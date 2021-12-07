@@ -25,6 +25,11 @@ namespace Tetramonio.Scenes
             
             SetDesignResolution(Width, Height, SceneResolutionPolicy.ShowAllPixelPerfect);
             Screen.SetSize(Width, Height);
+
+
+            var e = new Entity("test").AddComponent<TestComponent>();
+
+            AddEntity(e.Entity);
         }
 
         public override void Update()
