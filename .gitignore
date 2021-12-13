@@ -5,5 +5,4 @@ riderModule.iml
 /_ReSharper.Caches/
 .DS_Store
 .idea
-/.vs/Tetramonio/DesignTimeBuild/.dtbcache.v2
-/.vs/Tetramonio/v16/.suo
+.vs

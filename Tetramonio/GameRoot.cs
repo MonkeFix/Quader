@@ -8,6 +8,11 @@ namespace Tetramonio
 {
     public class GameRoot : Core
     {
+
+        public GameRoot()
+        {
+            Window.AllowUserResizing = false;
+        }
         
         protected override void Initialize()
         {
