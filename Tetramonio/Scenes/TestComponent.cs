@@ -15,12 +15,12 @@ namespace Tetramonio.Scenes
         {
             base.Initialize();
 
-            _blockTexture = Core.Content.Load<Texture2D>("blocks");
+            _blockTexture = Core.Content.Load<Texture2D>("skins/default");
         }
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            batcher.Draw(_blockTexture, new Vector2(64, 64), Color.Red);
+            batcher.Draw(_blockTexture, new Vector2(64, 64), Color.White);
         }
     }
 }
