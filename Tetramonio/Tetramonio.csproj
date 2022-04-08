@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
