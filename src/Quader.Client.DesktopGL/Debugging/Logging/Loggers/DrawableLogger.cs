@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Nez;
 
-namespace Tetramonio.Debugging.Logging.Loggers
+namespace Quader.Debugging.Logging.Loggers
 {
     public class DrawableLogger : LoggerBase
     {

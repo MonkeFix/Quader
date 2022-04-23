@@ -1,4 +1,4 @@
-﻿namespace Tetramonio.Debugging.Logging
+﻿namespace Quader.Debugging.Logging
 {
     public class LogEntry
     {

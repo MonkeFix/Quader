@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Tetramonio.Debugging.Logging
+namespace Quader.Debugging.Logging
 {
     public abstract class LoggerBase
     {

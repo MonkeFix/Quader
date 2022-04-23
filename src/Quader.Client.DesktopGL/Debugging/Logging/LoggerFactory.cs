@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Tetramonio.Debugging.Logging.Loggers;
+using Quader.Debugging.Logging.Loggers;
 
-namespace Tetramonio.Debugging.Logging
+namespace Quader.Debugging.Logging
 {
     public static class LoggerFactory
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tetramonio
+namespace Quader
 {
     public static class Program
     {

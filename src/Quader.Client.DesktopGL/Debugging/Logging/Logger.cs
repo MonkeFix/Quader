@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Tetramonio.Debugging.Logging
+namespace Quader.Debugging.Logging
 {
     /// <summary>
     /// Provides a logging system which might work on either sync or async.

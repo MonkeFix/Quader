@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Tetramonio.Debugging.Logging.Loggers
+namespace Quader.Debugging.Logging.Loggers
 {
     public class DiagnosticsLogger : LoggerBase
     {

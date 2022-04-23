@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 
-namespace Tetramonio.Scenes
+namespace Quader.Scenes
 {
     public class TestComponent : RenderableComponent
     {

@@ -1,7 +1,7 @@
 using Nez;
 using Nez.ImGuiTools;
 
-namespace Tetramonio.Scenes
+namespace Quader.Scenes
 {
     public class GameplayScene : Scene
     {
