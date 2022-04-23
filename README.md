@@ -1,4 +1,4 @@
-# TETRER
+# Quader
 
 Online stacker puzzle game
 
@@ -64,38 +64,43 @@ Online stacker puzzle game
 
 #### Pros
 
- - Exists
+ - Minimalistic in a good way
+ - A lot of game modes
+ - AI (bots)
+ - Player progression
 
 #### Cons
 
- - Something is bad
+ - Bad UI
+ - A little of customization - only sounds and pieces apperance
 
 ### Techmino
 
 #### Pros
 
- - Exists
+ - Full cross-platform support: PC, Mac, Android, etc
 
 #### Cons
 
- - Something is bad
+ - Written in Lua with bad English support
 
 ### Puyo Puyo Tetris 2
 
 #### Pros
 
- - Exists
+ - Anime with pretty girls
 
 #### Cons
 
- - Something is bad
+ - Feels slow and clunky to play
 
 ### Tetris Effect: Connected
 
 #### Pros
 
- - Exists
+ - Great one of the best visuals and music in all the tetris games
+ - Zone feature
 
 #### Cons
 
- - Something is bad
+ - Feels slow and clunky to play
