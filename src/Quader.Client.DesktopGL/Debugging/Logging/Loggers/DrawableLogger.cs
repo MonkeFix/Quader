@@ -4,7 +4,7 @@ using Nez;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class DrawableLogger : LoggerBase
+    public class DrawableLogger : ILogger
     {
         private Color _color;
         private float _duration;
@@ -17,12 +17,12 @@ namespace Quader.Debugging.Logging.Loggers
             _scale = scale;
         }
 
-        public override void Log(string message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
             Debug.DrawText(message, _color, _duration, _scale);
         }
 
-        public override Task LogAsync(string message, LogLevel level)
+        public Task LogAsync(string message, LogLevel level)
         {
             Debug.DrawText(message, _color, _duration, _scale);
             return Task.CompletedTask;

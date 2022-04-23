@@ -7,8 +7,8 @@ namespace Quader
         [STAThread]
         static void Main()
         {
-            using (var game = new GameRoot())
-                game.Run();
+            using var game = new GameRoot();
+            game.Run();
         }
     }
 }

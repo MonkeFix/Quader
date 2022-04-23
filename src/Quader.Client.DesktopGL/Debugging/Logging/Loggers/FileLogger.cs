@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class FileLogger : LoggerBase
+    public class FileLogger : ILogger
     {
         public string FileDir => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
 
@@ -22,18 +22,15 @@ namespace Quader.Debugging.Logging.Loggers
                 Directory.CreateDirectory(FileDir);
         }
 
-        public override void Log(string message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
-            lock (LockObject)
+            using (var sw = new StreamWriter(FilePath, true))
             {
-                using (var sw = new StreamWriter(FilePath, true))
-                {
-                    sw.WriteLine(message);
-                }
+                sw.WriteLine(message);
             }
         }
 
-        public override async Task LogAsync(string message, LogLevel level)
+        public async Task LogAsync(string message, LogLevel level)
         {
             using (var sw = new StreamWriter(FilePath, true))
             {

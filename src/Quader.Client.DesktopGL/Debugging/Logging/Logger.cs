@@ -10,9 +10,11 @@ namespace Quader.Debugging.Logging
     public class Logger
     {
         public string Context { get; }
-        private List<LoggerBase> ActiveLoggers { get; }
+        private List<ILogger> ActiveLoggers { get; }
 
-        public void AddLogger(LoggerBase logger)
+        private Dictionary<LogLevel, ILogger> _activeLoggersMap { get; } 
+
+        public void AddLogger(ILogger logger)
         {
             if (ActiveLoggers.Contains(logger))
             {
@@ -22,11 +24,13 @@ namespace Quader.Debugging.Logging
             ActiveLoggers.Add(logger);
         }
 
-        internal Logger(string context, IEnumerable<LoggerBase> activeLoggers)
+        internal Logger(string context, IEnumerable<ILogger> activeLoggers)
         {
             Context = context;
-            ActiveLoggers = new List<LoggerBase>();
+            ActiveLoggers = new List<ILogger>();
             ActiveLoggers.AddRange(activeLoggers);
+
+            _activeLoggersMap = new Dictionary<LogLevel, ILogger>();
         }
 
         public void Log(object message, LogLevel level = LogLevel.Debug)

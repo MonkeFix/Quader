@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class ConsoleLogger : LoggerBase
+    public class ConsoleLogger : ILogger
     {
         private ConsoleColor _origColor;
         public ConsoleColor ColorDebug { get; set; }
@@ -11,6 +11,8 @@ namespace Quader.Debugging.Logging.Loggers
         public ConsoleColor ColorWarning { get; set; }
         public ConsoleColor ColorError { get; set; }
         public ConsoleColor ColorFatal { get; set; }
+
+        private object _lockObject = new object();
 
         public ConsoleLogger()
         {
@@ -27,9 +29,9 @@ namespace Quader.Debugging.Logging.Loggers
             ColorFatal = ConsoleColor.DarkRed;
         }
 
-        public override void Log(string message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
-            lock (LockObject)
+            lock (_lockObject)
             {
                 switch (level)
                 {
@@ -58,7 +60,7 @@ namespace Quader.Debugging.Logging.Loggers
             }
         }
 
-        public override async Task LogAsync(string message, LogLevel level)
+        public async Task LogAsync(string message, LogLevel level)
         {
             switch (level)
             {
