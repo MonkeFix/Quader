@@ -12,6 +12,13 @@
     <Product>Quader</Product>
     <Authors>Grigory Aflyorov</Authors>
     <RootNamespace>Quader</RootNamespace>
+    <Nullable>annotations</Nullable>
+    <Description>An online stacker game</Description>
+    <PackageProjectUrl>https://github.com/lunacys/Quader</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/lunacys/Quader</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
@@ -23,6 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.Xna.Framework.Content.ContentTypeReader" Visible="false" />
