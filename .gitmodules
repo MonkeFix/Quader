@@ -1,0 +1,4 @@
+[submodule "3rdParty/Nez"]
+	path = 3rdParty/Nez
+	url = https://github.com/prime31/Nez.git
+	branch = master
