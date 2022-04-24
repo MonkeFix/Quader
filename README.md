@@ -1,5 +1,7 @@
 # Quader
 
+[![.NET Client Application](https://github.com/lunacys/Quader/actions/workflows/client-app.yml/badge.svg?branch=master)](https://github.com/lunacys/Quader/actions/workflows/client-app.yml)
+
 Online stacker puzzle game
 
 ## Ideas
