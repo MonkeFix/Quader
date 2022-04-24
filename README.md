@@ -2,7 +2,7 @@
 
 [![.NET Client Application](https://github.com/lunacys/Quader/actions/workflows/client-app.yml/badge.svg?branch=master)](https://github.com/lunacys/Quader/actions/workflows/client-app.yml)
 
-Online stacker puzzle game
+Online stacker puzzle game.
 
 ## Ideas
 
@@ -25,7 +25,7 @@ Online stacker puzzle game
  - Is really hard to get into competetive scene
  - Only 4 damage tagets: even, random, backfire and eliminations
 
-### TETR.IO
+### [TETR.IO](https://tetr.io)
 
 #### Pros
 
@@ -62,7 +62,7 @@ Online stacker puzzle game
  - No tutorials nor guides
  - Chat is a mess with a lot of useless info (players connected/disconnects)
 
-### Jstris
+### [Jstris](https://jstris.jezevec10.com/)
 
 #### Pros
 
@@ -76,7 +76,7 @@ Online stacker puzzle game
  - Bad UI
  - A little of customization - only sounds and pieces apperance
 
-### Techmino
+### [Techmino](https://github.com/26F-Studio/Techmino)
 
 #### Pros
 
@@ -86,7 +86,7 @@ Online stacker puzzle game
 
  - Written in Lua with bad English support
 
-### Puyo Puyo Tetris 2
+### [Puyo Puyo Tetris 2](https://store.steampowered.com/app/1259790/Puyo_Puyo_Tetris_2/)
 
 #### Pros
 
@@ -96,7 +96,7 @@ Online stacker puzzle game
 
  - Feels slow and clunky to play
 
-### Tetris Effect: Connected
+### [Tetris Effect: Connected](https://store.steampowered.com/app/1003590/Tetris_Effect_Connected/)
 
 #### Pros
 
