@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Quader.Client.DesktopGL/bin/Debug/net6.0/Quader.Client.DesktopGL.dll",
+            "program": "${workspaceFolder}/Quader.Client.DesktopGL/bin/Debug/net6.0/Quader.Client.DesktopGL.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Quader.Client.DesktopGL",
+            "cwd": "${workspaceFolder}/Quader.Client.DesktopGL",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
