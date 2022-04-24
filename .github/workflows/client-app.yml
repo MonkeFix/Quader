@@ -26,10 +26,10 @@ jobs:
         dotnet-version: 6.0.x
         
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/Quader.sln
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build ./src/Quader.sln --no-restore
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal ./src/Quader.sln
