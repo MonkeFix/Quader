@@ -1,5 +1,6 @@
 using Nez;
 using Nez.ImGuiTools;
+using Quader.Components;
 
 namespace Quader.Scenes
 {
@@ -30,6 +31,9 @@ namespace Quader.Scenes
             var e = new Entity("test").AddComponent<TestComponent>();
 
             AddEntity(e.Entity);
+
+            var e2 = new Entity("board").AddComponent<BoardComponent>();
+            AddEntity(e2.Entity);
         }
 
         public override void Update()

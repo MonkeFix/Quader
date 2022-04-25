@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 
-namespace Quader.Scenes
+namespace Quader.Components
 {
     public class TestComponent : RenderableComponent
     {
