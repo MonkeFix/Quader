@@ -59,7 +59,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(User), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetById([FromForm] int userId)
+    public async Task<IActionResult> GetById([FromQuery] int userId)
     {
         try
         {
@@ -86,7 +86,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(User), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByUsername([FromForm] string username)
+    public async Task<IActionResult> GetByUsername([FromQuery] string username)
     {
         try
         {
@@ -113,7 +113,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(User), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByEmail([FromForm] string email)
+    public async Task<IActionResult> GetByEmail([FromQuery] string email)
     {
         try
         {
@@ -139,7 +139,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(User), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Register([FromForm] UserRegisterRequest user)
+    public async Task<IActionResult> Register([FromQuery] UserRegisterRequest user)
     {
         try
         {
@@ -158,7 +158,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ChangePasswordById([FromForm] int userId, [FromForm] string oldPassword, [FromForm] string newPassword)
+    public async Task<IActionResult> ChangePasswordById([FromQuery] int userId, [FromQuery] string oldPassword, [FromQuery] string newPassword)
     {
         try
         {
@@ -184,7 +184,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ChangePasswordByUsername([FromForm] string username, [FromForm] string oldPassword, [FromForm] string newPassword)
+    public async Task<IActionResult> ChangePasswordByUsername([FromQuery] string username, [FromQuery] string oldPassword, [FromQuery] string newPassword)
     {
         try
         {
@@ -204,7 +204,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ChangePassword([FromForm] string oldPassword, [FromForm] string newPassword)
+    public async Task<IActionResult> ChangePassword([FromQuery] string oldPassword, [FromQuery] string newPassword)
     {
         try
         {
@@ -234,7 +234,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), 200)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateRole([FromForm] string username, [FromForm] string newRoleName)
+    public async Task<IActionResult> UpdateRole([FromQuery] string username, [FromQuery] string newRoleName)
     {
         try
         {
