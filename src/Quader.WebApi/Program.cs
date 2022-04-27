@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Options;
+using Quader.WebApi.Configuration;
+using Quader.WebApi.Data;
+
 namespace Quader.WebApi;
 
 class Program
@@ -22,7 +26,11 @@ class Program
 
         try
         {
+            var context = services.GetRequiredService<QuaderMainContext>();
+            await context.Database.EnsureCreatedAsync();
 
+            var settings = services.GetRequiredService<IOptions<AppSettings>>();
+            DbInitializer.Initialize(context, settings.Value);
         }
         catch (Exception e)
         {
