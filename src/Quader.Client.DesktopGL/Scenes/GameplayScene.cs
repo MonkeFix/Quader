@@ -8,8 +8,8 @@ namespace Quader.Scenes
     {
         public const int ScreenSpaceRenderLayer = 999;
 
-        public readonly int Width = 1280;
-        public readonly int Height = 720;
+        public readonly int Width = 1920;
+        public readonly int Height = 1080;
 
         public GameplayScene()
         {
@@ -28,9 +28,9 @@ namespace Quader.Scenes
             Screen.SetSize(Width, Height);
 
 
-            var e = new Entity("test").AddComponent<TestComponent>();
+            /*var e = new Entity("test").AddComponent<TestComponent>();
 
-            AddEntity(e.Entity);
+            AddEntity(e.Entity);*/
 
             var e2 = new Entity("board").AddComponent<BoardComponent>();
             AddEntity(e2.Entity);
