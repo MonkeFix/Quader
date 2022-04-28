@@ -30,9 +30,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Auth([FromQuery] AuthRequest model)
     {
-        AuthResponse response;
-        
-        response = await _authService.AuthAsync(model);
+        AuthResponse? response = await _authService.AuthAsync(model);
 
         if (response == null)
             return BadRequest(new ErrorResponse() { Error = "Invalid Username or Password" });
