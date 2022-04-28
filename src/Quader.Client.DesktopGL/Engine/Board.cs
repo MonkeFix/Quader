@@ -62,8 +62,6 @@ namespace Quader.Engine
 
             if (_currentPiece.X > 0)
                 _currentPiece.X -= 1;
-
-            Update();
         }
 
         public void MoveRight()
@@ -73,24 +71,36 @@ namespace Quader.Engine
 
             if (_currentPiece.X + _currentPiece.PieceTable.GetLength(1) < Width)
                 _currentPiece.X += 1;
-
-            Update();
         }
 
         public void HardDrop()
         {
-            Update();
+            if (_currentPiece == null)
+                return;
+
+
+        }
+
+        public void SoftDrop()
+        {
+            if (_currentPiece == null)
+                return;
+
+            _currentPiece.AbsoluteY += 1f;
         }
 
         public void Reset() => _board = new BoardPieceType[Width * Height];
 
-        public void Update()
+        public void Update(float deltaTime)
         {
             if (_currentPiece == null)
                 return;
 
             if (_currentPiece.Y < Height - 2)
-                _currentPiece.Y += 1;
+            {
+                _currentPiece.AbsoluteY += 1f * deltaTime;
+                _currentPiece.Y = (int)Math.Floor(_currentPiece.AbsoluteY);
+            }
 
             /*
             var width = _currentPiece.PieceTable.GetLength(0);

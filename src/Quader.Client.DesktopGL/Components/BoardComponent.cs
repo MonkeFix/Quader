@@ -1,7 +1,9 @@
 ﻿using System;
+using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nez;
+using Nez.ImGuiTools;
 using Nez.UI;
 using Quader.Engine;
 using Random = Nez.Random;
@@ -19,6 +21,11 @@ namespace Quader.Components
         public BoardComponent()
         {
             _board = new Board();
+        }
+
+        public override void OnAddedToEntity()
+        {
+            Core.GetGlobalManager<ImGuiManager>().RegisterDrawCommand(ImGuiDraw);
         }
 
         public override void Render(Batcher batcher, Camera camera)
@@ -41,6 +48,8 @@ namespace Quader.Components
                     {
                         batcher.DrawRect(128 + x * size, 64 + y * size, size, size, Color.Red);
                     }
+
+                    batcher.DrawHollowRect(128 + x * size, 64 + y * size, size, size, Color.White * 0.1f, 2f);
                 }
             }
 
@@ -52,7 +61,7 @@ namespace Quader.Components
                     {
                         if (c.PieceTable[y, x])
                         {
-                            batcher.DrawRect(128 + (c.X + x) * size, 64 + (c.Y + y) * size, size, size, Color.LightSkyBlue);
+                            batcher.DrawRect(128 + (c.X + x) * size, 64 + (c.Y + y) * size, size, size, c.Color);
                         }
                     }
                 }
@@ -80,18 +89,47 @@ namespace Quader.Components
         {
             if (Input.IsKeyPressed(Keys.Space))
             {
-                _board.PushPiece(new Piece(PieceType.I));
+                _board.HardDrop();
             }
 
-            if (Input.IsKeyDown(Keys.Left))
+            if (Input.IsKeyDown(Keys.Down))
+            {
+                _board.SoftDrop();
+            }
+
+            if (Input.IsKeyPressed(Keys.Left))
             {
                 _board.MoveLeft();
             }
 
-            if (Input.IsKeyDown(Keys.Right))
+            if (Input.IsKeyPressed(Keys.Right))
             {
                 _board.MoveRight();
             }
+            
+            _board.Update(Time.DeltaTime);
+        }
+
+        private void ImGuiDraw()
+        {
+            ImGui.Begin("Spawn Piece");
+
+            if (ImGui.Button("Spawn I"))
+                _board.PushPiece(new Piece(PieceType.I));
+            if (ImGui.Button("Spawn J"))
+                _board.PushPiece(new Piece(PieceType.J));
+            if (ImGui.Button("Spawn L"))
+                _board.PushPiece(new Piece(PieceType.L));
+            if (ImGui.Button("Spawn T"))
+                _board.PushPiece(new Piece(PieceType.T));
+            if (ImGui.Button("Spawn S"))
+                _board.PushPiece(new Piece(PieceType.S));
+            if (ImGui.Button("Spawn Z"))
+                _board.PushPiece(new Piece(PieceType.Z));
+            if (ImGui.Button("Spawn O"))
+                _board.PushPiece(new Piece(PieceType.O));
+
+            ImGui.End();
         }
     }
 }
