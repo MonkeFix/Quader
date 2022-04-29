@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.ImGuiTools;
 using Quader.Components;
@@ -27,6 +28,8 @@ namespace Quader.Scenes
             SetDesignResolution(Width, Height, SceneResolutionPolicy.ShowAllPixelPerfect);
             Screen.SetSize(Width, Height);
 
+            var data = RotationImageToJsonConverter.ConvertToJsonDebug(Content.Load<Texture2D>("data/srs_rotations"), out var timeSpent);
+            Debug.DrawText($"Time Spent: {timeSpent}", 10f);
 
             /*var e = new Entity("test").AddComponent<TestComponent>();
 
