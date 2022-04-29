@@ -6,7 +6,7 @@ namespace Quader.Engine
     public class Board
     {
         public static readonly int DefaultWidth = 10;
-        public static readonly int DefaultHeight = 40;
+        public static readonly int DefaultHeight = 20;
 
         public int Width { get; }
         public int Height { get; }
@@ -16,10 +16,16 @@ namespace Quader.Engine
         public BoardPieceType[] BoardLayout => _board;
 
         private Piece? _currentPiece;
+        private Piece? _heldPiece;
 
         public Piece? CurrentPiece => _currentPiece;
+        public Piece? HeldPiece => _heldPiece;
 
-        public Board(int width = 10, int height = 20)
+        public Board()
+            : this(DefaultWidth, DefaultHeight)
+        { }
+
+        public Board(int width, int height)
         {
             Width = width;
             Height = height;
@@ -36,23 +42,20 @@ namespace Quader.Engine
         {
             _currentPiece = piece ?? throw new Exception("Invalid piece");
 
-            //var height = _currentPiece.PieceTable.GetLength(0);
-            var width = _currentPiece.PieceTable.GetLength(1);
+            var width = _currentPiece.Width;
 
             var initialX = Width / 2 - (int)Math.Round(width / 2.0);
-            var initialY = 0;
+            var initialY = -1;
 
             piece.X = initialX;
+            piece.AbsoluteY = initialY;
             piece.Y = initialY;
+        }
 
-            /*for (var y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (_currentPiece.PieceTable[y, x])
-                        SetPieceAt(initialX + x, initialY + y, (BoardPieceType)(int)piece.Type);
-                }
-            }*/
+        public void Hold(Piece newPiece)
+        {
+            _heldPiece = _currentPiece;
+            PushPiece(newPiece);
         }
 
         public void MoveLeft()
@@ -69,16 +72,33 @@ namespace Quader.Engine
             if (_currentPiece == null)
                 return;
 
-            if (_currentPiece.X + _currentPiece.PieceTable.GetLength(1) < Width)
+            if (_currentPiece.X + _currentPiece.Width < Width)
                 _currentPiece.X += 1;
         }
 
-        public void HardDrop()
+        public void HardDrop(Piece newPiece)
         {
             if (_currentPiece == null)
                 return;
 
+            var nearestY = FindNearestDropY();
 
+            var width = _currentPiece.Width;
+            var height = _currentPiece.Height;
+
+            var initialX = _currentPiece.X;
+            var initialY = nearestY;
+
+            for (var y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (_currentPiece.PieceTable[y, x])
+                        SetPieceAt(initialX + x, initialY + y, (BoardPieceType)(int)_currentPiece.Type);
+                }
+            }
+
+            PushPiece(newPiece);
         }
 
         public void SoftDrop()
@@ -87,6 +107,30 @@ namespace Quader.Engine
                 return;
 
             _currentPiece.AbsoluteY += 1f;
+        }
+
+        public void RotateClockwise()
+        {
+            if (_currentPiece == null)
+                return;
+
+            _currentPiece.RotateClockwise();
+        }
+
+        public void RotateCounterClockwise()
+        {
+            if (_currentPiece == null)
+                return;
+
+            _currentPiece.RotateCounterClockwise();
+        }
+
+        public void Rotate180()
+        {
+            if (_currentPiece == null)
+                return;
+
+            _currentPiece.Rotate180();
         }
 
         public void Reset() => _board = new BoardPieceType[Width * Height];
@@ -101,21 +145,45 @@ namespace Quader.Engine
                 _currentPiece.AbsoluteY += 1f * deltaTime;
                 _currentPiece.Y = (int)Math.Floor(_currentPiece.AbsoluteY);
             }
+        }
 
-            /*
-            var width = _currentPiece.PieceTable.GetLength(0);
-            var height = _currentPiece.PieceTable.GetLength(1);
+        public int FindNearestDropY()
+        {
+            if (_currentPiece == null)
+                return 0;
 
-            for (var y = 0; y < height; y++)
+            var dropY = 0;
+
+            for (int y = 0; y <= Height - _currentPiece.Height; y++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    if (_currentPiece.PieceTable[y, x])
-                        SetPieceAt(initialX + x, initialY + y, (BoardPieceType)(int)piece.Type);
-                }
-            }*/
+                if (!TestPositionY(y))
+                    break;
 
-            // TODO: Check line clears
+                dropY = y;
+            }
+
+            return dropY;
+        }
+
+        private bool TestPositionY(int y)
+        {
+            if (_currentPiece == null)
+                return false;
+
+            var x = _currentPiece.X;
+            var width = _currentPiece.Width;
+            var height = _currentPiece.Height;
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    if (_currentPiece.PieceTable[i, j] && GetPieceAt(x + j, y + i) != BoardPieceType.None)
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         public BoardPieceType GetPieceAt(int x, int y) => _board[GetIndexByCoordinates(x, y)];

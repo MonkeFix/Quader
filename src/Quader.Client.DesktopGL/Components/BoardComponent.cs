@@ -12,8 +12,8 @@ namespace Quader.Components
 {
     public class BoardComponent : RenderableComponent, IUpdatable
     {
-        public override float Width => 1000;
-        public override float Height => 1000;
+        public override float Width => 800;
+        public override float Height => 600;
 
 
         private Board _board;
@@ -46,7 +46,7 @@ namespace Quader.Components
                     }
                     else
                     {
-                        batcher.DrawRect(128 + x * size, 64 + y * size, size, size, Color.Red);
+                        batcher.DrawRect(128 + x * size, 64 + y * size, size, size, PieceUtils.GetColorByBoardPieceType(p));
                     }
 
                     batcher.DrawHollowRect(128 + x * size, 64 + y * size, size, size, Color.White * 0.1f, 2f);
@@ -67,29 +67,30 @@ namespace Quader.Components
                 }
             }
 
-            /*for (int y = 0; y < _board.Height; y++)
+            // Draw Ghost Piece
+            if (c != null)
             {
-                for (int x = 0; x < _board.Width; x++)
-                {
-                    var p = _board.GetPieceAt(x, y);
+                var nY = _board.FindNearestDropY(); // Unoptimized as fuck, check only on piece movement
 
-                    if (p == BoardPieceType.None)
+                for (int y = 0; y < c.PieceTable.GetLength(0); y++)
+                {
+                    for (int x = 0; x < c.PieceTable.GetLength(1); x++)
                     {
-                        batcher.DrawRect(128 + x * size,  64+ y * size, size, size, Color.Black);
-                    }
-                    else
-                    {
-                        batcher.DrawRect(128 + x * size, 64 + y * size, size, size, Color.Red);
+                        if (c.PieceTable[y, x])
+                        {
+                            batcher.DrawRect(128 + (c.X + x) * size, 64 + (nY + y) * size, size, size, c.Color * 0.5f);
+                        }
                     }
                 }
-            }*/
+            }
         }
 
         public void Update()
         {
             if (Input.IsKeyPressed(Keys.Space))
             {
-                _board.HardDrop();
+                var np = new Piece(_board.CurrentPiece.Type);
+                _board.HardDrop(np);
             }
 
             if (Input.IsKeyDown(Keys.Down))
@@ -106,7 +107,14 @@ namespace Quader.Components
             {
                 _board.MoveRight();
             }
-            
+
+            if (Input.IsKeyPressed(Keys.X))
+                _board.RotateClockwise();
+            if (Input.IsKeyPressed(Keys.Z))
+                _board.RotateCounterClockwise();
+            if (Input.IsKeyPressed(Keys.F))
+                _board.Rotate180();
+
             _board.Update(Time.DeltaTime);
         }
 

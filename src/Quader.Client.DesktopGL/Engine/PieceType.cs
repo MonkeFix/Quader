@@ -2,6 +2,6 @@
 {
     public enum PieceType
     {
-        I, O, T, L, J, S, Z
+        I = 0, O, T, L, J, S, Z
     }
 }
