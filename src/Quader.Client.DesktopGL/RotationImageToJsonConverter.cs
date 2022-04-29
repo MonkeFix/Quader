@@ -35,21 +35,32 @@ namespace Quader
     {
         [JsonProperty(PropertyName = "RotationSystemTable")]
         public Dictionary<PieceType, RotationPositionEncoding> RotationSystemTableMap { get; set; } = null!;
+
+        public ConverterOptions ConverterOptions { get; set; }
     }
 
     public class ConverterOptions
     {
         public int SegmentSize { get; set; }
-        public int XOffset { get; set; }
-        public int YOffset { get; set; }
+
+        public Dictionary<PieceType, Point>? OffsetSettings { get; set; } = null;
+
         public int TestCount { get; set; }
 
         public static ConverterOptions Default => new ConverterOptions
         {
             SegmentSize = 16,
-            XOffset = 8,
-            YOffset = 8,
-            TestCount = 5
+            TestCount = 5,
+            OffsetSettings = new Dictionary<PieceType, Point>
+            {
+                { PieceType.I, new Point(8, 8) },
+                { PieceType.O, new Point(14, 14) },
+                { PieceType.T, new Point(10, 10) },
+                { PieceType.L, new Point(10, 10) },
+                { PieceType.J, new Point(10, 10) },
+                { PieceType.S, new Point(10, 10) },
+                { PieceType.Z, new Point(10, 10) },
+            }
         };
     }
 
@@ -76,8 +87,6 @@ namespace Quader
 
             var result = "";
             var segmentSize = options.SegmentSize;
-            var xOffset = options.XOffset;
-            var yOffset = options.YOffset;
 
             Color[,] newData = new Color[image.Height, image.Width];
 
@@ -131,18 +140,22 @@ namespace Quader
                     // 0       - initial position
                     // [1,  5] - clockwise tests
                     // [6, 10] - counter-clockwise tests
-                    var initialPosData = TakePortion(dataRawArr[i], 0, 0, segmentSize, segmentSize, Color.White);
+
+
+                    var offset = options?.OffsetSettings?[pieceType] ?? new Point(0, 0);
+
+                    var initialPosData = TakePortion(dataRawArr[i], 0 + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y, Color.White);
 
                     List<Color[,]> clockwiseTestData = new List<Color[,]>(5);
                     for (int k = 1; k <= options.TestCount; k++)
                     {
-                        clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k, 0, segmentSize, segmentSize));
+                        clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
 
                     List<Color[,]> counterClockwiseTestData = new List<Color[,]>(5);
                     for (int k = options.TestCount + 1; k <= options.TestCount * 2; k++)
                     {
-                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k, 0, segmentSize, segmentSize));
+                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
 
                     var re = new RotationEncoding
@@ -165,7 +178,9 @@ namespace Quader
                 }
             }
 
-            result = JsonConvert.SerializeObject(rst, Formatting.Indented);
+            rst.ConverterOptions = options;
+
+            result = JsonConvert.SerializeObject(rst, Formatting.None);
 
             using (var sw = new StreamWriter("data.json", false))
             {
