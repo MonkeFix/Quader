@@ -20,31 +20,43 @@ namespace Quader
 
     public class RotationEncoding
     {
+        [JsonProperty(PropertyName = "sp")]
         public PieceStartPosition StartPosition { get; set; }
-        public string[] InitialEncoding { get; set; } = null!;
-        public string[][] TestsClockwise { get; set; } = null!;
-        public string[][] TestsCounterClockwise { get; set; } = null!;
+        [JsonProperty(PropertyName = "ibo")]
+        public int InitialBitsOffset { get; set; }
+        [JsonProperty(PropertyName = "cbo")]
+        public int[] ClockwiseBitsOffsets { get; set; } = null!;
+        [JsonProperty(PropertyName = "ccbo")]
+        public int[] CounterClockwiseBitsOffsets { get; set; } = null!;
+        [JsonProperty(PropertyName = "ie")]
+        public long InitialEncoding { get; set; }
+        [JsonProperty(PropertyName = "tc")]
+        public long[] TestsClockwise { get; set; } = null!;
+        [JsonProperty(PropertyName = "tcc")]
+        public long[] TestsCounterClockwise { get; set; } = null!;
     }
 
     public class RotationPositionEncoding
     {
+        [JsonProperty(PropertyName = "pe")]
         public Dictionary<PieceStartPosition, RotationEncoding> PositionEncodings { get; set; } = null!;
     }
 
     public class RotationSystemTable
     {
-        [JsonProperty(PropertyName = "RotationSystemTable")]
+        [JsonProperty(PropertyName = "rst")]
         public Dictionary<PieceType, RotationPositionEncoding> RotationSystemTableMap { get; set; } = null!;
-
+        [JsonProperty(PropertyName = "co")]
         public ConverterOptions ConverterOptions { get; set; }
     }
 
     public class ConverterOptions
     {
+        [JsonProperty(PropertyName = "ss")]
         public int SegmentSize { get; set; }
-
+        [JsonProperty(PropertyName = "os")]
         public Dictionary<PieceType, Point>? OffsetSettings { get; set; } = null;
-
+        [JsonProperty(PropertyName = "tc")]
         public int TestCount { get; set; }
 
         public static ConverterOptions Default => new ConverterOptions
@@ -94,7 +106,7 @@ namespace Quader
             rst.RotationSystemTableMap = new Dictionary<PieceType, RotationPositionEncoding>();
 
             // Step 1: Take the entire piece table from the image
-            Dictionary<PieceType, Color[,]> piecesDataRaw = new Dictionary<PieceType, Color[,]>(7);
+            var piecesDataRaw = new List<Color[,]>(7);
 
             for (int i = 0; i < 7; i++)
             {
@@ -106,26 +118,15 @@ namespace Quader
 
                 var portion = TakePortion(newData, startX, startY, width, height, new Color(1.0f, 0, 0, 1.0f));
                 var pieceType = (PieceType)i; // I, O, T, L, J, S, Z
-                piecesDataRaw[pieceType] = portion;
+                piecesDataRaw.Add(portion);
 
                 // Step 2: Split piece table to rows
-                Dictionary<PieceStartPosition, Color[,]> piecesRowsRaw = new Dictionary<PieceStartPosition, Color[,]>(4);
-                var dataRawArr = piecesDataRaw.Values.ToArray();
-
-                var rpeList = new List<RotationPositionEncoding>(4);
+                var dataRawArr = piecesDataRaw;
 
                 // Proceed every row
                 for (int j = 0; j < 4; j++)
                 {
-                    startX = 0;
-                    startY = j * segmentSize;
-
-                    width = image.Width;
-                    height = segmentSize;
-
-                    portion = TakePortion(dataRawArr[i], startX, startY, width, height);
                     var pieceStartPos = (PieceStartPosition)j;
-                    piecesRowsRaw[pieceStartPos] = portion;
 
                     // Step 3: Create 4 sets of tests for both clockwise and counter-clockwise rotation and 4 types of initial position
                     // 0       - initial position
@@ -152,11 +153,20 @@ namespace Quader
                     var re = new RotationEncoding
                     {
                         StartPosition = pieceStartPos,
-                        InitialEncoding = Encode(initialPosData),
-                        TestsClockwise = Encode(clockwiseTestData.ToArray()),
-                        TestsCounterClockwise = Encode(counterClockwiseTestData.ToArray())
+                        InitialEncoding = EncodeV2(initialPosData, out var initialBitsOffset),
+                        TestsClockwise = EncodeV2(clockwiseTestData.ToArray(), out var clockwiseBitsOffsets),
+                        TestsCounterClockwise = EncodeV2(counterClockwiseTestData.ToArray(), out var counterClockwiseBitsOffsets),
+                        InitialBitsOffset = initialBitsOffset,
+                        ClockwiseBitsOffsets = clockwiseBitsOffsets,
+                        CounterClockwiseBitsOffsets = counterClockwiseBitsOffsets
                     };
 
+                    var a = Encode(initialPosData);
+                    var b = V2ToString(re.InitialEncoding, initialBitsOffset, segmentSize - offset.X, segmentSize - offset.Y);
+
+                    var res = Compare(a, b);
+                    if (!res)
+                        throw new Exception("Data is not consistent!");
 
                     if (!rst.RotationSystemTableMap.ContainsKey(pieceType))
                         rst.RotationSystemTableMap[pieceType] = new RotationPositionEncoding
@@ -170,6 +180,53 @@ namespace Quader
             rst.ConverterOptions = options;
 
             return rst;
+        }
+
+        private static bool Compare(string[] a, string[] b)
+        {
+            if (a.Length != b.Length)
+                return false;
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static string[] V2ToString(long encoded, int bitsOffset, int width, int height)
+        {
+            var result = new string[height];
+
+            for (int y = 0; y < height; y++)
+            {
+                var row = "";
+
+                for (int x = 0; x < width; x++)
+                {
+                    var i = (width * height) - (x + width * y);
+
+                    if (i >= bitsOffset)
+                    {
+                        if (((encoded >> i) & 1) == 1)
+                        {
+                            row += "X";
+                        }
+                        else
+                            row += ".";
+                    }
+                    else
+                    {
+                        row += ".";
+                    }
+                }
+
+                result[y] = row;
+            }
+
+            return result;
         }
 
         private static string[] Encode(Color[,] data)
@@ -193,6 +250,52 @@ namespace Quader
             }
 
             return result;
+        }
+
+        private static long EncodeV2(Color[,] data, out int bitsOffset)
+        {
+            long result = 0;
+            bitsOffset = 0;
+            bool bitsDone = false;
+
+            for (int y = 0; y < data.GetLength(1); y++)
+            {
+                for (int x = 0; x < data.GetLength(0); x++)
+                {
+                    var d = data[y, x];
+                    if (d == Color.Black)
+                    {
+                        bitsDone = true;
+                        result |= 1;
+                    }
+                    else
+                    {
+                        if (!bitsDone)
+                            bitsOffset++;
+                        
+                    }
+
+                    result <<= 1;
+                }
+            }
+
+            return result;
+        }
+
+        private static long[] EncodeV2(Color[][,] data, out int[] bitsOffsets)
+        {
+            var result = new List<long>();
+            bitsOffsets = new int[data.Length];
+
+            for (var i = 0; i < data.Length; i++)
+            {
+                var c = data[i];
+                result.Add(EncodeV2(c, out var bitsOffset));
+
+                bitsOffsets[i] = bitsOffset;
+            }
+
+            return result.ToArray();
         }
 
         private static string[][] Encode(Color[][,] data)
