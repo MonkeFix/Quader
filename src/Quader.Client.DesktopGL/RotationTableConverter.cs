@@ -64,19 +64,9 @@ namespace Quader
         };
     }
 
-    public static class RotationImageToJsonConverter
+    public static class RotationTableConverter
     {
-        public static string ConvertToJsonDebug(Texture2D image, out TimeSpan timeSpent)
-        {
-            string res = "";
-            timeSpent = Debug.TimeAction(() => { res = ConvertToJson(image); });
-
-
-
-            return res;
-        }
-
-        public static string ConvertToJson(Texture2D image, ConverterOptions? options = null)
+        public static RotationSystemTable FromTexture2D(Texture2D image, ConverterOptions? options = null)
         {
             Color[] data = new Color[image.Width * image.Height];
 
@@ -84,8 +74,7 @@ namespace Quader
             
             if (options == null)
                 options = ConverterOptions.Default;
-
-            var result = "";
+            
             var segmentSize = options.SegmentSize;
 
             Color[,] newData = new Color[image.Height, image.Width];
@@ -122,6 +111,8 @@ namespace Quader
                 // Step 2: Split piece table to rows
                 Dictionary<PieceStartPosition, Color[,]> piecesRowsRaw = new Dictionary<PieceStartPosition, Color[,]>(4);
                 var dataRawArr = piecesDataRaw.Values.ToArray();
+
+                var rpeList = new List<RotationPositionEncoding>(4);
 
                 // Proceed every row
                 for (int j = 0; j < 4; j++)
@@ -166,28 +157,19 @@ namespace Quader
                         TestsCounterClockwise = Encode(counterClockwiseTestData.ToArray())
                     };
 
-                    var rpe = new RotationPositionEncoding
-                    {
-                        PositionEncodings = new Dictionary<PieceStartPosition, RotationEncoding>
-                        {
-                            [pieceStartPos] = re
-                        }
-                    };
 
-                    rst.RotationSystemTableMap[pieceType] = rpe;
+                    if (!rst.RotationSystemTableMap.ContainsKey(pieceType))
+                        rst.RotationSystemTableMap[pieceType] = new RotationPositionEncoding
+                            { PositionEncodings = new Dictionary<PieceStartPosition, RotationEncoding>() };
+
+
+                    rst.RotationSystemTableMap[pieceType].PositionEncodings[pieceStartPos] = re;
                 }
             }
 
             rst.ConverterOptions = options;
 
-            result = JsonConvert.SerializeObject(rst, Formatting.None);
-
-            using (var sw = new StreamWriter("data.json", false))
-            {
-                sw.WriteLine(result);
-            }
-
-            return result;
+            return rst;
         }
 
         private static string[] Encode(Color[,] data)
