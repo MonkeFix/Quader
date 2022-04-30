@@ -22,8 +22,8 @@ namespace Quader
     {
         [JsonInclude]
         public PieceStartPosition StartPosition { get; set; }
-        [JsonInclude]
-        public string[] InitialEncoding { get; set; }
+        [JsonInclude] 
+        public string[] InitialEncoding { get; set; } = null!;
         [JsonInclude]
         public string[][] TestsClockwise { get; set; } = null!;
         [JsonInclude]
@@ -59,14 +59,10 @@ namespace Quader
         public int SegmentSize { get; set; }
         [JsonInclude]
         public Dictionary<PieceType, RotationSystemRowData>? RowDataSettings { get; set; } = null;
-        /*[JsonInclude]
-        [JsonProperty(PropertyName = "tc")]
-        public int TestCount { get; set; }*/
 
         public static ConverterOptions Default => new ConverterOptions
         {
             SegmentSize = 16,
-            /*TestCount = 5,*/
             RowDataSettings = new ()
             {
                 { PieceType.I, new RotationSystemRowData { Offset = new Point(8, 8), TestCount = 5 } },
@@ -136,24 +132,28 @@ namespace Quader
                     // 0       - initial position
                     // [1,  5] - clockwise tests
                     // [6, 10] - counter-clockwise tests
-
-
                     var offsetT = options?.RowDataSettings?[pieceType] ??
                                   new RotationSystemRowData { Offset = Point.Zero, TestCount = 5 };
                     var offset = offsetT.Offset;
 
-                    var initialPosData = TakePortion(dataRawArr[i], 0 + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y, Color.White);
+                    var segW = segmentSize - offset.X;
+                    var segH = segmentSize - offset.Y;
+
+                    var getSegX = new Func<int, int>((index) => index * segmentSize + offset.X / 2);
+                    var getSegY = new Func<int, int>((index) => index * segmentSize + offset.Y / 2);
+
+                    var initialPosData = TakePortion(dataRawArr[i], getSegX(0), j * segmentSize + offset.Y / 2, segW, segH, Color.White);
 
                     List<Color[,]> clockwiseTestData = new List<Color[,]>(5);
                     for (int k = 1; k <= offsetT.TestCount; k++)
                     {
-                        clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
+                        clockwiseTestData.Add(TakePortion(dataRawArr[i], getSegX(k), getSegY(j), segW, segH));
                     }
 
                     List<Color[,]> counterClockwiseTestData = new List<Color[,]>(5);
                     for (int k = offsetT.TestCount + 1; k <= offsetT.TestCount * 2; k++)
                     {
-                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
+                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], getSegX(k), getSegY(j), segW, segH));
                     }
 
                     var re = new RotationEncoding
