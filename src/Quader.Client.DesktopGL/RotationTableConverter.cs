@@ -142,18 +142,18 @@ namespace Quader
                                   new RotationSystemRowData { Offset = Point.Zero, TestCount = 5 };
                     var offset = offsetT.Offset;
 
-                    var initialPosData = TakePortion(dataRawArr[i], 0 + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y, Color.White);
+                    var initialPosData = TakePortion(dataRawArr[i], 0 + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y, Color.White);
 
                     List<Color[,]> clockwiseTestData = new List<Color[,]>(5);
                     for (int k = 1; k <= offsetT.TestCount; k++)
                     {
-                        clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
+                        clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
 
                     List<Color[,]> counterClockwiseTestData = new List<Color[,]>(5);
                     for (int k = offsetT.TestCount + 1; k <= offsetT.TestCount * 2; k++)
                     {
-                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
+                        counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, j * segmentSize + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
 
                     var re = new RotationEncoding
