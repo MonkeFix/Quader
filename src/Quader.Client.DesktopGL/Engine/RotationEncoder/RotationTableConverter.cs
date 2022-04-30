@@ -2,11 +2,25 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nez.Persistence;
 
 namespace Quader.Engine.RotationEncoder
 {
     public static class RotationTableConverter
     {
+        public static RotationSystemTable FromJson(string json, out ConverterOptions options)
+        {
+            var obj = Json.FromJson<RotationSystemTable>(json);
+            options = obj.ConverterOptions;
+
+            return obj;
+        }
+
+        public static string ToJson(RotationSystemTable rst)
+        {
+            return Json.ToJson(rst);
+        }
+
         public static RotationSystemTable FromTexture2D(Texture2D image, ConverterOptions? options = null)
         {
             Color[] data = new Color[image.Width * image.Height];

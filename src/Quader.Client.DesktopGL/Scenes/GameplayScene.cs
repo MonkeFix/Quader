@@ -8,6 +8,7 @@ using Nez.ImGuiTools;
 using Nez.Persistence;
 using Quader.Components;
 using Quader.Debugging.Logging;
+using Quader.Engine.RotationEncoder;
 
 namespace Quader.Scenes
 {

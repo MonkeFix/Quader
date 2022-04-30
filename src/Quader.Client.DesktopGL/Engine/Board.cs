@@ -152,9 +152,9 @@ namespace Quader.Engine
             if (_currentPiece == null)
                 return 0;
 
-            var dropY = 0;
+            var dropY = Math.Max(_currentPiece.Y, 0);
 
-            for (int y = 0; y <= Height - _currentPiece.Height; y++)
+            for (int y = dropY; y <= Height - _currentPiece.Height; y++)
             {
                 if (!TestPositionY(y))
                     break;
