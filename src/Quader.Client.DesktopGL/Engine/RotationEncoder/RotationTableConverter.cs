@@ -161,14 +161,14 @@ namespace Quader.Engine.RotationEncoder
                     {
                         if (((encoded >> i) & 1) == 1)
                         {
-                            row += "X";
+                            row += ConverterOptions.FilledChar;
                         }
                         else
-                            row += ".";
+                            row += ConverterOptions.EmptyChar;
                     }
                     else
                     {
-                        row += ".";
+                        row += ConverterOptions.EmptyChar;
                     }
                 }
 
@@ -189,9 +189,9 @@ namespace Quader.Engine.RotationEncoder
                 {
                     var d = data[y, x];
                     if (d == Color.Black)
-                        curStr += "X";
+                        curStr += ConverterOptions.FilledChar;
                     else
-                        curStr += ".";
+                        curStr += ConverterOptions.EmptyChar;
 
                 }
 

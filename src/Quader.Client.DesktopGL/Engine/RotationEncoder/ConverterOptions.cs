@@ -6,6 +6,9 @@ namespace Quader.Engine.RotationEncoder
 {
     public class ConverterOptions
     {
+        public static readonly char FilledChar = 'X';
+        public static readonly char EmptyChar = '.';
+        
         [JsonInclude]
         public int SegmentSize { get; set; }
         [JsonInclude]

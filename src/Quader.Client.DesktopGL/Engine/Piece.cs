@@ -16,6 +16,8 @@ namespace Quader.Engine
         public float AbsoluteY { get; set; }
 
         internal bool[,] PieceTable { get; private set; }
+        
+        public string[] Table { get; private set; }
 
         public Piece(PieceType type)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Quader.Engine.RotationEncoder;
 
 namespace Quader.Engine
 {
@@ -169,8 +170,58 @@ namespace Quader.Engine
         {
             if (_currentPiece == null)
                 return false;
+            
+            return TestPosition(_currentPiece.X, y);
+        }
 
-            var x = _currentPiece.X;
+        private bool TestPosition(int y)
+        {
+            if (_currentPiece == null)
+                return false;
+
+            return TestPosition(_currentPiece.Table, _currentPiece.X, y);
+        }
+
+        private bool TestPosition(string[] data, int x, int y)
+        {
+            if (data.Length == 0)
+                return false;
+            
+            var w = data[0].Length;
+            var h = data.Length;
+
+            // TODO: there must be a much faster algorithm
+            for (int i = 0; i < h; i++)
+            {
+                for (int j = 0; j < w; j++)
+                {
+                    var p = data[i][j];
+                    if (p != ConverterOptions.FilledChar)
+                        continue;
+                    
+                    var oX = x + j;
+                    var oY = y + i;
+                    
+                    // we can't rotate because of the walls
+                    if (oX < 0 || oX >= Width || oY >= Height)
+                        return false;
+                    
+                    // just skip if upper that the field's start Y
+                    if (oY < 0) continue;
+
+                    if (GetPieceAt(oX, oY) != BoardPieceType.None)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TestPosition(int x, int y)
+        {
+            if (_currentPiece == null)
+                return false;
+
             var width = _currentPiece.Width;
             var height = _currentPiece.Height;
 
@@ -182,7 +233,7 @@ namespace Quader.Engine
                         return false;
                 }
             }
-
+            
             return true;
         }
 
