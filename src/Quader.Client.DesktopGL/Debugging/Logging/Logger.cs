@@ -7,7 +7,7 @@ namespace Quader.Debugging.Logging
     /// <summary>
     /// Provides a logging system which might work on either sync or async.
     /// </summary>
-    public class Logger
+    public class Logger : ILogger
     {
         public string Context { get; }
         private List<ILogger> ActiveLoggers { get; }
@@ -56,6 +56,9 @@ namespace Quader.Debugging.Logging
 
             switch (level)
             {
+                case LogLevel.Trace:
+                    result += $"[TRACE] - {curDateTimeStr} - {Context} - ";
+                    break;
                 case LogLevel.Debug:
                     result += $"[DEBUG] - {curDateTimeStr} - {Context} - ";
                     break;
@@ -77,5 +80,7 @@ namespace Quader.Debugging.Logging
             
             return result + message.ToString();
         }
+
+        
     }
 }

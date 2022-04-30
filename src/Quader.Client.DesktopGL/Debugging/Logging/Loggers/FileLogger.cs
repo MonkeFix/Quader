@@ -22,7 +22,7 @@ namespace Quader.Debugging.Logging.Loggers
                 Directory.CreateDirectory(FileDir);
         }
 
-        public void Log(string message, LogLevel level)
+        public void Log(object message, LogLevel level)
         {
             using (var sw = new StreamWriter(FilePath, true))
             {
@@ -30,11 +30,11 @@ namespace Quader.Debugging.Logging.Loggers
             }
         }
 
-        public async Task LogAsync(string message, LogLevel level)
+        public async Task LogAsync(object message, LogLevel level)
         {
             using (var sw = new StreamWriter(FilePath, true))
             {
-                await sw.WriteLineAsync(message);
+                await sw.WriteLineAsync(message.ToString());
             }
         }
     }

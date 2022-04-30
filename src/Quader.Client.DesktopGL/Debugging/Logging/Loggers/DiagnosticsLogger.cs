@@ -4,12 +4,12 @@ namespace Quader.Debugging.Logging.Loggers
 {
     public class DiagnosticsLogger : ILogger
     {
-        public void Log(string message, LogLevel level)
+        public void Log(object message, LogLevel level)
         {
             System.Diagnostics.Debug.WriteLine(message);
         }
 
-        public Task LogAsync(string message, LogLevel level)
+        public Task LogAsync(object message, LogLevel level)
         {
             System.Diagnostics.Debug.WriteLine(message);
 

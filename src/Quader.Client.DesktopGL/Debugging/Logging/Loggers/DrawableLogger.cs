@@ -17,14 +17,14 @@ namespace Quader.Debugging.Logging.Loggers
             _scale = scale;
         }
 
-        public void Log(string message, LogLevel level)
+        public void Log(object message, LogLevel level)
         {
-            Debug.DrawText(message, _color, _duration, _scale);
+            Debug.DrawText(message.ToString(), _color, _duration, _scale);
         }
 
-        public Task LogAsync(string message, LogLevel level)
+        public Task LogAsync(object message, LogLevel level)
         {
-            Debug.DrawText(message, _color, _duration, _scale);
+            Debug.DrawText(message.ToString(), _color, _duration, _scale);
             return Task.CompletedTask;
         }
         

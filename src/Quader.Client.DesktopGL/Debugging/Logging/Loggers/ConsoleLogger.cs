@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace Quader.Debugging.Logging.Loggers
 {
     public class ConsoleLogger : ILogger
     {
         private ConsoleColor _origColor;
+        public ConsoleColor ColorTrace { get; set; }
         public ConsoleColor ColorDebug { get; set; }
         public ConsoleColor ColorInfo { get; set; }
         public ConsoleColor ColorWarning { get; set; }
@@ -22,19 +24,23 @@ namespace Quader.Debugging.Logging.Loggers
 
         protected void TakeDefaultColors()
         {
-            ColorDebug = ConsoleColor.Gray;
+            ColorTrace = ConsoleColor.Yellow;
+            ColorDebug = ConsoleColor.Green;
             ColorInfo = ConsoleColor.White;
             ColorWarning = ConsoleColor.DarkYellow;
             ColorError = ConsoleColor.Red;
             ColorFatal = ConsoleColor.DarkRed;
         }
 
-        public void Log(string message, LogLevel level)
+        public void Log(object message, LogLevel level)
         {
             lock (_lockObject)
             {
                 switch (level)
                 {
+                    case LogLevel.Trace:
+                        Console.ForegroundColor = ColorTrace;
+                        break;
                     case LogLevel.Debug:
                         Console.ForegroundColor = ColorDebug;
                         break;
@@ -60,7 +66,7 @@ namespace Quader.Debugging.Logging.Loggers
             }
         }
 
-        public async Task LogAsync(string message, LogLevel level)
+        public async Task LogAsync(object message, LogLevel level)
         {
             switch (level)
             {
@@ -83,7 +89,7 @@ namespace Quader.Debugging.Logging.Loggers
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
 
-            await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
+            await Console.Out.WriteLineAsync(message.ToString()).ConfigureAwait(false);
             
             Console.ForegroundColor = _origColor;
         }

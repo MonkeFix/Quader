@@ -4,7 +4,7 @@ namespace Quader.Debugging.Logging
 {
     public interface ILogger
     {
-        void Log(string message, LogLevel level);
-        Task LogAsync(string message, LogLevel level);
+        void Log(object message, LogLevel level);
+        Task LogAsync(object message, LogLevel level);
     }
 }
