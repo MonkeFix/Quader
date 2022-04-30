@@ -1,81 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nez;
-using Nez.Persistence;
-using Quader.Engine;
 
-namespace Quader
+namespace Quader.Engine.RotationEncoder
 {
-    public enum PieceStartPosition
-    {
-        Initial,
-        RotationClockwise,
-        RotationCounterClockwise,
-        Rotation180Deg
-    }
-
-    public class RotationEncoding
-    {
-        [JsonInclude]
-        public PieceStartPosition StartPosition { get; set; }
-        [JsonInclude] 
-        public string[] InitialEncoding { get; set; } = null!;
-        [JsonInclude]
-        public string[][] TestsClockwise { get; set; } = null!;
-        [JsonInclude]
-        public string[][] TestsCounterClockwise { get; set; } = null!;
-    }
-
-    public class RotationPositionEncoding
-    {
-        [JsonInclude]
-        public Dictionary<PieceStartPosition, RotationEncoding> PositionEncodings { get; set; } = null!;
-    }
-
-    public class RotationSystemTable
-    {
-        [JsonInclude]
-        public Dictionary<PieceType, RotationPositionEncoding> RotationSystemTableMap { get; set; } = null!;
-
-        [JsonInclude]
-        public ConverterOptions ConverterOptions { get; set; } = null!;
-    }
-
-    public class RotationSystemRowData
-    {
-        [JsonInclude]
-        public Point Offset { get; set; }
-        [JsonInclude]
-        public int TestCount { get; set; }
-    }
-
-    public class ConverterOptions
-    {
-        [JsonInclude]
-        public int SegmentSize { get; set; }
-        [JsonInclude]
-        public Dictionary<PieceType, RotationSystemRowData>? RowDataSettings { get; set; } = null;
-
-        public static ConverterOptions Default => new ConverterOptions
-        {
-            SegmentSize = 16,
-            RowDataSettings = new ()
-            {
-                { PieceType.I, new RotationSystemRowData { Offset = new Point(8, 8), TestCount = 5 } },
-                { PieceType.O, new RotationSystemRowData { Offset = new Point(14, 14), TestCount = 5 } },
-                { PieceType.T, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
-                { PieceType.L, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
-                { PieceType.J, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
-                { PieceType.S, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
-                { PieceType.Z, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
-            }
-        };
-    }
-
     public static class RotationTableConverter
     {
         public static RotationSystemTable FromTexture2D(Texture2D image, ConverterOptions? options = null)
