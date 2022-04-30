@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Transactions;
 using Microsoft.Xna.Framework;
 using Quader.Engine.RotationEncoder;
 
@@ -217,6 +218,27 @@ namespace Quader.Engine
             return true;
         }
 
+        private bool TestAll(string[][] tests, int x, int y, out string[]? firstPassedTest, out int? firstPassedTestIndex)
+        {
+            for (int i = 0; i < tests.Length; i++)
+            {
+                var test = tests[i];
+                var res = TestPosition(test, x, y);
+                if (res)
+                {
+                    firstPassedTest = test;
+                    firstPassedTestIndex = i;
+                    return true;
+                }
+                else
+                    break;
+            }
+
+            firstPassedTest = null;
+            firstPassedTestIndex = null;
+            return false;
+        }
+        
         private bool TestPosition(int x, int y)
         {
             if (_currentPiece == null)

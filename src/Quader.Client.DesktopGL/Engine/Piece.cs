@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Microsoft.Xna.Framework;
+using Quader.Engine.RotationEncoder;
 
 namespace Quader.Engine
 {
@@ -19,6 +22,12 @@ namespace Quader.Engine
         
         public string[] Table { get; private set; }
 
+        public PieceStartPosition Position { get; private set; } = PieceStartPosition.Initial;
+
+        public Dictionary<PieceStartPosition, string[][]> TestsMap = new();
+
+        public string[][] Tests => TestsMap[Position];
+
         public Piece(PieceType type)
         {
             Type = type;
@@ -33,19 +42,42 @@ namespace Quader.Engine
 
         public void RotateClockwise()
         {
-            PieceTable = RotateArrayClockwise(PieceTable);
+            /*PieceTable = RotateArrayClockwise(PieceTable);
             Width = PieceTable.GetLength(1);
-            Height = PieceTable.GetLength(0);
+            Height = PieceTable.GetLength(0);*/
+
+            Position = Position switch
+            {
+                PieceStartPosition.Initial => PieceStartPosition.RotationClockwise,
+                PieceStartPosition.RotationClockwise => PieceStartPosition.Rotation180Deg,
+                PieceStartPosition.RotationCounterClockwise => PieceStartPosition.Initial,
+                PieceStartPosition.Rotation180Deg => PieceStartPosition.RotationCounterClockwise,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public void RotateCounterClockwise()
         {
-
+            Position = Position switch
+            {
+                PieceStartPosition.Initial => PieceStartPosition.RotationCounterClockwise,
+                PieceStartPosition.RotationClockwise => PieceStartPosition.Initial,
+                PieceStartPosition.RotationCounterClockwise => PieceStartPosition.Rotation180Deg,
+                PieceStartPosition.Rotation180Deg => PieceStartPosition.RotationClockwise,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public void Rotate180()
         {
-
+            Position = Position switch
+            {
+                PieceStartPosition.Initial => PieceStartPosition.Rotation180Deg,
+                PieceStartPosition.RotationClockwise => PieceStartPosition.RotationCounterClockwise,
+                PieceStartPosition.RotationCounterClockwise => PieceStartPosition.RotationClockwise,
+                PieceStartPosition.Rotation180Deg => PieceStartPosition.Initial,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         private static bool[,] RotateArrayClockwise(bool[,] src)
