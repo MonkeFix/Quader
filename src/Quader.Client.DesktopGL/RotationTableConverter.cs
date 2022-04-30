@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
 using Nez;
+using Nez.Persistence;
 using Quader.Engine;
 
 namespace Quader
@@ -20,58 +20,62 @@ namespace Quader
 
     public class RotationEncoding
     {
-        [JsonProperty(PropertyName = "sp")]
+        [JsonInclude]
         public PieceStartPosition StartPosition { get; set; }
-        [JsonProperty(PropertyName = "ibo")]
-        public int InitialBitsOffset { get; set; }
-        [JsonProperty(PropertyName = "cbo")]
-        public int[] ClockwiseBitsOffsets { get; set; } = null!;
-        [JsonProperty(PropertyName = "ccbo")]
-        public int[] CounterClockwiseBitsOffsets { get; set; } = null!;
-        [JsonProperty(PropertyName = "ie")]
-        public long InitialEncoding { get; set; }
-        [JsonProperty(PropertyName = "tc")]
-        public long[] TestsClockwise { get; set; } = null!;
-        [JsonProperty(PropertyName = "tcc")]
-        public long[] TestsCounterClockwise { get; set; } = null!;
+        [JsonInclude]
+        public string[] InitialEncoding { get; set; }
+        [JsonInclude]
+        public string[][] TestsClockwise { get; set; } = null!;
+        [JsonInclude]
+        public string[][] TestsCounterClockwise { get; set; } = null!;
     }
 
     public class RotationPositionEncoding
     {
-        [JsonProperty(PropertyName = "pe")]
+        [JsonInclude]
         public Dictionary<PieceStartPosition, RotationEncoding> PositionEncodings { get; set; } = null!;
     }
 
     public class RotationSystemTable
     {
-        [JsonProperty(PropertyName = "rst")]
+        [JsonInclude]
         public Dictionary<PieceType, RotationPositionEncoding> RotationSystemTableMap { get; set; } = null!;
-        [JsonProperty(PropertyName = "co")]
-        public ConverterOptions ConverterOptions { get; set; }
+
+        [JsonInclude]
+        public ConverterOptions ConverterOptions { get; set; } = null!;
+    }
+
+    public class RotationSystemRowData
+    {
+        [JsonInclude]
+        public Point Offset { get; set; }
+        [JsonInclude]
+        public int TestCount { get; set; }
     }
 
     public class ConverterOptions
     {
-        [JsonProperty(PropertyName = "ss")]
+        [JsonInclude]
         public int SegmentSize { get; set; }
-        [JsonProperty(PropertyName = "os")]
-        public Dictionary<PieceType, Point>? OffsetSettings { get; set; } = null;
+        [JsonInclude]
+        public Dictionary<PieceType, RotationSystemRowData>? RowDataSettings { get; set; } = null;
+        /*[JsonInclude]
         [JsonProperty(PropertyName = "tc")]
-        public int TestCount { get; set; }
+        public int TestCount { get; set; }*/
 
         public static ConverterOptions Default => new ConverterOptions
         {
             SegmentSize = 16,
-            TestCount = 5,
-            OffsetSettings = new Dictionary<PieceType, Point>
+            /*TestCount = 5,*/
+            RowDataSettings = new ()
             {
-                { PieceType.I, new Point(8, 8) },
-                { PieceType.O, new Point(14, 14) },
-                { PieceType.T, new Point(10, 10) },
-                { PieceType.L, new Point(10, 10) },
-                { PieceType.J, new Point(10, 10) },
-                { PieceType.S, new Point(10, 10) },
-                { PieceType.Z, new Point(10, 10) },
+                { PieceType.I, new RotationSystemRowData { Offset = new Point(8, 8), TestCount = 5 } },
+                { PieceType.O, new RotationSystemRowData { Offset = new Point(14, 14), TestCount = 5 } },
+                { PieceType.T, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
+                { PieceType.L, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
+                { PieceType.J, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
+                { PieceType.S, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
+                { PieceType.Z, new RotationSystemRowData { Offset = new Point(10, 10), TestCount = 5 } },
             }
         };
     }
@@ -134,18 +138,20 @@ namespace Quader
                     // [6, 10] - counter-clockwise tests
 
 
-                    var offset = options?.OffsetSettings?[pieceType] ?? new Point(0, 0);
+                    var offsetT = options?.RowDataSettings?[pieceType] ??
+                                  new RotationSystemRowData { Offset = Point.Zero, TestCount = 5 };
+                    var offset = offsetT.Offset;
 
                     var initialPosData = TakePortion(dataRawArr[i], 0 + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y, Color.White);
 
                     List<Color[,]> clockwiseTestData = new List<Color[,]>(5);
-                    for (int k = 1; k <= options.TestCount; k++)
+                    for (int k = 1; k <= offsetT.TestCount; k++)
                     {
                         clockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
 
                     List<Color[,]> counterClockwiseTestData = new List<Color[,]>(5);
-                    for (int k = options.TestCount + 1; k <= options.TestCount * 2; k++)
+                    for (int k = offsetT.TestCount + 1; k <= offsetT.TestCount * 2; k++)
                     {
                         counterClockwiseTestData.Add(TakePortion(dataRawArr[i], segmentSize * k + offset.X / 2, 0 + offset.Y / 2, segmentSize - offset.X, segmentSize - offset.Y));
                     }
@@ -153,20 +159,20 @@ namespace Quader
                     var re = new RotationEncoding
                     {
                         StartPosition = pieceStartPos,
-                        InitialEncoding = EncodeV2(initialPosData, out var initialBitsOffset),
-                        TestsClockwise = EncodeV2(clockwiseTestData.ToArray(), out var clockwiseBitsOffsets),
-                        TestsCounterClockwise = EncodeV2(counterClockwiseTestData.ToArray(), out var counterClockwiseBitsOffsets),
-                        InitialBitsOffset = initialBitsOffset,
+                        InitialEncoding = Encode(initialPosData/*, out var initialBitsOffset*/),
+                        TestsClockwise = Encode(clockwiseTestData.ToArray()/*, out var clockwiseBitsOffsets*/),
+                        TestsCounterClockwise = Encode(counterClockwiseTestData.ToArray()/*, out var counterClockwiseBitsOffsets*/),
+                        /*InitialBitsOffset = initialBitsOffset,
                         ClockwiseBitsOffsets = clockwiseBitsOffsets,
-                        CounterClockwiseBitsOffsets = counterClockwiseBitsOffsets
+                        CounterClockwiseBitsOffsets = counterClockwiseBitsOffsets*/
                     };
 
-                    var a = Encode(initialPosData);
+                    /*var a = Encode(initialPosData);
                     var b = V2ToString(re.InitialEncoding, initialBitsOffset, segmentSize - offset.X, segmentSize - offset.Y);
 
                     var res = Compare(a, b);
                     if (!res)
-                        throw new Exception("Data is not consistent!");
+                        throw new Exception("Data is not consistent!");*/
 
                     if (!rst.RotationSystemTableMap.ContainsKey(pieceType))
                         rst.RotationSystemTableMap[pieceType] = new RotationPositionEncoding
@@ -302,9 +308,9 @@ namespace Quader
         {
             var result = new List<string[]>();
 
-            for (int i = 0; i < data.Length; i++)
+            foreach (var t in data)
             {
-                var encoded = Encode(data[i]);
+                var encoded = Encode(t);
                 result.Add(encoded);
             }
 

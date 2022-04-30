@@ -1,20 +1,39 @@
 using System;
 using System.IO;
 using System.Linq.Expressions;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
 using Nez;
 using Nez.ImGuiTools;
+using Nez.Persistence;
 using Quader.Components;
+using Quader.Debugging.Logging;
 
 namespace Quader.Scenes
 {
+    public class PointJsonConverter : JsonTypeConverter<Point>
+    {
+        public override bool WantsExclusiveWrite => true;
+
+        public override void WriteJson(IJsonEncoder encoder, Point value)
+        {
+            encoder.EncodeKeyValuePair("p", new [] { value.X, value.Y });
+        }
+
+        public override void OnFoundCustomData(Point instance, string key, object value)
+        {
+            Console.WriteLine($"filed name: {key}, value: {value}");
+        }
+    }
+
     public class GameplayScene : Scene
     {
         public const int ScreenSpaceRenderLayer = 999;
 
         public readonly int Width = 1920;
         public readonly int Height = 1080;
+
+        private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
 
         public GameplayScene()
         {
@@ -26,6 +45,14 @@ namespace Quader.Scenes
         {
             base.Initialize();
 
+            _logger.Trace("Initializing");
+            _logger.Debug("Initializing");
+            _logger.Info("Initializing");
+            _logger.Warn("Initializing");
+            _logger.Error("Initializing");
+            _logger.Critical("Initializing");
+
+
             var imGuiManager = new ImGuiManager();
             Core.RegisterGlobalManager(imGuiManager);
             
@@ -33,9 +60,14 @@ namespace Quader.Scenes
             Screen.SetSize(Width, Height);
 
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));
+
             using (var sw = new StreamWriter("srs.json", false))
             {
-                sw.WriteLine(JsonConvert.SerializeObject(data, Formatting.Indented));
+                sw.WriteLine(Json.ToJson(data, new JsonSettings
+                {
+                    PrettyPrint = true,
+                    //TypeConverters = new JsonTypeConverter[] {new PointJsonConverter()}
+                }));
             }
 
             RotationSystemTable rst;
@@ -43,10 +75,9 @@ namespace Quader.Scenes
             using (var sr = new StreamReader("srs.json"))
             {
                 var content = sr.ReadToEnd();
-                rst = JsonConvert.DeserializeObject<RotationSystemTable>(content);
+                rst = Json.FromJson<RotationSystemTable>(content);
             }
-
-            Console.WriteLine(rst);
+            
 
             /*var e = new Entity("test").AddComponent<TestComponent>();
 
