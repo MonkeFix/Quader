@@ -9,11 +9,11 @@ namespace Quader.Debugging.Logging
     {
         private static readonly Dictionary<string, ILogger> LogHelpers = new ();
 
-        public static List<ILogger> DefaultLoggers { get; set; }
+        public static List<ILoggerFrontend> DefaultLoggers { get; set; }
 
         static LoggerFactory()
         {
-            DefaultLoggers = new List<ILogger> { new ConsoleLogger(), new FileLogger(), new DiagnosticsLogger() };
+            DefaultLoggers = new List<ILoggerFrontend> { new ConsoleLogger(), new FileLogger(), new DiagnosticsLogger() };
         }
 
 
@@ -22,7 +22,7 @@ namespace Quader.Debugging.Logging
             return GetLogger(DefaultLoggers);
         }
 
-        public static ILogger GetLogger(List<ILogger> loggers)
+        public static ILogger GetLogger(List<ILoggerFrontend> loggers)
         {
             return GetLogger(new StackFrame(2).GetMethod()?.DeclaringType?.Name ?? "UNKNOWN", loggers);
         }
@@ -32,7 +32,7 @@ namespace Quader.Debugging.Logging
             return GetLogger(context.Name, DefaultLoggers);
         }
 
-        public static ILogger GetLogger(Type context, List<ILogger> loggers)
+        public static ILogger GetLogger(Type context, List<ILoggerFrontend> loggers)
         {
             return GetLogger(context.Name, loggers);
         }
@@ -47,7 +47,7 @@ namespace Quader.Debugging.Logging
             return GetLogger(typeof(T).Name);
         }
 
-        public static ILogger GetLogger(string context, List<ILogger> loggers)
+        public static ILogger GetLogger(string context, List<ILoggerFrontend> loggers)
         {
             if (!LogHelpers.ContainsKey(context))
             {

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Quader.Debugging.Logging
 {
     /// <summary>
-    /// Provides a logging system which might work on either sync or async.
+    /// Provides a simple logging system.
     /// </summary>
     public class Logger : ILogger
     {
         public string Context { get; }
-        private List<ILogger> ActiveLoggers { get; }
+        private List<ILoggerFrontend> ActiveLoggers { get; }
 
-        private Dictionary<LogLevel, ILogger> _activeLoggersMap { get; } 
+        private Dictionary<LogLevel, ILoggerFrontend> _activeLoggersMap { get; } 
 
-        public void AddLogger(ILogger logger)
+        public void AddLoggerFrontend(ILoggerFrontend logger)
         {
             if (ActiveLoggers.Contains(logger))
             {
@@ -24,13 +23,18 @@ namespace Quader.Debugging.Logging
             ActiveLoggers.Add(logger);
         }
 
-        internal Logger(string context, IEnumerable<ILogger> activeLoggers)
+        internal Logger(string context, IEnumerable<ILoggerFrontend> activeLoggers)
         {
             Context = context;
-            ActiveLoggers = new List<ILogger>();
+            ActiveLoggers = new List<ILoggerFrontend>();
             ActiveLoggers.AddRange(activeLoggers);
 
-            _activeLoggersMap = new Dictionary<LogLevel, ILogger>();
+            _activeLoggersMap = new Dictionary<LogLevel, ILoggerFrontend>();
+        }
+
+        public bool IsEnabled(LogLevel level)
+        {
+            return true;
         }
 
         public void Log(object message, LogLevel level = LogLevel.Debug)
@@ -39,14 +43,6 @@ namespace Quader.Debugging.Logging
 
             foreach (var logger in ActiveLoggers)
                 logger.Log(builtString, level);
-        }
-
-        public async Task LogAsync(object message, LogLevel level = LogLevel.Debug)
-        {
-            var buildString = BuildString(message, level);
-
-            foreach (var logger in ActiveLoggers)
-                await logger.LogAsync(buildString, level).ConfigureAwait(false);
         }
 
         private string BuildString(object message, LogLevel level)
@@ -78,7 +74,7 @@ namespace Quader.Debugging.Logging
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
             
-            return result + message.ToString();
+            return result + message;
         }
 
         

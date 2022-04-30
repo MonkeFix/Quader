@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class FileLogger : ILogger
+    public class FileLogger : ILoggerFrontend
     {
         public string FileDir => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
 
@@ -14,7 +13,7 @@ namespace Quader.Debugging.Logging.Loggers
         {
             if (filePath == null)
                 FilePath = Path.Combine(FileDir,
-                    $"log-{DateTime.Now:yyyy-MM-dd}.txt");
+                    $"log-{DateTime.Now:yyyy-MM-dd}.log");
             else
                 FilePath = filePath;
 
@@ -22,19 +21,11 @@ namespace Quader.Debugging.Logging.Loggers
                 Directory.CreateDirectory(FileDir);
         }
 
-        public void Log(object message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
             using (var sw = new StreamWriter(FilePath, true))
             {
                 sw.WriteLine(message);
-            }
-        }
-
-        public async Task LogAsync(object message, LogLevel level)
-        {
-            using (var sw = new StreamWriter(FilePath, true))
-            {
-                await sw.WriteLineAsync(message.ToString());
             }
         }
     }

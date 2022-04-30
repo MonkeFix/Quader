@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Nez;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class DrawableLogger : ILogger
+    public class DrawableLogger : ILoggerFrontend
     {
         private Color _color;
         private float _duration;
@@ -17,16 +16,9 @@ namespace Quader.Debugging.Logging.Loggers
             _scale = scale;
         }
 
-        public void Log(object message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
-            Debug.DrawText(message.ToString(), _color, _duration, _scale);
+            Debug.DrawText(message, _color, _duration, _scale);
         }
-
-        public Task LogAsync(object message, LogLevel level)
-        {
-            Debug.DrawText(message.ToString(), _color, _duration, _scale);
-            return Task.CompletedTask;
-        }
-        
     }
 }

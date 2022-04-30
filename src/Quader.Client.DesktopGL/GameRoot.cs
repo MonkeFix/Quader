@@ -14,7 +14,7 @@ namespace Quader
         {
             Window.AllowUserResizing = false;
 
-            LoggerFactory.DefaultLoggers = new List<ILogger>
+            LoggerFactory.DefaultLoggers = new List<ILoggerFrontend>
             {
                 new ConsoleLogger(),
                 new DiagnosticsLogger(),

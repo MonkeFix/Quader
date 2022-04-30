@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 namespace Quader.Debugging.Logging.Loggers
 {
-    public class ConsoleLogger : ILogger
+    public class ConsoleLogger : ILoggerFrontend
     {
         private ConsoleColor _origColor;
         public ConsoleColor ColorTrace { get; set; }
@@ -32,7 +32,7 @@ namespace Quader.Debugging.Logging.Loggers
             ColorFatal = ConsoleColor.DarkRed;
         }
 
-        public void Log(object message, LogLevel level)
+        public void Log(string message, LogLevel level)
         {
             lock (_lockObject)
             {
@@ -64,34 +64,6 @@ namespace Quader.Debugging.Logging.Loggers
 
                 Console.ForegroundColor = _origColor;
             }
-        }
-
-        public async Task LogAsync(object message, LogLevel level)
-        {
-            switch (level)
-            {
-                case LogLevel.Debug:
-                    Console.ForegroundColor = ColorDebug;
-                    break;
-                case LogLevel.Info:
-                    Console.ForegroundColor = ColorInfo;
-                    break;
-                case LogLevel.Warning:
-                    Console.ForegroundColor = ColorWarning;
-                    break;
-                case LogLevel.Error:
-                    Console.ForegroundColor = ColorError;
-                    break;
-                case LogLevel.Critical:
-                    Console.ForegroundColor = ColorFatal;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
-            }
-
-            await Console.Out.WriteLineAsync(message.ToString()).ConfigureAwait(false);
-            
-            Console.ForegroundColor = _origColor;
         }
     }
 }
