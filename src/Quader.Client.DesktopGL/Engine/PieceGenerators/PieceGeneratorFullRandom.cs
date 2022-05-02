@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Quader.Engine.Pieces;
 using Random = Nez.Random;
 
 namespace Quader.Engine.PieceGenerators
@@ -9,6 +10,8 @@ namespace Quader.Engine.PieceGenerators
     {
         private readonly int _pieceCount = Enum.GetValues<PieceType>().Length;
 
+        private readonly PieceFactory _pf = new PieceFactory();
+        
         public int QueueSize { get; }
 
         public PieceGeneratorFullRandom(int queueSize = 4)
@@ -16,21 +19,21 @@ namespace Quader.Engine.PieceGenerators
             QueueSize = queueSize;
         }
 
-        public IEnumerable<Piece> Initialize()
+        public IEnumerable<PieceBase> Initialize()
         {
-            Piece[] queue = new Piece[QueueSize];
+            PieceBase[] queue = new PieceBase[QueueSize];
 
             for (int i = 0; i < QueueSize; i++)
             {
-                queue[i] = new Piece(Rng(), null);
+                queue[i] = _pf.Create(Rng());
             }
 
             return queue;
         }
 
-        public Piece Generate()
+        public PieceBase Generate()
         {
-            return new Piece(Rng(), null);
+            return _pf.Create(Rng());
         }
 
         private PieceType Rng()

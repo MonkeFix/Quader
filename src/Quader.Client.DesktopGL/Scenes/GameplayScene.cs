@@ -84,7 +84,7 @@ namespace Quader.Scenes
 
             AddEntity(e.Entity);*/
 
-            var e2 = new Entity("board").AddComponent(new BoardComponent(rst));
+            var e2 = new Entity("board").AddComponent(new BoardComponent());
             AddEntity(e2.Entity);
         }
 

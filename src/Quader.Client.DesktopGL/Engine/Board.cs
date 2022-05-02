@@ -12,6 +12,7 @@ namespace Quader.Engine
         public int Height { get; }
         
 
+        // TODO: Make board layout to be from down to up (0,0 at the bottom left corner instead of top left corner)
         private BoardPieceType[] _boardLayout;
 
         private PieceBase? _currentPiece = null;
@@ -180,6 +181,8 @@ namespace Quader.Engine
 
         private Point[] AdjustPositions(Point[] data, Point offset)
         {
+            // TODO: Get rid of this method and perform all calculations in the PieceBase class on demand
+            //  as this method takes a lot of memory
             var newData = new Point[data.Length];
             
             for (int i = 0; i < data.Length; i++)
@@ -227,6 +230,10 @@ namespace Quader.Engine
             
             return true;
         }
+
+
+        public bool IsOutOfBounds(Point p) => IsOutOfBoundsExceptTop(p) || p.Y < 0;
+        public bool IsOutOfBoundsExceptTop(Point p) => p.X < 0 || p.X >= Width || p.Y >= Height;
         
         public BoardPieceType GetPieceAt(int x, int y) => _boardLayout[GetIndexByCoordinates(x, y)];
         public void SetPieceAt(int x, int y, BoardPieceType piece) => _boardLayout[GetIndexByCoordinates(x, y)] = piece;

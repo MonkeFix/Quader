@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Nez.Persistence;
+using Quader.Engine.Pieces;
 
 namespace Quader.Engine.RotationEncoder
 {

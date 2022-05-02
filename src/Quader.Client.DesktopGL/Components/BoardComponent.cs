@@ -5,12 +5,8 @@ using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.ImGuiTools.ObjectInspectors;
-using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.Pieces;
-using Quader.Engine.Pieces.Impl;
-using Quader.Engine.RotationEncoder;
-using Random = Nez.Random;
 
 namespace Quader.Components
 {
@@ -18,15 +14,11 @@ namespace Quader.Components
     {
         public override float Width => 800;
         public override float Height => 600;
-
-
-        private BoardOld boardOld;
-
+        
         private Board _board;
 
-        public BoardComponent(RotationSystemTable rts)
+        public BoardComponent()
         {
-            boardOld = new BoardOld(rts);
             _board = new Board();
             
             _board.PushPiece(PieceType.T);
@@ -36,8 +28,6 @@ namespace Quader.Components
         {
             Core.GetGlobalManager<ImGuiManager>().RegisterDrawCommand(ImGuiDraw);
         }
-
-        private PieceBase _piece = new PieceZ();
 
         public override void Render(Batcher batcher, Camera camera)
         {
@@ -144,7 +134,6 @@ namespace Quader.Components
 
             if (Input.IsKeyDown(Keys.Down))
             {
-                boardOld.SoftDrop();
             }
 
             if (Input.IsKeyPressed(Keys.Down))
@@ -156,45 +145,30 @@ namespace Quader.Components
 
             if (Input.IsKeyPressed(Keys.Left))
             {
-                boardOld.MoveLeft();
-                // _piece.X -= 1;
                 _board.MoveLeft();
             }
 
             if (Input.IsKeyPressed(Keys.Right))
             {
-                boardOld.MoveRight();
-                //_piece.X += 1;
                 _board.MoveRight();
             }
 
             if (Input.IsKeyPressed(Keys.X))
             {
-                boardOld.RotatePiece(Rotation.Clockwise);
-                //_piece.RotateSimple(Rotation.Clockwise);
-
                 _board.Rotate(Rotation.Clockwise);
             }
             if (Input.IsKeyPressed(Keys.Z))
             {
-                boardOld.RotatePiece(Rotation.CounterClockwise);
-                //_piece.RotateSimple(Rotation.CounterClockwise);
-                
                 _board.Rotate(Rotation.CounterClockwise);
             }
             if (Input.IsKeyPressed(Keys.F))
             {
-                boardOld.RotatePiece(Rotation.Deg180);
-                // _piece.RotateSimple(Rotation.Deg180);
-
                 _board.Rotate(Rotation.Deg180);
             }
 
-            boardOld.Update(Time.DeltaTime);
+            //boardOld.Update(Time.DeltaTime);
         }
-
-        private PieceFactory _pf = new ();
-
+        
         private Point[]? _currentTest = null;
 
         private bool _drawOrigin = true;

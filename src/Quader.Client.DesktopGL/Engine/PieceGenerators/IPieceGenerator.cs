@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Quader.Engine.Pieces;
 
 namespace Quader.Engine.PieceGenerators
 {
@@ -6,7 +7,7 @@ namespace Quader.Engine.PieceGenerators
     {
         int QueueSize { get; }
 
-        IEnumerable<Piece> Initialize(); 
-        Piece Generate();
+        IEnumerable<PieceBase> Initialize(); 
+        PieceBase Generate();
     }
 }
