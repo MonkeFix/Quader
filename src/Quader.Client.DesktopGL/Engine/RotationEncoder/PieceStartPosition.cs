@@ -4,7 +4,8 @@
     {
         Initial,
         RotationClockwise,
+        Rotation180Deg,
         RotationCounterClockwise,
-        Rotation180Deg
+        
     }
 }

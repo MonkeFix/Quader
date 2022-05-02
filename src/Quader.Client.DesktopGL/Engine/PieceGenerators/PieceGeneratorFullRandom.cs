@@ -22,7 +22,7 @@ namespace Quader.Engine.PieceGenerators
 
             for (int i = 0; i < QueueSize; i++)
             {
-                queue[i] = new Piece(Rng());
+                queue[i] = new Piece(Rng(), null);
             }
 
             return queue;
@@ -30,7 +30,7 @@ namespace Quader.Engine.PieceGenerators
 
         public Piece Generate()
         {
-            return new Piece(Rng());
+            return new Piece(Rng(), null);
         }
 
         private PieceType Rng()
