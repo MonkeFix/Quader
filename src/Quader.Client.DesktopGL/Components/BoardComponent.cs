@@ -69,7 +69,7 @@ namespace Quader.Components
                 }
             }
             
-            if (piece != null)
+            if (_board.CurrentPiece != null)
             {
                 var curPos = piece.CurrentPos;
 
@@ -104,6 +104,18 @@ namespace Quader.Components
                     batcher.DrawHollowRect(baseX + b.X * size, baseY + b.Y * size, b.Width * size, b.Height * size,
                         Color.White, 2f);
                 }
+
+                var dropY = _board.FindNearestY();
+
+                var curX = _board.CurrentPiece.X;
+                var curY = dropY;
+                var points = _board.CurrentPiece.CurrentPos;
+
+                foreach (var p in points)
+                {
+                    batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
+                        PieceUtils.GetColorByPieceType(_board.CurrentPiece.Type) * 0.5f);
+                }
             }
             
             
@@ -124,8 +136,10 @@ namespace Quader.Components
         {
             if (Input.IsKeyPressed(Keys.Space))
             {
-                var np = boardOld.CreatePiece(boardOld.CurrentPiece.Type);
-                boardOld.HardDrop(np);
+                //var np = boardOld.CreatePiece(boardOld.CurrentPiece.Type);
+                //boardOld.HardDrop(np);
+                
+                _board.HardDrop();
             }
 
             if (Input.IsKeyDown(Keys.Down))

@@ -33,12 +33,21 @@ namespace Quader.Engine
             var pf = new PieceFactory();
             var piece = pf.Create(type);
 
+            ResetPiece(piece);
+            
+            _currentPiece = piece;
+        }
+
+        public void ResetPiece(PieceBase piece)
+        {
+            piece.CurrentRotation = PieceStartPosition.Initial;
+
             if (piece.OffsetType == OffsetType.BetweenCells)
                 piece.X = Width / 2;
             else
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
-            
-            _currentPiece = piece;
+
+            piece.Y = 0;
         }
 
         public void Reset()
@@ -76,6 +85,19 @@ namespace Quader.Engine
                 _currentPiece.Y += 1;
         }
 
+        public void HardDrop()
+        {
+            if (_currentPiece == null)
+                return;
+
+            var nearestY = FindNearestY();
+
+            if (!TryApplyPiece(_currentPiece.CurrentPos, _currentPiece.X, nearestY))
+                throw new Exception("Something went wrong while applying the piece");
+                
+            ResetPiece(_currentPiece);
+        }
+
         public void Rotate(Rotation rotation)
         {
             if (_currentPiece == null)
@@ -89,20 +111,33 @@ namespace Quader.Engine
             });
         }
 
+        public int FindNearestY()
+        {
+            if (_currentPiece == null)
+                return 0;
+
+            var y = Math.Max(_currentPiece.Y, 0);
+
+            for (int i = y; i <= Height; i++)
+            {
+                if (Intersects(AdjustPositions(_currentPiece.CurrentPos, new Point(_currentPiece.X, i))))
+                    break;
+
+                y = i;
+            }
+
+            return y;
+        }
+
         private bool TestMovement(int xOffset, int yOffset)
         {
-            var b = _currentPiece!.Bounds;
-
-            if (b.X + xOffset < 0)
+            if (_currentPiece == null)
                 return false;
 
-            if (b.X + xOffset + b.Width > Width)
-                return false;
+            var adjusted = AdjustPositions(_currentPiece.CurrentPos,
+                new Point(_currentPiece.X + xOffset, _currentPiece.Y + yOffset));
 
-            if (b.Y + yOffset + b.Height > Height)
-                return false;
-
-            return true;
+            return !Intersects(adjusted);
         }
 
         public Queue<Point[]> TestQueue { get; private set; } = new Queue<Point[]>();
@@ -130,7 +165,7 @@ namespace Quader.Engine
                 
                 TestQueue.Enqueue(adjusted);
 
-                var intersects = Intersects(adjusted, out bool isFloorKick);
+                var intersects = Intersects(adjusted);
 
                 if (!intersects)
                 {
@@ -149,18 +184,14 @@ namespace Quader.Engine
             
             for (int i = 0; i < data.Length; i++)
             {
-                newData[i] = new Point(data[i].X + offset.X, data[i].Y + offset.Y);
-                // data[i].X += offset.X;
-                // data[i].Y += offset.Y;
+                 newData[i] = new Point(data[i].X + offset.X, data[i].Y + offset.Y);
             }
 
             return newData;
         }
 
-        private bool Intersects(Point[] points, out bool isFloorKick)
+        private bool Intersects(Point[] points)
         {
-            isFloorKick = false;
-            
             foreach (var point in points)
             {
                 if (point.Y < 0)
@@ -171,7 +202,6 @@ namespace Quader.Engine
 
                 if (point.Y >= Height)
                 {
-                    isFloorKick = true;
                     return true;
                 }
 
@@ -180,6 +210,22 @@ namespace Quader.Engine
             }
 
             return false;
+        }
+
+        private bool TryApplyPiece(Point[] points, int x, int y)
+        {
+            var adjusted = AdjustPositions(points, new Point(x, y));
+
+            foreach (var point in adjusted)
+            {
+                var piece = GetPieceAt(point.X, point.Y);
+                if (piece != BoardPieceType.None)
+                    return false;
+                
+                SetPieceAt(point.X, point.Y, (BoardPieceType)(int)_currentPiece.Type);
+            }
+            
+            return true;
         }
         
         public BoardPieceType GetPieceAt(int x, int y) => _boardLayout[GetIndexByCoordinates(x, y)];
