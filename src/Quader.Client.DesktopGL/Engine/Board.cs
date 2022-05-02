@@ -111,8 +111,10 @@ namespace Quader.Engine
             
             firstSuccessfulTest = null;
 
-            foreach (var test in tests)
+            foreach (var t in tests)
             {
+                var test = new Point(t.X, -t.Y); // TODO: We need to revert the Y axis to perform correct checks
+                
                 // var bounds = PieceBase.GetBounds(expectedPos, _currentPiece!.X + test.X, _currentPiece!.Y + test.Y);
                 var adjusted = AdjustPositions(
                     expectedPos,
