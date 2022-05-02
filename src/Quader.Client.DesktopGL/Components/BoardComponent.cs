@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.ImGuiTools;
+using Nez.ImGuiTools.ObjectInspectors;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.Pieces;
@@ -40,88 +41,6 @@ namespace Quader.Components
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            /*var size = 32;
-
-            var c = boardOld.CurrentPiece;
-
-            for (int y = 0; y < boardOld.Height; y++)
-            {
-                for (int x = 0; x < boardOld.Width; x++)
-                {
-                    var p = boardOld.GetPieceAt(x, y);
-
-                    if (p == BoardPieceType.None)
-                    {
-                        batcher.DrawRect(128 + x * size, 64 + y * size, size, size, Color.Black);
-                    }
-                    else
-                    {
-                        batcher.DrawRect(128 + x * size, 64 + y * size, size, size, PieceUtils.GetColorByBoardPieceType(p));
-                    }
-
-                    batcher.DrawHollowRect(128 + x * size, 64 + y * size, size, size, Color.White * 0.1f, 2f);
-                }
-            }
-
-            if (c != null)
-            {
-                for (int y = 0; y < c.PieceTable.Length; y++)
-                {
-                    for (int x = 0; x < c.PieceTable.Length; x++)
-                    {
-                        if (c.DrawAt(x, y))
-                        {
-                            batcher.DrawRect(128 + (c.X + x) * size, 64 + (c.Y + y) * size, size, size, c.Color);
-                        }
-                    }
-                }
-            }
-
-            // Draw Ghost Piece
-            if (c != null)
-            {
-                var nY = boardOld.FindNearestDropY(); // Unoptimized as fuck, check only on piece movement
-
-                for (int y = 0; y < c.PieceTable.Length; y++)
-                {
-                    for (int x = 0; x < c.PieceTable.Length; x++)
-                    {
-                        if (c.DrawAt(x, y))
-                        {
-                            batcher.DrawRect(128 + (c.X + x) * size, 64 + (nY + y) * size, size, size, c.Color * 0.5f);
-                        }
-                    }
-                }
-            }*/
-            
-            /*var w = 32;
-            var h = 32;
-            var baseX = 128 + _piece.X * w;
-            var baseY = 64 + _piece.Y * h;
-
-            var curPos = _piece.CurrentPos;
-
-            for (int i = 0; i < curPos.Length; i++)
-            {
-                var point = curPos[i];
-                
-                batcher.DrawRect(baseX + point.X * w, baseY + point.Y * h, w, h, _piece.BaseColor);
-                batcher.DrawHollowRect(baseX + point.X * w, baseY + point.Y * h, w, h, Color.Black * 0.5f, 4f);
-            }
-
-            var t = _piece.OffsetType;
-
-            if (t == OffsetType.Cell)
-            {
-                baseX += w / 2;
-                baseY += h / 2;
-            }
-
-            batcher.DrawPixel(baseX, baseY, Color.White, 12);
-
-            var b = _piece.Bounds;
-            batcher.DrawHollowRect( 128 + b.X * w, 64 + b.Y * h, b.Width * w, b.Height * h, Color.White, 2f);*/
-
             var size = 32;
             var baseX = 128;
             var baseY = 64;
@@ -162,22 +81,33 @@ namespace Quader.Components
                     batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(_board.CurrentPiece.Type));
                     //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
                 }
-                
-                var t = piece.OffsetType;
 
-                var pX = baseX + piece.X * size;
-                var pY = baseY + piece.Y * size;
-                
-                if (t == OffsetType.Cell)
+                if (_drawOrigin)
                 {
-                    pX += 16;
-                    pY += 16;
+                    var t = piece.OffsetType;
+
+                    var pX = baseX + piece.X * size;
+                    var pY = baseY + piece.Y * size;
+
+                    if (t == OffsetType.Cell)
+                    {
+                        pX += 16;
+                        pY += 16;
+                    }
+
+                    batcher.DrawPixel(pX, pY, Color.White, 10);
                 }
-
-                batcher.DrawPixel(pX, pY, Color.White, 10);
+                
+                if (_drawBoundingBox)
+                {
+                    var b = piece.Bounds;
+                    batcher.DrawHollowRect(baseX + b.X * size, baseY + b.Y * size, b.Width * size, b.Height * size,
+                        Color.White, 2f);
+                }
             }
-
-            if (_currentTest != null)
+            
+            
+            if (_currentTest != null && _drawTestQueue)
             {
                 foreach (var p in _currentTest)
                 {
@@ -185,6 +115,7 @@ namespace Quader.Components
                     var drawY = baseY + (p.Y) * size;
                     
                     batcher.DrawRect(drawX, drawY, size, size, Color.White * 0.5f);
+                    //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.Red);
                 }
             }
         }
@@ -251,12 +182,38 @@ namespace Quader.Components
         private PieceFactory _pf = new ();
 
         private Point[]? _currentTest = null;
+
+        private bool _drawOrigin = true;
+        private bool _drawBoundingBox = true;
+        private bool _drawTestQueue = true;
+
+        [Inspectable] 
+        public int TestProperty { get; set; } = 32;
+
+        [InspectorDelegate]
+        public void TestMethod()
+        {
+            ImGui.TextColored( new System.Numerics.Vector4( 0, 1, 0, 1 ), "Colored text..." );
+            ImGui.Combo( "Combo Box", ref privateInt, "First\0Second\0Third\0No Way\0Fifth Option" );
+        }
+
+        private int privateInt;
         
         private void ImGuiDraw()
         {
-            ImGui.Begin("Spawn Piece");
+            ImGui.Begin("Piece Handling");
             
             ImGui.Text($"Board Size: {_board.Width}x{_board.Height}");
+            if (ImGui.Button("RESET BOARD"))
+                _board.Reset();
+
+            ImGui.Separator();
+
+            ImGui.Checkbox("Draw Piece Origin", ref _drawOrigin);
+            ImGui.Checkbox("Draw Bounding Box", ref _drawBoundingBox);
+            ImGui.Checkbox("Draw Piece Test Queue", ref _drawTestQueue);
+            
+            ImGui.Separator();
 
             var c = _board.CurrentPiece;
             if (c != null)
@@ -288,18 +245,21 @@ namespace Quader.Components
             if (ImGui.Button("Spawn I"))
                 //_piece = _pf.Create(PieceType.I);
                 _board.PushPiece(PieceType.I);
+            ImGui.SameLine();
             if (ImGui.Button("Spawn J"))
                 //_piece = _pf.Create(PieceType.J);
                 _board.PushPiece(PieceType.J);
             if (ImGui.Button("Spawn L"))
                 //_piece = _pf.Create(PieceType.L);
                 _board.PushPiece(PieceType.L);
+            ImGui.SameLine();
             if (ImGui.Button("Spawn T"))
                 //_piece = _pf.Create(PieceType.T);
                 _board.PushPiece(PieceType.T);
             if (ImGui.Button("Spawn S"))
                 //_piece = _pf.Create(PieceType.S);
                 _board.PushPiece(PieceType.S);
+            ImGui.SameLine();
             if (ImGui.Button("Spawn Z"))
                 //_piece = _pf.Create(PieceType.Z);
                 _board.PushPiece(PieceType.Z);

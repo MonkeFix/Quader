@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Quader.Engine.Pieces;
+using Quader.Engine.RotationEncoder;
 
 namespace Quader.Engine
 {
@@ -31,9 +32,13 @@ namespace Quader.Engine
         {
             var pf = new PieceFactory();
             var piece = pf.Create(type);
-            piece.X = 5;
+
+            if (piece.OffsetType == OffsetType.BetweenCells)
+                piece.X = Width / 2;
+            else
+                piece.X = (int) Math.Round((Width - 1) / 2.0);
+            
             _currentPiece = piece;
-            _currentPiece.X = 5;
         }
 
         public void Reset()
@@ -115,7 +120,9 @@ namespace Quader.Engine
             {
                 var test = new Point(t.X, -t.Y); // TODO: We need to revert the Y axis to perform correct checks
                 
-                // var bounds = PieceBase.GetBounds(expectedPos, _currentPiece!.X + test.X, _currentPiece!.Y + test.Y);
+                // TODO: For 180deg rotation we need to perform two consecutive tests:
+                //      Right -> Perform Tests -> Right again -> Perform Tests -> Done
+                
                 var adjusted = AdjustPositions(
                     expectedPos,
                     new Point(_currentPiece!.X, _currentPiece!.Y) + test
@@ -131,13 +138,6 @@ namespace Quader.Engine
 
                     return true;
                 }
-
-                /*if (isFloorKick)
-                {
-                    firstSuccessfulTest = new Point(0, -1);
-
-                    return true;
-                }*/
             }
             
             return false;

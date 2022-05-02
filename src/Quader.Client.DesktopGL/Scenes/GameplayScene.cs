@@ -31,8 +31,8 @@ namespace Quader.Scenes
     {
         public const int ScreenSpaceRenderLayer = 999;
 
-        public readonly int Width = 1920;
-        public readonly int Height = 1080;
+        public readonly int Width = 1280;
+        public readonly int Height = 720;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
 
@@ -58,7 +58,7 @@ namespace Quader.Scenes
             Core.RegisterGlobalManager(imGuiManager);
             
             SetDesignResolution(Width, Height, SceneResolutionPolicy.ShowAllPixelPerfect);
-            Screen.SetSize(Width, Height);
+            Screen.SetSize(1920, 1080);
 
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));
 
