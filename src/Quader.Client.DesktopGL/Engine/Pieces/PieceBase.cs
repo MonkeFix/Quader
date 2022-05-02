@@ -117,8 +117,6 @@ namespace Quader.Engine.Pieces
             if (!result.Success || result.WallKickPosition == null)
                 return;
             
-            // TODO: Check if we need to update positions before or after the rotation
-            
             RotateSimple(rotation);
             
             X += result.WallKickPosition.Value.X;

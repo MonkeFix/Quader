@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Quader.Engine.Pieces;
 
@@ -99,10 +100,14 @@ namespace Quader.Engine
             return true;
         }
 
+        public Queue<Point[]> TestQueue { get; private set; } = new Queue<Point[]>();
+
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
         {
             var tests = kickParams.Tests;
             var expectedPos = kickParams.ExpectedPos;
+
+            TestQueue = new Queue<Point[]>();
             
             firstSuccessfulTest = null;
 
@@ -113,6 +118,8 @@ namespace Quader.Engine
                     expectedPos,
                     new Point(_currentPiece!.X, _currentPiece!.Y) + test
                 );
+                
+                TestQueue.Enqueue(adjusted);
 
                 var intersects = Intersects(adjusted, out bool isFloorKick);
 
@@ -123,12 +130,12 @@ namespace Quader.Engine
                     return true;
                 }
 
-                if (isFloorKick)
+                /*if (isFloorKick)
                 {
                     firstSuccessfulTest = new Point(0, -1);
 
                     return true;
-                }
+                }*/
             }
             
             return false;

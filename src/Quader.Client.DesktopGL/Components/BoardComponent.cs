@@ -176,6 +176,17 @@ namespace Quader.Components
 
                 batcher.DrawPixel(pX, pY, Color.White, 10);
             }
+
+            if (_currentTest != null)
+            {
+                foreach (var p in _currentTest)
+                {
+                    var drawX = baseX + (p.X) * size;
+                    var drawY = baseY + (p.Y) * size;
+                    
+                    batcher.DrawRect(drawX, drawY, size, size, Color.White * 0.5f);
+                }
+            }
         }
 
         public void Update()
@@ -238,6 +249,8 @@ namespace Quader.Components
         }
 
         private PieceFactory _pf = new ();
+
+        private Point[]? _currentTest = null;
         
         private void ImGuiDraw()
         {
@@ -253,6 +266,24 @@ namespace Quader.Components
                 ImGui.Text($"Current Rotation: {c.CurrentRotation}");
                 //ImGui.Text($"Current Rotation:");
             }
+            
+            ImGui.Separator();
+
+            ImGui.Text($"Test Queue Size: {_board.TestQueue.Count}");
+            if (ImGui.Button("Queue Next"))
+            {
+                if (_board.TestQueue.Count > 0)
+                {
+                    var p = _board.TestQueue.Dequeue();
+                    _currentTest = p;
+                }
+                else
+                {
+                    _currentTest = null;
+                }
+            }
+            
+            ImGui.Separator();
 
             if (ImGui.Button("Spawn I"))
                 //_piece = _pf.Create(PieceType.I);
