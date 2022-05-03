@@ -2,6 +2,7 @@
 using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended.Input.InputListeners;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.ImGuiTools.ObjectInspectors;
@@ -17,11 +18,38 @@ namespace Quader.Components
         
         private Board _board;
 
+        private KeyboardListener _keyboardListener;
+
         public BoardComponent()
         {
             _board = new Board();
             
             _board.PushPiece(PieceType.T);
+
+            _keyboardListener = new KeyboardListener(new KeyboardListenerSettings
+            {
+                RepeatPress = true,
+                InitialDelayMilliseconds = 127,
+                RepeatDelayMilliseconds = 0
+            });
+
+            _keyboardListener.KeyPressed += (sender, args) =>
+            {
+                var key = args.Key;
+
+                if (key == Keys.Left)
+                {
+                    _board.MoveLeft();
+                }
+                else if (key == Keys.Right)
+                {
+                    _board.MoveRight();
+                }
+                else if (key == Keys.Down)
+                {
+                    _board.SoftDrop();
+                }
+            };
         }
 
         public override void OnAddedToEntity()
@@ -46,6 +74,8 @@ namespace Quader.Components
                     var drawX = baseX + x * size;
                     var drawY = baseY + y * size;
 
+                    batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
+                    
                     if (p == BoardPieceType.None)
                     {
                         batcher.DrawRect(drawX, drawY, size, size, Color.Black);
@@ -55,7 +85,7 @@ namespace Quader.Components
                         batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardPieceType(p));
                     }
 
-                    batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
+                    
                 }
             }
             
@@ -120,10 +150,16 @@ namespace Quader.Components
                     //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.Red);
                 }
             }
+
+            var lineY = baseY + _moveFromY * size;
+            batcher.DrawLine(baseX, lineY, baseX + _board.Width * size, lineY, Color.Red);
         }
 
         public void Update()
         {
+            if (GameRoot.GameTime != null)
+                _keyboardListener.Update(GameRoot.GameTime);
+            
             if (Input.IsKeyPressed(Keys.Space))
             {
                 //var np = boardOld.CreatePiece(boardOld.CurrentPiece.Type);
@@ -131,27 +167,23 @@ namespace Quader.Components
                 
                 _board.HardDrop();
             }
-
-            if (Input.IsKeyDown(Keys.Down))
-            {
-            }
-
-            if (Input.IsKeyPressed(Keys.Down))
+            
+            /*if (Input.IsKeyDown(Keys.Down))
             {
                 //_piece.Y += 1;
                 
                 _board.SoftDrop();
             }
 
-            if (Input.IsKeyPressed(Keys.Left))
+            if (Input.IsKeyDown(Keys.Left))
             {
                 _board.MoveLeft();
             }
 
-            if (Input.IsKeyPressed(Keys.Right))
+            if (Input.IsKeyDown(Keys.Right))
             {
                 _board.MoveRight();
-            }
+            }*/
 
             if (Input.IsKeyPressed(Keys.X))
             {
@@ -165,6 +197,24 @@ namespace Quader.Components
             {
                 _board.Rotate(Rotation.Deg180);
             }
+
+            var mp = Input.MousePosition;
+
+            var scaledMp = new Point(((int)mp.X - 128) / 32, ((int)mp.Y - 64) / 32);
+
+            if (scaledMp.X >= 0 && scaledMp.X < _board.Width && scaledMp.Y >= 0 && scaledMp.Y < _board.Height)
+            {
+                if (Input.LeftMouseButtonDown)
+                {
+                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.Garbage);
+                }
+                else if (Input.RightMouseButtonDown)
+                {
+                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.None);
+                }
+            }
+            
+            
 
             //boardOld.Update(Time.DeltaTime);
         }
@@ -186,14 +236,33 @@ namespace Quader.Components
         }
 
         private int privateInt;
+
+        private int _moveFromY = -1;
         
         private void ImGuiDraw()
         {
             ImGui.Begin("Piece Handling");
             
+            var mp = Input.MousePosition;
+            ImGui.Text($"MP: {mp.X:F0},{mp.Y:F0}");
+            
             ImGui.Text($"Board Size: {_board.Width}x{_board.Height}");
             if (ImGui.Button("RESET BOARD"))
                 _board.Reset();
+
+            ImGui.SliderInt("From Y: ", ref _moveFromY, 0, 20);
+
+            if (ImGui.Button("Move Up"))
+            {
+                _board.MoveUp();
+            }
+            
+            ImGui.SameLine();
+
+            if (ImGui.Button("Move Down"))
+            {
+                _board.MoveDown(_moveFromY);
+            }
 
             ImGui.Separator();
 

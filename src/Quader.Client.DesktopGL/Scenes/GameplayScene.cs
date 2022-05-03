@@ -57,7 +57,7 @@ namespace Quader.Scenes
             var imGuiManager = new ImGuiManager();
             Core.RegisterGlobalManager(imGuiManager);
             
-            SetDesignResolution(Width, Height, SceneResolutionPolicy.ShowAllPixelPerfect);
+            SetDesignResolution(Width, Height, SceneResolutionPolicy.BestFit);
             Screen.SetSize(1920, 1080);
 
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));

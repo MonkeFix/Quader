@@ -96,6 +96,8 @@ namespace Quader.Engine
             if (!TryApplyPiece(_currentPiece.CurrentPos, _currentPiece.X, nearestY))
                 throw new Exception("Something went wrong while applying the piece");
                 
+            CheckLineClears();
+            
             ResetPiece(_currentPiece);
         }
 
@@ -142,6 +144,91 @@ namespace Quader.Engine
         }
 
         public Queue<Point[]> TestQueue { get; private set; } = new Queue<Point[]>();
+
+        public void MoveUp()
+        {
+            
+        }
+
+        public void MoveDown(int fromY = 0)
+        {
+            for (int y = fromY; y < Height - 1; y++)
+            {
+                var cur = GetLineAt(y);
+                var next = GetLineAt(y + 1);
+
+                
+            }
+        }
+        
+        private int CheckLineClears()
+        {
+            int linesCleared = 0;
+            
+            for (int y = 0; y < Height; y++)
+            {
+                var isFull = IsLineFull(y);
+                if (isFull)
+                {
+                    ClearLine(y);
+                    linesCleared++;
+                    
+                    MoveTo(y);
+                }
+            }
+
+            return linesCleared;
+        }
+
+        private void ClearLine(int y)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                SetPieceAt(x, y, BoardPieceType.None);
+            }
+        }
+        
+        private bool IsLineFull(int y)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                if (GetPieceAt(i, y) == BoardPieceType.None)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void MoveTo(int y)
+        {
+            for (int i = 0; i < y; i++)
+            {
+                var cur = GetLineAt(i);
+                var next = GetLineAt(i + 1);
+                
+                SetLineAt(cur, i + 1);
+                SetLineAt(next, i + 2);
+            }
+        }
+
+        private BoardPieceType[] GetLineAt(int y)
+        {
+            BoardPieceType[] res = new BoardPieceType[Width];
+            for (int i = 0; i < Width; i++)
+            {
+                res[i] = GetPieceAt(i, y);
+            }
+
+            return res;
+        }
+
+        private void SetLineAt(BoardPieceType[] data, int y)
+        {
+            for (int i = 0; i < data.Length; i++)
+            {
+                SetPieceAt(i, y, data[i]);
+            }
+        }
 
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
         {

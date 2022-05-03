@@ -11,6 +11,8 @@ namespace Quader
     public class GameRoot : Core
     {
 
+        public static GameTime GameTime { get; private set; }
+        
         public GameRoot()
             : base(windowTitle: "Quader")
         {
@@ -33,6 +35,13 @@ namespace Quader
             base.Initialize();
 
             Scene = new GameplayScene();
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            GameTime = gameTime;
         }
     }
 }
