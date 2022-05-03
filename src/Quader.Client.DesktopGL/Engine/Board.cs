@@ -55,7 +55,7 @@ namespace Quader.Engine
             else
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
 
-            piece.Y = 0;
+            piece.Y = -1;
         }
 
         public void Reset()
@@ -152,6 +152,13 @@ namespace Quader.Engine
             if (_currentPiece == null)
                 return false;
 
+            // Checking bounds first as it is much faster
+            var b = _currentPiece.Bounds;
+            if (b.X + xOffset < 0 || b.X + b.Width + xOffset > Width)
+                return false;
+            if (b.Y + b.Height + yOffset > Height)
+                return false;
+
             var adjusted = AdjustPositions(_currentPiece.CurrentPos,
                 new Point(_currentPiece.X + xOffset, _currentPiece.Y + yOffset));
 
@@ -181,16 +188,6 @@ namespace Quader.Engine
                 _board[y] = empty;
                 _board[y + 1] = tmp;
             }
-            
-            /*for (int y = fromY; y < Height - 2; y++)
-            {
-                var cur = _board[y + 1];
-                //var next = _board[y + 1];
-                BoardPieceType[] tmp = new BoardPieceType[Width];
-                Array.Copy(cur, tmp, Width);
-
-                _board[y + 1] = tmp;
-            }*/
         }
         
         private int CheckLineClears()
