@@ -4,6 +4,28 @@
 
 Online stacker puzzle game.
 
+## TODOs
+
+### Client
+
+ - [ ] Add timers to every board action and store the times. Will be useful for the following TODOs
+ - [ ] Change direction of the board's Y axis from (0,0) being at top left corner to bottom left corner
+ - [ ] Fix rotation tests for 180 degrees rotation
+ - [ ] Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow
+ - [ ] Check if there's a faster variant of `TestRotation` and `MoveDown` methods of the `Board` class
+ - [ ] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
+ - [ ] Move SRS tables to a JSON file
+ - [ ] Add correct input handling
+   - [ ] Handling simultaneous key presses
+   - [ ] Correct ARR (Automatic Repeat Rate)
+   - [ ] Correct DAS (Delayed Auto Shift)
+   - [ ] Correct DCD (DAS Cut Delay)
+   - [ ] Correct SDF (Soft Drop Factor)
+ - [ ] Add Piece Queue
+ - [ ] Implement Bag-7 piece generator
+ - [ ] Implement a scoring system (combos, quads, etc)
+ - [ ] Handle T-Spins (minis, singles, doubles, triples)
+
 ## Ideas
 
  - Add a way to choose which player you want to get blocks from, adding a negative multiplier to attack sent
