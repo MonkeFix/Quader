@@ -13,7 +13,9 @@ namespace Quader.Engine
         
 
         // TODO: Make board layout to be from down to up (0,0 at the bottom left corner instead of top left corner)
-        private BoardPieceType[] _boardLayout;
+        //private BoardPieceType[] _boardLayout;
+
+        private BoardPieceType[][] _board;
 
         private PieceBase? _currentPiece = null;
 
@@ -24,7 +26,12 @@ namespace Quader.Engine
             Width = width;
             Height = height;
 
-            _boardLayout = new BoardPieceType[width * height];
+            //_board = new BoardPieceType[Height, Width];
+            _board = new BoardPieceType[Height][];
+            for (int i = 0; i < Height; i++)
+            {
+                _board[i] = new BoardPieceType[Width];
+            }
             
             Reset();
         }
@@ -53,9 +60,17 @@ namespace Quader.Engine
 
         public void Reset()
         {
-            for (int i = 0; i < _boardLayout.Length; i++)
+            ForEach((x, y) => _board[y][x] = BoardPieceType.None);
+        }
+
+        private void ForEach(Action<int, int> action)
+        {
+            for (int y = 0; y < Height; y++)
             {
-                _boardLayout[i] = BoardPieceType.None;
+                for (int x = 0; x < Width; x++)
+                {
+                    action(x, y);
+                }
             }
         }
 
@@ -152,13 +167,30 @@ namespace Quader.Engine
 
         public void MoveDown(int fromY = 0)
         {
-            for (int y = fromY; y < Height - 1; y++)
+            for (int y = fromY - 1; y >= 0; y--)
             {
-                var cur = GetLineAt(y);
-                var next = GetLineAt(y + 1);
+                var empty = new BoardPieceType[Width];
+                var cur = _board[y];
+                var tmp = new BoardPieceType[Width];
+                for (int i = 0; i < Width; i++)
+                {
+                    empty[i] = BoardPieceType.None; // TODO: None = 0
+                }
+                Array.Copy(cur, tmp, Width);
 
-                
+                _board[y] = empty;
+                _board[y + 1] = tmp;
             }
+            
+            /*for (int y = fromY; y < Height - 2; y++)
+            {
+                var cur = _board[y + 1];
+                //var next = _board[y + 1];
+                BoardPieceType[] tmp = new BoardPieceType[Width];
+                Array.Copy(cur, tmp, Width);
+
+                _board[y + 1] = tmp;
+            }*/
         }
         
         private int CheckLineClears()
@@ -173,7 +205,7 @@ namespace Quader.Engine
                     ClearLine(y);
                     linesCleared++;
                     
-                    MoveTo(y);
+                    MoveDown(y);
                 }
             }
 
@@ -322,8 +354,8 @@ namespace Quader.Engine
         public bool IsOutOfBounds(Point p) => IsOutOfBoundsExceptTop(p) || p.Y < 0;
         public bool IsOutOfBoundsExceptTop(Point p) => p.X < 0 || p.X >= Width || p.Y >= Height;
         
-        public BoardPieceType GetPieceAt(int x, int y) => _boardLayout[GetIndexByCoordinates(x, y)];
-        public void SetPieceAt(int x, int y, BoardPieceType piece) => _boardLayout[GetIndexByCoordinates(x, y)] = piece;
+        public BoardPieceType GetPieceAt(int x, int y) => _board[y][x];
+        public void SetPieceAt(int x, int y, BoardPieceType piece) => _board[y][x] = piece;
         public int GetIndexByCoordinates(int x, int y) => x + Width * y;
     }
 }

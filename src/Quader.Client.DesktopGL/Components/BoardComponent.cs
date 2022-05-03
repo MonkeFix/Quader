@@ -237,7 +237,7 @@ namespace Quader.Components
 
         private int privateInt;
 
-        private int _moveFromY = -1;
+        private int _moveFromY = 0;
         
         private void ImGuiDraw()
         {
