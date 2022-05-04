@@ -65,7 +65,7 @@ namespace Quader.Components
 
             var piece = _board.CurrentPiece;
             
-            for (int y = 0; y < _board.Height; y++)
+            for (int y = 0; y < _board.TotalHeight; y++)
             {
                 for (int x = 0; x < _board.Width; x++)
                 {

@@ -15,8 +15,12 @@ namespace Quader.Engine
         
         public int Width { get; }
         public int Height { get; }
+        public int TotalHeight { get; }
+        
+        public Queue<Point[]> TestQueue { get; } = new ();
+        
 
-        private readonly BoardCellType[][] _board;
+        private readonly BoardCellContainer _cellContainer;
 
         private PieceBase? _currentPiece = null;
 
@@ -25,16 +29,10 @@ namespace Quader.Engine
         public Board(int width = 10, int height = 20)
         {
             Width = width;
-            Height = height + ExtraHeight;
+            Height = height;
+            TotalHeight = Height + ExtraHeight;
 
-            //_board = new BoardPieceType[Height, Width];
-            _board = new BoardCellType[Height][];
-            for (int i = 0; i < Height; i++)
-            {
-                _board[i] = new BoardCellType[Width];
-            }
-            
-            Reset();
+            _cellContainer = new BoardCellContainer(Width, TotalHeight);
         }
 
         public void PushPiece(PieceType type)
@@ -59,22 +57,6 @@ namespace Quader.Engine
             if (piece.Type == PieceType.I)
                 piece.Y = 19; // TODO: FIXME
             else piece.Y = 18;
-        }
-
-        public void Reset()
-        {
-            ForEach((x, y) => _board[y][x] = BoardCellType.None);
-        }
-
-        private void ForEach(Action<int, int> action)
-        {
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    action(x, y);
-                }
-            }
         }
 
         public void MoveLeft()
@@ -139,9 +121,9 @@ namespace Quader.Engine
 
             var y = Math.Max(_currentPiece.Y, 0);
 
-            for (int i = y; i <= Height; i++)
+            for (int i = y; i <= TotalHeight; i++)
             {
-                if (Intersects(AdjustPositions(_currentPiece.CurrentPos, new Point(_currentPiece.X, i))))
+                if (_cellContainer.Intersects(AdjustPositions(_currentPiece.CurrentPos, new Point(_currentPiece.X, i))))
                     break;
 
                 y = i;
@@ -159,46 +141,32 @@ namespace Quader.Engine
             var b = _currentPiece.Bounds;
             if (b.X + xOffset < 0 || b.X + b.Width + xOffset > Width)
                 return false;
-            if (b.Y + b.Height + yOffset > Height)
+            if (b.Y + b.Height + yOffset > TotalHeight)
                 return false;
 
             var adjusted = AdjustPositions(_currentPiece.CurrentPos,
                 new Point(_currentPiece.X + xOffset, _currentPiece.Y + yOffset));
 
-            return !Intersects(adjusted);
+            return !_cellContainer.Intersects(adjusted);
         }
-
-        public Queue<Point[]> TestQueue { get; private set; } = new Queue<Point[]>();
-
-        public void MoveUp()
-        {
-            
-        }
-
-        public void MoveDown(int fromY = 0)
-        {
-            for (int y = fromY - 1; y >= 0; y--)
-            {
-                var empty = new BoardCellType[Width];
-                var cur = _board[y];
-                var tmp = new BoardCellType[Width];
-                Array.Copy(cur, tmp, Width);
-
-                _board[y] = empty;
-                _board[y + 1] = tmp;
-            }
-        }
+        
+        public void Reset() => _cellContainer.Reset();
+        public void MoveUp() => _cellContainer.MoveUp();
+        public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
+        public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
+        public void SetCellAt(int x, int y, BoardCellType cell) => _cellContainer.SetCellAt(x, y, cell);
+        
         
         private int CheckLineClears()
         {
             int linesCleared = 0;
             
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < TotalHeight; y++)
             {
-                var isFull = IsLineFull(y);
+                var isFull = _cellContainer.IsLineFull(y);
                 if (isFull)
                 {
-                    ClearLine(y);
+                    _cellContainer.ClearLine(y);
                     linesCleared++;
                     
                     MoveDown(y);
@@ -206,47 +174,6 @@ namespace Quader.Engine
             }
 
             return linesCleared;
-        }
-
-        private void ClearLine(int y)
-        {
-            for (int x = 0; x < Width; x++)
-            {
-                SetCellAt(x, y, BoardCellType.None);
-            }
-        }
-        
-        private bool IsLineFull(int y)
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                if (GetCellAt(i, y) == BoardCellType.None)
-                    return false;
-            }
-
-            return true;
-        }
-
-        private void MoveTo(int y)
-        {
-            for (int i = 0; i < y; i++)
-            {
-                var cur = GetLineAt(i);
-                var next = GetLineAt(i + 1);
-                
-                SetLineAt(cur, i + 1);
-                SetLineAt(next, i + 2);
-            }
-        }
-
-        private BoardCellType[] GetLineAt(int y)
-        {
-            return _board[y];
-        }
-
-        private void SetLineAt(BoardCellType[] data, int y)
-        {
-            _board[y] = data;
         }
 
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
@@ -272,7 +199,7 @@ namespace Quader.Engine
                 
                 TestQueue.Enqueue(adjusted);
 
-                var intersects = Intersects(adjusted);
+                var intersects = _cellContainer.Intersects(adjusted);
 
                 if (!intersects)
                 {
@@ -299,28 +226,6 @@ namespace Quader.Engine
             return newData;
         }
 
-        private bool Intersects(Point[] points)
-        {
-            foreach (var point in points)
-            {
-                if (point.Y < 0)
-                    continue; // Skip tests upper than the board's border
-                
-                if (point.X < 0 || point.X >= Width)
-                    return true;
-
-                if (point.Y >= Height)
-                {
-                    return true;
-                }
-
-                if (GetCellAt(point.X, point.Y) != BoardCellType.None)
-                    return true;
-            }
-
-            return false;
-        }
-
         private bool TryApplyPiece(Point[] points, int x, int y)
         {
             var adjusted = AdjustPositions(points, new Point(x, y));
@@ -336,13 +241,5 @@ namespace Quader.Engine
             
             return true;
         }
-
-
-        public bool IsOutOfBounds(Point p) => IsOutOfBoundsExceptTop(p) || p.Y < 0;
-        public bool IsOutOfBoundsExceptTop(Point p) => p.X < 0 || p.X >= Width || p.Y >= Height;
-        
-        public BoardCellType GetCellAt(int x, int y) => _board[y][x];
-        public void SetCellAt(int x, int y, BoardCellType cell) => _board[y][x] = cell;
-        public int GetIndexByCoordinates(int x, int y) => x + Width * y;
     }
 }
