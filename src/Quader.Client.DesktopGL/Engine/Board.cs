@@ -15,12 +15,8 @@ namespace Quader.Engine
         
         public int Width { get; }
         public int Height { get; }
-        
 
-        // TODO: Make board layout to be from down to up (0,0 at the bottom left corner instead of top left corner)
-        //private BoardPieceType[] _boardLayout;
-
-        private readonly BoardPieceType[][] _board;
+        private readonly BoardCellType[][] _board;
 
         private PieceBase? _currentPiece = null;
 
@@ -32,10 +28,10 @@ namespace Quader.Engine
             Height = height + ExtraHeight;
 
             //_board = new BoardPieceType[Height, Width];
-            _board = new BoardPieceType[Height][];
+            _board = new BoardCellType[Height][];
             for (int i = 0; i < Height; i++)
             {
-                _board[i] = new BoardPieceType[Width];
+                _board[i] = new BoardCellType[Width];
             }
             
             Reset();
@@ -60,12 +56,14 @@ namespace Quader.Engine
             else
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
 
-            piece.Y = -1;
+            if (piece.Type == PieceType.I)
+                piece.Y = 19; // TODO: FIXME
+            else piece.Y = 18;
         }
 
         public void Reset()
         {
-            ForEach((x, y) => _board[y][x] = BoardPieceType.None);
+            ForEach((x, y) => _board[y][x] = BoardCellType.None);
         }
 
         private void ForEach(Action<int, int> action)
@@ -181,9 +179,9 @@ namespace Quader.Engine
         {
             for (int y = fromY - 1; y >= 0; y--)
             {
-                var empty = new BoardPieceType[Width];
+                var empty = new BoardCellType[Width];
                 var cur = _board[y];
-                var tmp = new BoardPieceType[Width];
+                var tmp = new BoardCellType[Width];
                 Array.Copy(cur, tmp, Width);
 
                 _board[y] = empty;
@@ -214,7 +212,7 @@ namespace Quader.Engine
         {
             for (int x = 0; x < Width; x++)
             {
-                SetPieceAt(x, y, BoardPieceType.None);
+                SetCellAt(x, y, BoardCellType.None);
             }
         }
         
@@ -222,7 +220,7 @@ namespace Quader.Engine
         {
             for (int i = 0; i < Width; i++)
             {
-                if (GetPieceAt(i, y) == BoardPieceType.None)
+                if (GetCellAt(i, y) == BoardCellType.None)
                     return false;
             }
 
@@ -241,12 +239,12 @@ namespace Quader.Engine
             }
         }
 
-        private BoardPieceType[] GetLineAt(int y)
+        private BoardCellType[] GetLineAt(int y)
         {
             return _board[y];
         }
 
-        private void SetLineAt(BoardPieceType[] data, int y)
+        private void SetLineAt(BoardCellType[] data, int y)
         {
             _board[y] = data;
         }
@@ -316,7 +314,7 @@ namespace Quader.Engine
                     return true;
                 }
 
-                if (GetPieceAt(point.X, point.Y) != BoardPieceType.None)
+                if (GetCellAt(point.X, point.Y) != BoardCellType.None)
                     return true;
             }
 
@@ -329,11 +327,11 @@ namespace Quader.Engine
 
             foreach (var point in adjusted)
             {
-                var piece = GetPieceAt(point.X, point.Y);
-                if (piece != BoardPieceType.None)
+                var piece = GetCellAt(point.X, point.Y);
+                if (piece != BoardCellType.None)
                     return false;
                 
-                SetPieceAt(point.X, point.Y, (BoardPieceType)(((int)_currentPiece.Type) + 1));
+                SetCellAt(point.X, point.Y, (BoardCellType)(((int)_currentPiece.Type) + 1));
             }
             
             return true;
@@ -343,8 +341,8 @@ namespace Quader.Engine
         public bool IsOutOfBounds(Point p) => IsOutOfBoundsExceptTop(p) || p.Y < 0;
         public bool IsOutOfBoundsExceptTop(Point p) => p.X < 0 || p.X >= Width || p.Y >= Height;
         
-        public BoardPieceType GetPieceAt(int x, int y) => _board[y][x];
-        public void SetPieceAt(int x, int y, BoardPieceType piece) => _board[y][x] = piece;
+        public BoardCellType GetCellAt(int x, int y) => _board[y][x];
+        public void SetCellAt(int x, int y, BoardCellType cell) => _board[y][x] = cell;
         public int GetIndexByCoordinates(int x, int y) => x + Width * y;
     }
 }

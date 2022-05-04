@@ -31,8 +31,8 @@ namespace Quader.Scenes
     {
         public const int ScreenSpaceRenderLayer = 999;
 
-        public readonly int Width = 1280;
-        public readonly int Height = 720;
+        public readonly int Width = 1440;
+        public readonly int Height = 980;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
 

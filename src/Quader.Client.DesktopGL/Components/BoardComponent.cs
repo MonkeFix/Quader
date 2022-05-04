@@ -61,7 +61,7 @@ namespace Quader.Components
         {
             var size = 32;
             var baseX = 128;
-            var baseY = 64;
+            var baseY = -(18 * size) + 32;
 
             var piece = _board.CurrentPiece;
             
@@ -69,23 +69,23 @@ namespace Quader.Components
             {
                 for (int x = 0; x < _board.Width; x++)
                 {
-                    var p = _board.GetPieceAt(x, y);
+                    var p = _board.GetCellAt(x, y);
 
                     var drawX = baseX + x * size;
                     var drawY = baseY + y * size;
 
-                    batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
+                    if (y >= 20)
+                        batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
                     
-                    if (p == BoardPieceType.None)
+                    if (p == BoardCellType.None)
                     {
-                        batcher.DrawRect(drawX, drawY, size, size, Color.Black);
+                        if (y >= 20)
+                            batcher.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
                     else
                     {
-                        batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardPieceType(p));
+                        batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardCell(p));
                     }
-
-                    
                 }
             }
             
@@ -206,11 +206,11 @@ namespace Quader.Components
             {
                 if (Input.LeftMouseButtonDown)
                 {
-                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.Garbage);
+                    _board.SetCellAt(scaledMp.X, scaledMp.Y, BoardCellType.Garbage);
                 }
                 else if (Input.RightMouseButtonDown)
                 {
-                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.None);
+                    _board.SetCellAt(scaledMp.X, scaledMp.Y, BoardCellType.None);
                 }
             }
             
