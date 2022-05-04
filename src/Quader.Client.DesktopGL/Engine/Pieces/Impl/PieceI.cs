@@ -7,10 +7,10 @@ namespace Quader.Engine.Pieces.Impl
     {
         public override PieceType Type => PieceType.I;
         public override OffsetType OffsetType => OffsetType.BetweenCells;
-        public override Point[] SpawnPos { get; }
-        public override Point[] RightPos { get; }
-        public override Point[] Deg180Pos { get; }
-        public override Point[] LeftPos { get; }
+        protected override Point[] SpawnPos { get; }
+        protected override Point[] RightPos { get; }
+        protected override Point[] Deg180Pos { get; }
+        protected override Point[] LeftPos { get; }
 
         public override Dictionary<PieceRotationType, Point[]> WallKickData => PieceUtils.PieceIWallKickData;
 

@@ -25,6 +25,8 @@ Online stacker puzzle game.
  - [ ] Implement Bag-7 piece generator
  - [ ] Implement a scoring system (combos, quads, etc)
  - [ ] Handle T-Spins (minis, singles, doubles, triples)
+ - [ ] Add ColdClearNet bot
+ - [ ] Add Unit Tests
 
 ## Ideas
 

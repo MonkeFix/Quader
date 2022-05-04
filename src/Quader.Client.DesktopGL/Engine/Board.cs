@@ -8,6 +8,11 @@ namespace Quader.Engine
 {
     public class Board
     {
+        /// <summary>
+        /// Extra height of the board. Used for cases when player receives garbage with ability to spawn a new piece.
+        /// </summary>
+        public static readonly int ExtraHeight = 20;
+        
         public int Width { get; }
         public int Height { get; }
         
@@ -15,16 +20,16 @@ namespace Quader.Engine
         // TODO: Make board layout to be from down to up (0,0 at the bottom left corner instead of top left corner)
         //private BoardPieceType[] _boardLayout;
 
-        private BoardPieceType[][] _board;
+        private readonly BoardPieceType[][] _board;
 
         private PieceBase? _currentPiece = null;
 
         public PieceBase? CurrentPiece => _currentPiece;
-        
+
         public Board(int width = 10, int height = 20)
         {
             Width = width;
-            Height = height;
+            Height = height + ExtraHeight;
 
             //_board = new BoardPieceType[Height, Width];
             _board = new BoardPieceType[Height][];
@@ -80,7 +85,7 @@ namespace Quader.Engine
                 return;
 
             if (TestMovement(-1, 0))
-                _currentPiece.X -= 1;
+                _currentPiece!.X -= 1;
         }
 
         public void MoveRight()
@@ -179,10 +184,6 @@ namespace Quader.Engine
                 var empty = new BoardPieceType[Width];
                 var cur = _board[y];
                 var tmp = new BoardPieceType[Width];
-                for (int i = 0; i < Width; i++)
-                {
-                    empty[i] = BoardPieceType.None; // TODO: None = 0
-                }
                 Array.Copy(cur, tmp, Width);
 
                 _board[y] = empty;
@@ -242,21 +243,12 @@ namespace Quader.Engine
 
         private BoardPieceType[] GetLineAt(int y)
         {
-            BoardPieceType[] res = new BoardPieceType[Width];
-            for (int i = 0; i < Width; i++)
-            {
-                res[i] = GetPieceAt(i, y);
-            }
-
-            return res;
+            return _board[y];
         }
 
         private void SetLineAt(BoardPieceType[] data, int y)
         {
-            for (int i = 0; i < data.Length; i++)
-            {
-                SetPieceAt(i, y, data[i]);
-            }
+            _board[y] = data;
         }
 
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
@@ -264,7 +256,7 @@ namespace Quader.Engine
             var tests = kickParams.Tests;
             var expectedPos = kickParams.ExpectedPos;
 
-            TestQueue = new Queue<Point[]>();
+            TestQueue.Clear();
             
             firstSuccessfulTest = null;
 
@@ -341,7 +333,7 @@ namespace Quader.Engine
                 if (piece != BoardPieceType.None)
                     return false;
                 
-                SetPieceAt(point.X, point.Y, (BoardPieceType)(int)_currentPiece.Type);
+                SetPieceAt(point.X, point.Y, (BoardPieceType)(((int)_currentPiece.Type) + 1));
             }
             
             return true;

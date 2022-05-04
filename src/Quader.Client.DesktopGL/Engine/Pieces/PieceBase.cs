@@ -16,21 +16,21 @@ namespace Quader.Engine.Pieces
     {
         public abstract PieceType Type { get; }
         /// <summary>
-        /// Gets occupied piece cells, where (0,0) is the origin
+        /// Gets occupied piece cells for the <b>Spawn</b> position, where (0,0) is the origin
         /// </summary>
-        public abstract Point[] SpawnPos { get; }
+        protected abstract Point[] SpawnPos { get; }
         /// <summary>
-        /// Gets occupied piece cells, where (0,0) is the origin
+        /// Gets occupied piece cells for the <b>Right (Clockwise)</b> position, where (0,0) is the origin
         /// </summary>
-        public abstract Point[] RightPos { get; }
+        protected abstract Point[] RightPos { get; }
         /// <summary>
-        /// Gets occupied piece cells, where (0,0) is the origin
+        /// Gets occupied piece cells for the <b>180 Degrees (double right)</b> position, where (0,0) is the origin
         /// </summary>
-        public abstract Point[] Deg180Pos { get; }
+        protected abstract Point[] Deg180Pos { get; }
         /// <summary>
-        /// Gets occupied piece cells, where (0,0) is the origin
+        /// Gets occupied piece cells for the <b>Left (Counter-Clockwise)</b> position, where (0,0) is the origin
         /// </summary>
-        public abstract Point[] LeftPos { get; }
+        protected abstract Point[] LeftPos { get; }
 
         public virtual OffsetType OffsetType { get; } = OffsetType.Cell;
 
@@ -101,7 +101,7 @@ namespace Quader.Engine.Pieces
             public Point? WallKickPosition { get; set; }
         }
         
-        public virtual void Rotate(Rotation rotation, Func<WallKickCheckParams, WallKickCheckResult> wallKickPredicate)
+        public void Rotate(Rotation rotation, Func<WallKickCheckParams, WallKickCheckResult> wallKickPredicate)
         {
             var r = GetRotationTypeByRotation(rotation);
             var tests = WallKickData[r.rotationType];
@@ -119,13 +119,14 @@ namespace Quader.Engine.Pieces
             
             RotateSimple(rotation);
             
+            
             X += result.WallKickPosition.Value.X;
             Y += result.WallKickPosition.Value.Y;
 
             _bounds = GetBounds();
         }
 
-        public void RotateSimple(Rotation rotation)
+        private void RotateSimple(Rotation rotation)
         {
             switch (rotation)
             {

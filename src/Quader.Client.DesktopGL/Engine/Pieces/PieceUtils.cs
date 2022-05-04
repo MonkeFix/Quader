@@ -65,12 +65,34 @@ namespace Quader.Engine.Pieces
                 case PieceType.S: return ColorS;
                 case PieceType.Z: return ColorZ;
                 default:
-                    return ColorGarbage;
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
         public static Color GetColorByBoardPieceType(BoardPieceType type)
         {
-            return GetColorByPieceType((PieceType)(int)type);
+            switch (type)
+            {
+                case BoardPieceType.None:
+                    return Color.Transparent;
+                case BoardPieceType.I:
+                    return ColorI;
+                case BoardPieceType.O:
+                    return ColorO;
+                case BoardPieceType.T:
+                    return ColorT;
+                case BoardPieceType.L:
+                    return ColorL;
+                case BoardPieceType.J:
+                    return ColorJ;
+                case BoardPieceType.S:
+                    return ColorS;
+                case BoardPieceType.Z:
+                    return ColorZ;
+                case BoardPieceType.Garbage:
+                    return ColorGarbage;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
         }
     }
 }
