@@ -2,6 +2,7 @@
 {
     public enum PieceType
     {
-        I = 0, O, T, L, J, S, Z
+        I = 0, O, T, L, J, S, Z,
+        Pixel
     }
 }

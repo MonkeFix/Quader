@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Nez;
 using Quader.Engine.Pieces;
+using Quader.Engine.Pieces.Impl;
 using Quader.Engine.RotationEncoder;
 
 namespace Quader.Engine
@@ -22,9 +24,7 @@ namespace Quader.Engine
 
         private readonly BoardCellContainer _cellContainer;
 
-        private PieceBase? _currentPiece = null;
-
-        public PieceBase? CurrentPiece => _currentPiece;
+        public PieceBase CurrentPiece { get; private set; }
 
         public Board(int width = 10, int height = 20)
         {
@@ -33,6 +33,8 @@ namespace Quader.Engine
             TotalHeight = Height + ExtraHeight;
 
             _cellContainer = new BoardCellContainer(Width, TotalHeight);
+            CurrentPiece = new PiecePixel();
+            ResetPiece(CurrentPiece);
         }
 
         public void PushPiece(PieceType type)
@@ -42,7 +44,7 @@ namespace Quader.Engine
 
             ResetPiece(piece);
             
-            _currentPiece = piece;
+            CurrentPiece = piece;
         }
 
         public void ResetPiece(PieceBase piece)
@@ -61,69 +63,66 @@ namespace Quader.Engine
 
         public void MoveLeft()
         {
-            if (_currentPiece == null)
-                return;
-
-            if (TestMovement(-1, 0))
-                _currentPiece!.X -= 1;
+            var t = Debug.TimeAction(() =>
+            {
+                if (TestMovement(-1, 0))
+                    CurrentPiece.X -= 1;
+            });
+            GlobalTimeManager.AddData("MoveLeft", t);
         }
 
         public void MoveRight()
         {
-            if (_currentPiece == null)
-                return;
-
-            if (TestMovement(1, 0))
-                _currentPiece.X += 1;
+            var t = Debug.TimeAction(() =>
+            {
+                if (TestMovement(1, 0))
+                    CurrentPiece.X += 1;
+            });
+            GlobalTimeManager.AddData("MoveRight", t);
         }
 
         public void SoftDrop()
         {
-            if (_currentPiece == null)
-                return;
-
             if (TestMovement(0, 1))
-                _currentPiece.Y += 1;
+                CurrentPiece.Y += 1;
         }
 
         public void HardDrop()
         {
-            if (_currentPiece == null)
-                return;
+            var t = Debug.TimeAction(() =>
+            {
+                var nearestY = FindNearestY();
 
-            var nearestY = FindNearestY();
+                if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
+                    throw new Exception("Something went wrong while applying the piece");
 
-            if (!TryApplyPiece(_currentPiece.CurrentPos, _currentPiece.X, nearestY))
-                throw new Exception("Something went wrong while applying the piece");
-                
-            CheckLineClears();
-            
-            ResetPiece(_currentPiece);
+                CheckLineClears();
+
+                ResetPiece(CurrentPiece);
+            });
+            GlobalTimeManager.AddData("HardDrop", t);
         }
 
         public void Rotate(Rotation rotation)
         {
-            if (_currentPiece == null)
-                return;
-
-            //_currentPiece.RotateSimple(rotation);
-            _currentPiece.Rotate(rotation, kickParams => new PieceBase.WallKickCheckResult
+            var t = Debug.TimeAction(() =>
             {
-                Success = TestRotation(kickParams, out Point? test),
-                WallKickPosition = test
+                CurrentPiece.Rotate(rotation, kickParams => new PieceBase.WallKickCheckResult
+                {
+                    Success = TestRotation(kickParams, out Point? test),
+                    WallKickPosition = test
+                });
             });
+            GlobalTimeManager.AddData("Rotate", t);
         }
 
         public int FindNearestY()
         {
-            if (_currentPiece == null)
-                return 0;
-
-            var y = Math.Max(_currentPiece.Y, 0);
+            var y = Math.Max(CurrentPiece.Y, 0);
 
             for (int i = y; i <= TotalHeight; i++)
             {
-                if (_cellContainer.Intersects(AdjustPositions(_currentPiece.CurrentPos, new Point(_currentPiece.X, i))))
+                if (_cellContainer.Intersects(AdjustPositions(CurrentPiece.CurrentPos, new Point(CurrentPiece.X, i))))
                     break;
 
                 y = i;
@@ -134,18 +133,15 @@ namespace Quader.Engine
 
         private bool TestMovement(int xOffset, int yOffset)
         {
-            if (_currentPiece == null)
-                return false;
-
-            // Checking bounds first as it is much faster
-            var b = _currentPiece.Bounds;
+            // Checking piece bounds first as it is much faster
+            var b = CurrentPiece.Bounds;
             if (b.X + xOffset < 0 || b.X + b.Width + xOffset > Width)
                 return false;
             if (b.Y + b.Height + yOffset > TotalHeight)
                 return false;
 
-            var adjusted = AdjustPositions(_currentPiece.CurrentPos,
-                new Point(_currentPiece.X + xOffset, _currentPiece.Y + yOffset));
+            var adjusted = AdjustPositions(CurrentPiece.CurrentPos,
+                new Point(CurrentPiece.X + xOffset, CurrentPiece.Y + yOffset));
 
             return !_cellContainer.Intersects(adjusted);
         }
@@ -161,12 +157,12 @@ namespace Quader.Engine
         {
             int linesCleared = 0;
             
+            // TODO: Check only affected Y's
             for (int y = 0; y < TotalHeight; y++)
             {
                 var isFull = _cellContainer.IsLineFull(y);
                 if (isFull)
                 {
-                    _cellContainer.ClearLine(y);
                     linesCleared++;
                     
                     MoveDown(y);
@@ -194,7 +190,7 @@ namespace Quader.Engine
                 
                 var adjusted = AdjustPositions(
                     expectedPos,
-                    new Point(_currentPiece!.X, _currentPiece!.Y) + test
+                    new Point(CurrentPiece!.X, CurrentPiece!.Y) + test
                 );
                 
                 TestQueue.Enqueue(adjusted);
@@ -236,7 +232,8 @@ namespace Quader.Engine
                 if (piece != BoardCellType.None)
                     return false;
                 
-                SetCellAt(point.X, point.Y, (BoardCellType)(((int)_currentPiece.Type) + 1));
+                // TODO: Convert properly
+                SetCellAt(point.X, point.Y, (BoardCellType)(((int)CurrentPiece.Type) + 1));
             }
             
             return true;

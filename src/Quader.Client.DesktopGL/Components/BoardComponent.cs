@@ -125,7 +125,10 @@ namespace Quader.Components
                         Color.White, 2f);
                 }
 
-                var dropY = _board.FindNearestY();
+                int dropY = 0;
+
+                _lastNearestY = Debug.TimeAction(() => dropY = _board.FindNearestY());
+                GlobalTimeManager.AddData("BoardComponent.FindNearestY", _lastNearestY);
 
                 var curX = _board.CurrentPiece.X;
                 var curY = dropY;
@@ -224,8 +227,10 @@ namespace Quader.Components
         private Point[]? _currentTest = null;
 
         private bool _drawOrigin = true;
-        private bool _drawBoundingBox = true;
+        private bool _drawBoundingBox = false;
         private bool _drawTestQueue = true;
+
+        private TimeSpan _lastNearestY = TimeSpan.Zero;
 
         [Inspectable] 
         public int TestProperty { get; set; } = 32;
@@ -244,9 +249,16 @@ namespace Quader.Components
         private void ImGuiDraw()
         {
             ImGui.Begin("Piece Handling");
-            
-            var mp = Input.MousePosition;
-            ImGui.Text($"MP: {mp.X:F0},{mp.Y:F0}");
+
+            ImGui.Text($"Time Data:");
+
+            var vals = GlobalTimeManager.TimeData.Values;
+            foreach (var val in vals)
+            {
+                ImGui.Text(val.ToString());
+            }
+
+            ImGui.Separator();
             
             ImGui.Text($"Board Size: {_board.Width}x{_board.Height}");
             if (ImGui.Button("RESET BOARD"))

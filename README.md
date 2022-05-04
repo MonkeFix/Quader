@@ -8,11 +8,14 @@ Online stacker puzzle game.
 
 ### Client
 
- - [ ] Add timers to every board action and store the times. Will be useful for the following TODOs
- - [ ] Change direction of the board's Y axis from (0,0) being at top left corner to bottom left corner
+ - [x] Add timers to every board action and store the times. Will be useful for the following TODOs
+ - [x] ~~Change direction of the board's Y axis from (0,0) being at top left corner to bottom left corner~~
+ - [x] Add "invisible" top 20 lines for cases when garbage is over the board's top border
+ - [x] Fix initial Y position of the incoming pieces
  - [ ] Fix rotation tests for 180 degrees rotation
- - [ ] Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow
- - [ ] Check if there's a faster variant of `TestRotation` and `MoveDown` methods of the `Board` class
+ - [x] ~~Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow~~
+ - [ ] Check if there's a faster variant of `TestRotation` and `MoveDown` methods of the `Board` class:
+   - [ ] `HardDrop()` and `Rotate()` are relatively slow (0.02ms and 0.05ms respectively)
  - [ ] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [ ] Move SRS tables to a JSON file
  - [ ] Add correct input handling

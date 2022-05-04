@@ -63,6 +63,7 @@ namespace Quader.Engine.Pieces
                 case PieceType.J: return ColorJ;
                 case PieceType.S: return ColorS;
                 case PieceType.Z: return ColorZ;
+                case PieceType.Pixel: return ColorGarbage;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }

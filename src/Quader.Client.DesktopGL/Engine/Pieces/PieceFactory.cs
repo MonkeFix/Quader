@@ -16,6 +16,7 @@ namespace Quader.Engine.Pieces
                 PieceType.J => new PieceJ(),
                 PieceType.S => new PieceS(),
                 PieceType.Z => new PieceZ(),
+                PieceType.Pixel => new PiecePixel(),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
