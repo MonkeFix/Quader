@@ -15,19 +15,30 @@ namespace Quader.Engine
         
         public int Width { get; }
         public int Height { get; }
-        public int TotalHeight { get; }
         
-        public PieceContainer PieceContainer { get; }
 
-        public PieceBase? CurrentPiece { get; private set; }
+        // TODO: Make board layout to be from down to up (0,0 at the bottom left corner instead of top left corner)
+        //private BoardPieceType[] _boardLayout;
+
+        private readonly BoardPieceType[][] _board;
+
+        private PieceBase? _currentPiece = null;
+
+        public PieceBase? CurrentPiece => _currentPiece;
 
         public Board(int width = 10, int height = 20)
         {
             Width = width;
-            Height = height;
-            TotalHeight = Height + ExtraHeight;
+            Height = height + ExtraHeight;
 
-            PieceContainer = new PieceContainer(Width, TotalHeight, true);
+            //_board = new BoardPieceType[Height, Width];
+            _board = new BoardPieceType[Height][];
+            for (int i = 0; i < Height; i++)
+            {
+                _board[i] = new BoardPieceType[Width];
+            }
+            
+            Reset();
         }
 
         public void PushPiece(PieceType type)
@@ -37,7 +48,7 @@ namespace Quader.Engine
 
             ResetPiece(piece);
             
-            CurrentPiece = piece;
+            _currentPiece = piece;
         }
 
         public void ResetPiece(PieceBase piece)
@@ -49,60 +60,74 @@ namespace Quader.Engine
             else
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
 
-            piece.Y = 21;
+            piece.Y = -1;
         }
 
-        public void Reset() => PieceContainer.Clear();
+        public void Reset()
+        {
+            ForEach((x, y) => _board[y][x] = BoardPieceType.None);
+        }
+
+        private void ForEach(Action<int, int> action)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    action(x, y);
+                }
+            }
+        }
 
         public void MoveLeft()
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return;
 
             if (TestMovement(-1, 0))
-                CurrentPiece!.X -= 1;
+                _currentPiece!.X -= 1;
         }
 
         public void MoveRight()
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return;
 
             if (TestMovement(1, 0))
-                CurrentPiece.X += 1;
+                _currentPiece.X += 1;
         }
 
         public void SoftDrop()
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return;
 
             if (TestMovement(0, 1))
-                CurrentPiece.Y += 1;
+                _currentPiece.Y += 1;
         }
 
         public void HardDrop()
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return;
 
             var nearestY = FindNearestY();
 
-            if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
+            if (!TryApplyPiece(_currentPiece.CurrentPos, _currentPiece.X, nearestY))
                 throw new Exception("Something went wrong while applying the piece");
                 
             CheckLineClears();
             
-            ResetPiece(CurrentPiece);
+            ResetPiece(_currentPiece);
         }
 
         public void Rotate(Rotation rotation)
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return;
 
             //_currentPiece.RotateSimple(rotation);
-            CurrentPiece.Rotate(rotation, kickParams => new PieceBase.WallKickCheckResult
+            _currentPiece.Rotate(rotation, kickParams => new PieceBase.WallKickCheckResult
             {
                 Success = TestRotation(kickParams, out Point? test),
                 WallKickPosition = test
@@ -111,14 +136,14 @@ namespace Quader.Engine
 
         public int FindNearestY()
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return 0;
 
-            var y = Math.Max(CurrentPiece.Y, 0);
+            var y = Math.Max(_currentPiece.Y, 0);
 
-            for (int i = y; i < TotalHeight; i++)
+            for (int i = y; i <= Height; i++)
             {
-                if (PieceContainer.Intersects(AdjustPositions(CurrentPiece.CurrentPos, new Point(CurrentPiece.X, i))))
+                if (Intersects(AdjustPositions(_currentPiece.CurrentPos, new Point(_currentPiece.X, i))))
                     break;
 
                 y = i;
@@ -129,20 +154,20 @@ namespace Quader.Engine
 
         private bool TestMovement(int xOffset, int yOffset)
         {
-            if (CurrentPiece == null)
+            if (_currentPiece == null)
                 return false;
 
             // Checking bounds first as it is much faster
-            var b = CurrentPiece.Bounds;
+            var b = _currentPiece.Bounds;
             if (b.X + xOffset < 0 || b.X + b.Width + xOffset > Width)
                 return false;
-            if (b.Y + b.Height + yOffset > TotalHeight)
+            if (b.Y + b.Height + yOffset > Height)
                 return false;
 
-            var adjusted = AdjustPositions(CurrentPiece.CurrentPos,
-                new Point(CurrentPiece.X + xOffset, CurrentPiece.Y + yOffset));
+            var adjusted = AdjustPositions(_currentPiece.CurrentPos,
+                new Point(_currentPiece.X + xOffset, _currentPiece.Y + yOffset));
 
-            return !PieceContainer.Intersects(adjusted);
+            return !Intersects(adjusted);
         }
 
         public Queue<Point[]> TestQueue { get; private set; } = new Queue<Point[]>();
@@ -152,18 +177,30 @@ namespace Quader.Engine
             
         }
 
-        public void MoveDown(int fromY = 0) => PieceContainer.MoveDown(fromY);
+        public void MoveDown(int fromY = 0)
+        {
+            for (int y = fromY - 1; y >= 0; y--)
+            {
+                var empty = new BoardPieceType[Width];
+                var cur = _board[y];
+                var tmp = new BoardPieceType[Width];
+                Array.Copy(cur, tmp, Width);
 
+                _board[y] = empty;
+                _board[y + 1] = tmp;
+            }
+        }
+        
         private int CheckLineClears()
         {
             int linesCleared = 0;
             
-            for (int y = 0; y < TotalHeight; y++)
+            for (int y = 0; y < Height; y++)
             {
-                var isFull = PieceContainer.IsLineFull(y);
+                var isFull = IsLineFull(y);
                 if (isFull)
                 {
-                    PieceContainer.ClearLine(y);
+                    ClearLine(y);
                     linesCleared++;
                     
                     MoveDown(y);
@@ -171,6 +208,47 @@ namespace Quader.Engine
             }
 
             return linesCleared;
+        }
+
+        private void ClearLine(int y)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                SetPieceAt(x, y, BoardPieceType.None);
+            }
+        }
+        
+        private bool IsLineFull(int y)
+        {
+            for (int i = 0; i < Width; i++)
+            {
+                if (GetPieceAt(i, y) == BoardPieceType.None)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void MoveTo(int y)
+        {
+            for (int i = 0; i < y; i++)
+            {
+                var cur = GetLineAt(i);
+                var next = GetLineAt(i + 1);
+                
+                SetLineAt(cur, i + 1);
+                SetLineAt(next, i + 2);
+            }
+        }
+
+        private BoardPieceType[] GetLineAt(int y)
+        {
+            return _board[y];
+        }
+
+        private void SetLineAt(BoardPieceType[] data, int y)
+        {
+            _board[y] = data;
         }
 
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
@@ -191,12 +269,12 @@ namespace Quader.Engine
                 
                 var adjusted = AdjustPositions(
                     expectedPos,
-                    new Point(CurrentPiece!.X, CurrentPiece!.Y) + test
+                    new Point(_currentPiece!.X, _currentPiece!.Y) + test
                 );
                 
                 TestQueue.Enqueue(adjusted);
 
-                var intersects = PieceContainer.Intersects(adjusted);
+                var intersects = Intersects(adjusted);
 
                 if (!intersects)
                 {
@@ -223,6 +301,28 @@ namespace Quader.Engine
             return newData;
         }
 
+        private bool Intersects(Point[] points)
+        {
+            foreach (var point in points)
+            {
+                if (point.Y < 0)
+                    continue; // Skip tests upper than the board's border
+                
+                if (point.X < 0 || point.X >= Width)
+                    return true;
+
+                if (point.Y >= Height)
+                {
+                    return true;
+                }
+
+                if (GetPieceAt(point.X, point.Y) != BoardPieceType.None)
+                    return true;
+            }
+
+            return false;
+        }
+
         private bool TryApplyPiece(Point[] points, int x, int y)
         {
             var adjusted = AdjustPositions(points, new Point(x, y));
@@ -230,16 +330,21 @@ namespace Quader.Engine
             foreach (var point in adjusted)
             {
                 var piece = GetPieceAt(point.X, point.Y);
-                if (piece != BoardCellType.None)
+                if (piece != BoardPieceType.None)
                     return false;
                 
-                SetPieceAt(point.X, point.Y, (BoardCellType)(((int)CurrentPiece.Type) + 1));
+                SetPieceAt(point.X, point.Y, (BoardPieceType)(((int)_currentPiece.Type) + 1));
             }
             
             return true;
         }
 
-        public BoardCellType GetPieceAt(int x, int y) => PieceContainer.GetPieceAt(x, y);
-        public void SetPieceAt(int x, int y, BoardCellType cell) => PieceContainer.SetPieceAt(x, y, cell);
+
+        public bool IsOutOfBounds(Point p) => IsOutOfBoundsExceptTop(p) || p.Y < 0;
+        public bool IsOutOfBoundsExceptTop(Point p) => p.X < 0 || p.X >= Width || p.Y >= Height;
+        
+        public BoardPieceType GetPieceAt(int x, int y) => _board[y][x];
+        public void SetPieceAt(int x, int y, BoardPieceType piece) => _board[y][x] = piece;
+        public int GetIndexByCoordinates(int x, int y) => x + Width * y;
     }
 }

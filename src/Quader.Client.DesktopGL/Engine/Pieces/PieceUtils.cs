@@ -68,27 +68,27 @@ namespace Quader.Engine.Pieces
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
-        public static Color GetColorByBoardPieceType(BoardCellType type)
+        public static Color GetColorByBoardPieceType(BoardPieceType type)
         {
             switch (type)
             {
-                case BoardCellType.None:
+                case BoardPieceType.None:
                     return Color.Transparent;
-                case BoardCellType.I:
+                case BoardPieceType.I:
                     return ColorI;
-                case BoardCellType.O:
+                case BoardPieceType.O:
                     return ColorO;
-                case BoardCellType.T:
+                case BoardPieceType.T:
                     return ColorT;
-                case BoardCellType.L:
+                case BoardPieceType.L:
                     return ColorL;
-                case BoardCellType.J:
+                case BoardPieceType.J:
                     return ColorJ;
-                case BoardCellType.S:
+                case BoardPieceType.S:
                     return ColorS;
-                case BoardCellType.Z:
+                case BoardPieceType.Z:
                     return ColorZ;
-                case BoardCellType.Garbage:
+                case BoardPieceType.Garbage:
                     return ColorGarbage;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
