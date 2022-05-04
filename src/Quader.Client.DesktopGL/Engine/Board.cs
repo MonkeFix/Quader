@@ -83,8 +83,12 @@ namespace Quader.Engine
 
         public void SoftDrop()
         {
-            if (TestMovement(0, 1))
-                CurrentPiece.Y += 1;
+            var t = Debug.TimeAction(() =>
+            {
+                if (TestMovement(0, 1))
+                    CurrentPiece.Y += 1;
+            });
+            GlobalTimeManager.AddData("SoftDrop", t);
         }
 
         public void HardDrop()
@@ -95,12 +99,14 @@ namespace Quader.Engine
 
                 if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
                     throw new Exception("Something went wrong while applying the piece");
-
-                CheckLineClears();
-
-                ResetPiece(CurrentPiece);
             });
+
+            var t2 = Debug.TimeAction(() => CheckLineClears());
+
+            ResetPiece(CurrentPiece);
+            
             GlobalTimeManager.AddData("HardDrop", t);
+            GlobalTimeManager.AddData("CheckLineClears", t2);
         }
 
         public void Rotate(Rotation rotation)
@@ -130,7 +136,14 @@ namespace Quader.Engine
 
             return y;
         }
-
+        
+        public void Reset() => _cellContainer.Reset();
+        public void MoveUp() => _cellContainer.MoveUp();
+        public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
+        public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
+        public void SetCellAt(int x, int y, BoardCellType cell) => _cellContainer.SetCellAt(x, y, cell);
+        
+        
         private bool TestMovement(int xOffset, int yOffset)
         {
             // Checking piece bounds first as it is much faster
@@ -145,13 +158,6 @@ namespace Quader.Engine
 
             return !_cellContainer.Intersects(adjusted);
         }
-        
-        public void Reset() => _cellContainer.Reset();
-        public void MoveUp() => _cellContainer.MoveUp();
-        public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
-        public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
-        public void SetCellAt(int x, int y, BoardCellType cell) => _cellContainer.SetCellAt(x, y, cell);
-        
         
         private int CheckLineClears()
         {

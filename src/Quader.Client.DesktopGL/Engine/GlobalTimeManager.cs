@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Quader.Engine
 {
@@ -10,11 +11,23 @@ namespace Quader.Engine
         public TimeSpan LastTime { get; set; }
         public TimeSpan MeanTime { get; set; }
 
-        public List<TimeSpan> AllTimes { get; } = new ();
+        private List<TimeSpan> AllTimes { get; } = new ();
+        private double _average;
+
+        public void Add(TimeSpan ts)
+        {
+            AllTimes.Add(ts);
+            Recalc();
+        }
+
+        private void Recalc()
+        {
+            _average = AllTimes.Select(span => span.TotalMilliseconds).Average();
+        }
 
         public override string ToString()
         {
-            return $"{MethodName}:    Last: {LastTime.TotalMilliseconds} | Mean: {AllTimes.Select(span => span.TotalMilliseconds).Average():F6}";
+            return $"{MethodName}:    Last: {LastTime.TotalMilliseconds} | Mean: {_average:F6} ({AllTimes.Count})";
         }
     }
     
@@ -32,12 +45,12 @@ namespace Quader.Engine
                     LastTime = lastTime
                 };
                 
-                TimeData[methodName].AllTimes.Add(lastTime);
+                TimeData[methodName].Add(lastTime);
             }
             else
             {
                 TimeData[methodName].LastTime = lastTime;
-                TimeData[methodName].AllTimes.Add(lastTime);
+                TimeData[methodName].Add(lastTime);
             }
         }
     }
