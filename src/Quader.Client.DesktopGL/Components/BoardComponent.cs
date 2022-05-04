@@ -61,7 +61,7 @@ namespace Quader.Components
         {
             var size = 32;
             var baseX = 128;
-            var baseY = -(18 * size) + 32;
+            var baseY = -(15 * size);
 
             var piece = _board.CurrentPiece;
             
@@ -200,9 +200,11 @@ namespace Quader.Components
 
             var mp = Input.MousePosition;
 
-            var scaledMp = new Point(((int)mp.X - 128) / 32, ((int)mp.Y - 64) / 32);
+            /*var baseX = 128;
+            var baseY = -(18 * size) + 32;*/
+            var scaledMp = new Point(((int)mp.X - 128) / 32, ((int)mp.Y + 15 * 32) / 32);
 
-            if (scaledMp.X >= 0 && scaledMp.X < _board.Width && scaledMp.Y >= 0 && scaledMp.Y < _board.Height)
+            if (scaledMp.X >= 0 && scaledMp.X < _board.Width && scaledMp.Y >= 0 && scaledMp.Y < _board.TotalHeight)
             {
                 if (Input.LeftMouseButtonDown)
                 {

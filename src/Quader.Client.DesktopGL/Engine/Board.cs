@@ -55,8 +55,8 @@ namespace Quader.Engine
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
 
             if (piece.Type == PieceType.I)
-                piece.Y = 19; // TODO: FIXME
-            else piece.Y = 18;
+                piece.Y = Height - 1; // TODO: FIXME
+            else piece.Y = Height - 2;
         }
 
         public void MoveLeft()
