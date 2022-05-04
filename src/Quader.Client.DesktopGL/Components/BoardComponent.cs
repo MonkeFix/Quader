@@ -50,6 +50,19 @@ namespace Quader.Components
                     _board.SoftDrop();
                 }
             };
+
+            var c = new PieceContainer(10, 40, true);
+
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine($"#{i}");
+                foreach (var a in c)
+                {
+                    Console.Write(i);
+                }
+
+                Console.WriteLine();
+            }
         }
 
         public override void OnAddedToEntity()
@@ -64,6 +77,11 @@ namespace Quader.Components
             var baseY = 64;
 
             var piece = _board.CurrentPiece;
+
+            foreach (var pi in _board.PieceContainer)
+            {
+                
+            }
             
             for (int y = 0; y < _board.Height; y++)
             {
@@ -76,7 +94,7 @@ namespace Quader.Components
 
                     batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
                     
-                    if (p == BoardPieceType.None)
+                    if (p == BoardCellType.None)
                     {
                         batcher.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
@@ -206,11 +224,11 @@ namespace Quader.Components
             {
                 if (Input.LeftMouseButtonDown)
                 {
-                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.Garbage);
+                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardCellType.Garbage);
                 }
                 else if (Input.RightMouseButtonDown)
                 {
-                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardPieceType.None);
+                    _board.SetPieceAt(scaledMp.X, scaledMp.Y, BoardCellType.None);
                 }
             }
             
