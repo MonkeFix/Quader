@@ -6,7 +6,8 @@ namespace Quader.Components
 {
     public class PieceRendererComponent : RenderableComponent
     {
-        public override RectangleF Bounds { get; }
+        public override float Width { get; }
+        public override float Height { get; }
 
         public Board Board { get; }
 
@@ -17,7 +18,8 @@ namespace Quader.Components
             Board = board;
             CellSize = cellSize;
 
-            Bounds = new RectangleF(0, 0, 1000, 1000); // TODO: Change size
+            Width = Board.Width * CellSize;
+            Height = Board.TotalHeight * CellSize;
         }
 
         public override void Render(Batcher batcher, Camera camera)

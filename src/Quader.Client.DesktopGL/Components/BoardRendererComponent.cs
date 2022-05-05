@@ -22,8 +22,8 @@ namespace Quader.Components
             Board = board;
             CellSize = cellSize;
 
-            Width = 2000;// board.Width * CellSize;
-            Height = 2000; //board.Height * CellSize;
+            Width = board.Width * CellSize;
+            Height = board.TotalHeight * CellSize;
         }
 
         public void PushPiece(PieceType type)
@@ -39,9 +39,7 @@ namespace Quader.Components
         public void Update()
         {
             var mp = Input.MousePosition;
-
-            /*var baseX = 128;
-            var baseY = -(18 * size) + 32;*/
+            
             var scaledMp = new Point(
                 (int)(mp.X - Entity.Position.X) / CellSize,
                 (int)(mp.Y - Entity.Position.Y) / CellSize

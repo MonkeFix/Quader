@@ -58,10 +58,12 @@ namespace Quader.Components
 
             ImGui.Separator();
 
-            ImGui.Checkbox("Draw Piece Origin", ref SharedSettings.DrawPieceOrigin);
-            ImGui.Checkbox("Draw Bounding Box", ref SharedSettings.DrawPieceBoundingBox);
-            ImGui.Checkbox("Draw Piece Test Queue", ref SharedSettings.DrawPieceRotationTests);
-
+            if (Core.DebugRenderEnabled)
+            {
+                ImGui.Checkbox("Draw Piece Origin", ref SharedSettings.DrawPieceOrigin);
+                ImGui.Checkbox("Draw Bounding Box", ref SharedSettings.DrawPieceBoundingBox);
+                ImGui.Checkbox("Draw Piece Test Queue", ref SharedSettings.DrawPieceRotationTests);
+            }
             ImGui.Separator();
 
             var c = Board.CurrentPiece;
