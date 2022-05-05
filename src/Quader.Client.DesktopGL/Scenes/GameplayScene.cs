@@ -7,8 +7,10 @@ using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
 using Quader.Components;
+using Quader.Components.Boards;
 using Quader.Debugging.Logging;
 using Quader.Engine;
+using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
 using Quader.Engine.RotationEncoder;
 
@@ -71,11 +73,15 @@ namespace Quader.Scenes
             var board = new Board();
             board.PushPiece(PieceType.T);
 
+            var pieceGenerator = new PieceGeneratorBag7(5);
+
             var boardEntity = new Entity("board-player");
             boardEntity.AddComponent(new BoardRendererComponent(board));
             boardEntity.AddComponent(new PieceRendererComponent(board));
             boardEntity.AddComponent(new PieceHandlerComponent(board));
             boardEntity.AddComponent(new BoardImGuiComponent(board));
+            boardEntity.AddComponent(new PieceQueueComponent(board, pieceGenerator));
+            boardEntity.AddComponent(new HeldPieceComponent(board));
             
             boardEntity.Position = new Vector2(128, -460);
 

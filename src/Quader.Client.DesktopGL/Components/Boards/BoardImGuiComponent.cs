@@ -5,7 +5,7 @@ using Nez.ImGuiTools;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
-namespace Quader.Components
+namespace Quader.Components.Boards
 {
     public class BoardImGuiComponent : Component
     {

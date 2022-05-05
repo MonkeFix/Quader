@@ -3,11 +3,13 @@ using Nez;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
-namespace Quader.Components
+namespace Quader.Components.Boards
 {
     public class PieceHandlerComponent : Component, IUpdatable
     {
         public Board Board { get; }
+
+        private HeldPieceComponent? _heldPiece;
 
         public PieceHandlerComponent(Board board)
         {
@@ -16,6 +18,7 @@ namespace Quader.Components
 
         public override void OnAddedToEntity()
         {
+            _heldPiece = Entity.GetComponent<HeldPieceComponent>();
         }
 
         public void Update()
@@ -51,6 +54,11 @@ namespace Quader.Components
             if (Input.IsKeyPressed(Keys.F))
             {
                 Board.Rotate(Rotation.Deg180);
+            }
+
+            if (Input.IsKeyPressed(Keys.C))
+            {
+                _heldPiece?.HoldPiece();
             }
         }
     }

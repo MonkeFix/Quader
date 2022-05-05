@@ -1,12 +1,9 @@
-﻿using System.Linq;
-using ImGuiNET;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Nez;
-using Nez.ImGuiTools;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
-namespace Quader.Components
+namespace Quader.Components.Boards
 {
     public class BoardRendererComponent : RenderableComponent, IUpdatable
     {

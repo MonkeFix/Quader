@@ -24,8 +24,8 @@ Online stacker puzzle game.
    - [ ] Correct DAS (Delayed Auto Shift)
    - [ ] Correct DCD (DAS Cut Delay)
    - [ ] Correct SDF (Soft Drop Factor)
- - [ ] Add Piece Queue
- - [ ] Implement Bag-7 piece generator
+ - [x] Add Piece Queue
+ - [x] Implement Bag-7 piece generator
  - [ ] Implement a scoring system (combos, quads, etc)
  - [ ] Handle T-Spins (minis, singles, doubles, triples)
  - [ ] Add ColdClearNet bot
