@@ -180,59 +180,38 @@ namespace Quader.Engine.Pieces
 
         protected (PieceRotationType rotationType, Point[] pos) GetRotationTypeByRotation(Rotation rotation)
         {
-            switch (CurrentRotation)
+            return CurrentRotation switch
             {
-                case PieceStartPosition.Initial:
-                    switch (rotation)
-                    {
-                        case Rotation.Clockwise:
-                            return (PieceRotationType.SpawnToRight, RightPos);
-                        case Rotation.CounterClockwise:
-                            return (PieceRotationType.SpawnToLeft, LeftPos);
-                        case Rotation.Deg180:
-                            return (PieceRotationType.RightToDeg180, Deg180Pos);
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
-                    }
-                case PieceStartPosition.RotationClockwise:
-                    switch (rotation)
-                    {
-                        case Rotation.Clockwise:
-                            return (PieceRotationType.RightToDeg180, Deg180Pos);
-                        case Rotation.CounterClockwise:
-                            return (PieceRotationType.RightToSpawn, SpawnPos);
-                        case Rotation.Deg180:
-                            return (PieceRotationType.Deg180ToLeft, LeftPos);
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
-                    }
-                case PieceStartPosition.Rotation180Deg:
-                    switch (rotation)
-                    {
-                        case Rotation.Clockwise:
-                            return (PieceRotationType.Deg180ToLeft, LeftPos);
-                        case Rotation.CounterClockwise:
-                            return (PieceRotationType.Deg180ToRight, RightPos);
-                        case Rotation.Deg180:
-                            return (PieceRotationType.LeftToSpawn, SpawnPos);
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
-                    }
-                case PieceStartPosition.RotationCounterClockwise:
-                    switch (rotation)
-                    {
-                        case Rotation.Clockwise:
-                            return (PieceRotationType.LeftToSpawn, SpawnPos);
-                        case Rotation.CounterClockwise:
-                            return (PieceRotationType.LeftToDeg180, Deg180Pos);
-                        case Rotation.Deg180:
-                            return (PieceRotationType.SpawnToRight, RightPos);
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null);
-                    }
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                PieceStartPosition.Initial => rotation switch
+                {
+                    Rotation.Clockwise => (PieceRotationType.SpawnToRight, RightPos),
+                    Rotation.CounterClockwise => (PieceRotationType.SpawnToLeft, LeftPos),
+                    Rotation.Deg180 => (PieceRotationType.RightToDeg180, Deg180Pos),
+                    _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
+                },
+                PieceStartPosition.RotationClockwise => rotation switch
+                {
+                    Rotation.Clockwise => (PieceRotationType.RightToDeg180, Deg180Pos),
+                    Rotation.CounterClockwise => (PieceRotationType.RightToSpawn, SpawnPos),
+                    Rotation.Deg180 => (PieceRotationType.Deg180ToLeft, LeftPos),
+                    _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
+                },
+                PieceStartPosition.Rotation180Deg => rotation switch
+                {
+                    Rotation.Clockwise => (PieceRotationType.Deg180ToLeft, LeftPos),
+                    Rotation.CounterClockwise => (PieceRotationType.Deg180ToRight, RightPos),
+                    Rotation.Deg180 => (PieceRotationType.LeftToSpawn, SpawnPos),
+                    _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
+                },
+                PieceStartPosition.RotationCounterClockwise => rotation switch
+                {
+                    Rotation.Clockwise => (PieceRotationType.LeftToSpawn, SpawnPos),
+                    Rotation.CounterClockwise => (PieceRotationType.LeftToDeg180, Deg180Pos),
+                    Rotation.Deg180 => (PieceRotationType.SpawnToRight, RightPos),
+                    _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
+                },
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         protected void RotateRight()

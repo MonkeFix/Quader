@@ -79,7 +79,7 @@ namespace Quader.Components.Boards
 
             var curPos = piece.CurrentPos;
 
-            // Draw piece itself
+            // Draw the piece itself
             foreach (var p in curPos)
             {
                 var drawX = baseX + (p.X) * size;

@@ -48,7 +48,7 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            var y = 220;
+            var y = Entity.Position.Y + 700;
 
             //batcher.DrawRect(baseX, baseY, 128, 128 * 5, Color.Black);
 
@@ -73,9 +73,9 @@ namespace Quader.Components.Boards
             _queue.Enqueue(PieceGenerator.Generate());
         }
 
-        private void DrawPiece(Batcher batcher, PieceBase piece, int y)
+        private void DrawPiece(Batcher batcher, PieceBase piece, float y)
         {
-            var baseX = 128 + 10 * 32 + 80;
+            var baseX = Entity.Position.X + Board.Width * 32 + 80;
             if (piece.Type == PieceType.I || piece.Type == PieceType.O)
                 baseX += 32;
 
@@ -87,8 +87,8 @@ namespace Quader.Components.Boards
             // Draw piece itself
             foreach (var p in curPos)
             {
-                var drawX = baseX + (p.X + piece.X) * size;
-                var drawY = baseY + (p.Y + piece.Y) * size;
+                var drawX = baseX + p.X * size;
+                var drawY = baseY + p.Y * size;
 
                 batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(piece.Type));
                 //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);

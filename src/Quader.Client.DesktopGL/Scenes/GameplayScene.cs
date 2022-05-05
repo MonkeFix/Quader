@@ -82,8 +82,9 @@ namespace Quader.Scenes
             boardEntity.AddComponent(new BoardImGuiComponent(board));
             boardEntity.AddComponent(new PieceQueueComponent(board, pieceGenerator));
             boardEntity.AddComponent(new HeldPieceComponent(board));
-            
-            boardEntity.Position = new Vector2(128, -460);
+
+
+            boardEntity.Position = new Vector2(150, -500);
 
             AddEntity(boardEntity);
 
