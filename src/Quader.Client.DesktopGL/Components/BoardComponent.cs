@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -8,9 +11,26 @@ using Nez.ImGuiTools;
 using Nez.ImGuiTools.ObjectInspectors;
 using Quader.Engine;
 using Quader.Engine.Pieces;
+using Quader.InputMgr;
 
 namespace Quader.Components
 {
+    public class MoveLeftCommand : IInputCommand<Board>
+    {
+        public void Execute(Board entity)
+        {
+            entity.MoveLeft();
+        }
+    }
+    
+    public class MoveRightCommand : IInputCommand<Board>
+    {
+        public void Execute(Board entity)
+        {
+            entity.MoveRight();
+        }
+    }
+
     public class BoardComponent : RenderableComponent, IUpdatable
     {
         public override float Width => 800;
@@ -20,11 +40,31 @@ namespace Quader.Components
 
         private KeyboardListener _keyboardListener;
 
+        private Task _inputTask;
+
+        private int _x;
+
+        private bool _isLeftDown;
+        private bool _isRightDown;
+
+        private IInputCommand<Board> _moveLeft;
+        private IInputCommand<Board> _moveRight;
+
+        private InputHandler<Keys, Board> _inputHandler;
+
         public BoardComponent()
         {
             _board = new Board();
             
             _board.PushPiece(PieceType.T);
+
+            _moveLeft = new MoveLeftCommand();
+            _moveRight = new MoveRightCommand();
+            
+            _inputHandler = new InputHandler<Keys, Board>();
+            
+            _inputHandler.Register(Keys.Q, Input.IsKeyPressed, _moveLeft);
+            _inputHandler.Register(Keys.W, Input.IsKeyPressed, _moveRight);
 
             _keyboardListener = new KeyboardListener(new KeyboardListenerSettings
             {
@@ -50,6 +90,25 @@ namespace Quader.Components
                     _board.SoftDrop();
                 }
             };
+
+            _inputTask = Task.Run(() =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        
+                        /*if (_isRightDown)
+                            _board.MoveRight();
+                        if (_isLeftDown)
+                            _board.MoveLeft();*/
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            });
         }
 
         public override void OnAddedToEntity()
@@ -128,7 +187,7 @@ namespace Quader.Components
                 int dropY = 0;
 
                 _lastNearestY = Debug.TimeAction(() => dropY = _board.FindNearestY());
-                GlobalTimeManager.AddData("BoardComponent.FindNearestY", _lastNearestY);
+                GlobalTimeManager.AddData("FindNearestY", _lastNearestY);
 
                 var curX = _board.CurrentPiece.X;
                 var curY = dropY;
@@ -162,6 +221,8 @@ namespace Quader.Components
         {
             if (GameRoot.GameTime != null)
                 _keyboardListener.Update(GameRoot.GameTime);
+
+            _inputHandler.Handle(_board);
             
             if (Input.IsKeyPressed(Keys.Space))
             {
@@ -171,22 +232,32 @@ namespace Quader.Components
                 _board.HardDrop();
             }
             
-            /*if (Input.IsKeyDown(Keys.Down))
-            {
-                //_piece.Y += 1;
-                
-                _board.SoftDrop();
-            }
+            // if (Input.IsKeyDown(Keys.Down))
+            // {
+            //     //_piece.Y += 1;
+            //     
+            //     _board.SoftDrop();
+            // }
+            //
+            // if (Input.IsKeyDown(Keys.Left))
+            // {
+            //     _board.MoveLeft();
+            // }
+            //
+            // if (Input.IsKeyDown(Keys.Right))
+            // {
+            //     _board.MoveRight();
+            // }
 
-            if (Input.IsKeyDown(Keys.Left))
-            {
-                _board.MoveLeft();
-            }
-
-            if (Input.IsKeyDown(Keys.Right))
-            {
-                _board.MoveRight();
-            }*/
+            if (Input.IsKeyPressed(Keys.Left))
+                _isLeftDown = true;
+            if (Input.IsKeyPressed(Keys.Right))
+                _isRightDown = true;
+            
+            if (Input.IsKeyReleased(Keys.Left))
+                _isLeftDown = false;
+            if (Input.IsKeyReleased(Keys.Right))
+                _isRightDown = false;
 
             if (Input.IsKeyPressed(Keys.X))
             {
@@ -250,6 +321,7 @@ namespace Quader.Components
         {
             ImGui.Begin("Piece Handling");
 
+            ImGui.Text("A: " + _x);
             ImGui.Text($"Time Data:");
 
             var vals = GlobalTimeManager.TimeData.Values;
@@ -257,6 +329,23 @@ namespace Quader.Components
             {
                 ImGui.Text(val.ToString());
             }
+
+            var totalLast = vals.Select(data => data.LastTime);
+            var totalMean = vals.Select(data => data._average);
+
+            double tl = 0, tm = 0;
+
+            foreach (var l in totalLast)
+            {
+                tl += l.TotalMilliseconds;
+            }
+
+            foreach (var timeSpan in totalMean)
+            {
+                tm += timeSpan;
+            }
+
+            ImGui.Text($"Total: Last: {tl:F6}, Mean: {tm:F6}");
 
             ImGui.Separator();
             

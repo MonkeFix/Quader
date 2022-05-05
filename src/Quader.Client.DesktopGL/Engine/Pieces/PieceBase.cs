@@ -84,6 +84,9 @@ namespace Quader.Engine.Pieces
                 _bounds = GetBounds();
             }
         }
+        
+        public float AbsoluteX { get; set; }
+        public float AbsoluteY { get; set; }
 
         public PieceStartPosition CurrentRotation { get; set; } = PieceStartPosition.Initial;
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Nez;
+using Nez.Systems;
 using Quader.Debugging.Logging;
 using Quader.Debugging.Logging.Loggers;
 using Quader.Scenes;
@@ -12,7 +14,7 @@ namespace Quader
     {
 
         public static GameTime GameTime { get; private set; }
-        
+
         public GameRoot()
             : base(windowTitle: "Quader")
         {
@@ -25,7 +27,7 @@ namespace Quader
                 new DrawableLogger(Color.Black, 10f, 3f),
                 new FileLogger()
             };
-
+            
             IsFixedTimeStep = false;
             TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 240.0);
         }

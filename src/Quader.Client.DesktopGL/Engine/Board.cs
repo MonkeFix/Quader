@@ -5,10 +5,11 @@ using Nez;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.RotationEncoder;
+using Quader.InputMgr;
 
 namespace Quader.Engine
 {
-    public class Board
+    public class Board : IInputHandleable
     {
         /// <summary>
         /// Extra height of the board. Used for cases when player receives garbage with ability to spawn a new piece.
@@ -57,36 +58,36 @@ namespace Quader.Engine
                 piece.X = (int) Math.Round((Width - 1) / 2.0);
 
             if (piece.Type == PieceType.I)
-                piece.Y = Height - 1; // TODO: FIXME
+                piece.Y = Height - 1; 
             else piece.Y = Height - 2;
         }
 
-        public void MoveLeft()
+        public void MoveLeft(int delta = 1)
         {
             var t = Debug.TimeAction(() =>
             {
-                if (TestMovement(-1, 0))
-                    CurrentPiece.X -= 1;
+                if (TestMovement(-delta, 0))
+                    CurrentPiece.X -= delta;
             });
             GlobalTimeManager.AddData("MoveLeft", t);
         }
 
-        public void MoveRight()
+        public void MoveRight(int delta = 1)
         {
             var t = Debug.TimeAction(() =>
             {
-                if (TestMovement(1, 0))
-                    CurrentPiece.X += 1;
+                if (TestMovement(delta, 0))
+                    CurrentPiece.X += delta;
             });
             GlobalTimeManager.AddData("MoveRight", t);
         }
 
-        public void SoftDrop()
+        public void SoftDrop(int delta = 1)
         {
             var t = Debug.TimeAction(() =>
             {
-                if (TestMovement(0, 1))
-                    CurrentPiece.Y += 1;
+                if (TestMovement(0, delta))
+                    CurrentPiece.Y += delta;
             });
             GlobalTimeManager.AddData("SoftDrop", t);
         }
@@ -124,6 +125,8 @@ namespace Quader.Engine
 
         public int FindNearestY()
         {
+            //return 20;
+
             var y = Math.Max(CurrentPiece.Y, 0);
 
             for (int i = y; i <= TotalHeight; i++)

@@ -12,7 +12,7 @@ namespace Quader.Engine
         public TimeSpan MeanTime { get; set; }
 
         private List<TimeSpan> AllTimes { get; } = new ();
-        private double _average;
+        public double _average;
 
         public void Add(TimeSpan ts)
         {
