@@ -40,6 +40,8 @@ namespace Quader.Scenes
 
         public GameplayScene()
         {
+            _logger.Debug("Constructing, adding renderer");
+
             AddRenderer(new ScreenSpaceRenderer(100, ScreenSpaceRenderLayer));
             AddRenderer(new RenderLayerExcludeRenderer(0, ScreenSpaceRenderLayer));
         }
@@ -64,6 +66,8 @@ namespace Quader.Scenes
 
             LoadSrs();
 
+            _logger.Debug("Creating Board Entity...");
+
             var board = new Board();
             board.PushPiece(PieceType.T);
 
@@ -76,6 +80,8 @@ namespace Quader.Scenes
             boardEntity.Position = new Vector2(128, -460);
 
             AddEntity(boardEntity);
+
+            _logger.Debug("Done initializing");
         }
 
         public override void Update()
@@ -85,6 +91,8 @@ namespace Quader.Scenes
 
         private void LoadSrs()
         {
+            _logger.Debug("Loading Rotation Tables..");
+
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));
 
             using (var sw = new StreamWriter("srs.json", false))
@@ -106,12 +114,16 @@ namespace Quader.Scenes
 
 
             using var sr2 = new StreamWriter("srs_table.json");
-            sr2.WriteLine(Json.ToJson(new
-            {
-                DefaultPiece = PieceUtils.DefaultWallKickData,
-                IPiece = PieceUtils.PieceIWallKickData,
-                OPiece = PieceUtils.PieceOWallKickData
-            }));
+            sr2.WriteLine(Json.ToJson(
+                new RotationTableTests
+                {
+                    DefaultWallKickData = PieceUtils.DefaultWallKickData,
+                    PieceIWallKickData = PieceUtils.PieceIWallKickData,
+                    PieceOWallKickData = PieceUtils.PieceOWallKickData
+                }
+                , true));
+
+            _logger.Debug("Done loading Rotation Tables");
         }
     }
 }

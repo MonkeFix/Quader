@@ -47,7 +47,7 @@ namespace Quader.Engine.Pieces
 
         private Rectangle? _bounds = null;
         
-        public Color BaseColor => PieceUtils.GetColorByPieceType(Type);
+        public virtual Color BaseColor => PieceUtils.GetColorByPieceType(Type);
 
         public Point[] CurrentPos
         {
@@ -129,7 +129,7 @@ namespace Quader.Engine.Pieces
             _bounds = GetBounds();
         }
 
-        private void RotateSimple(Rotation rotation)
+        protected void RotateSimple(Rotation rotation)
         {
             switch (rotation)
             {
@@ -170,7 +170,7 @@ namespace Quader.Engine.Pieces
             return new Rectangle(x + minX, y + minY, w, h);
         }
 
-        private Point[] GetWallKickByRotation(Rotation rotation, out Point[] expectedPos)
+        protected Point[] GetWallKickByRotation(Rotation rotation, out Point[] expectedPos)
         {
             var res = GetRotationTypeByRotation(rotation);
             expectedPos = res.pos;
@@ -178,7 +178,7 @@ namespace Quader.Engine.Pieces
             return WallKickData[res.rotationType];
         }
 
-        private (PieceRotationType rotationType, Point[] pos) GetRotationTypeByRotation(Rotation rotation)
+        protected (PieceRotationType rotationType, Point[] pos) GetRotationTypeByRotation(Rotation rotation)
         {
             switch (CurrentRotation)
             {
@@ -235,7 +235,7 @@ namespace Quader.Engine.Pieces
             }
         }
 
-        private void RotateRight()
+        protected void RotateRight()
         {
             CurrentRotation = CurrentRotation switch
             {
@@ -247,7 +247,7 @@ namespace Quader.Engine.Pieces
             };
         }
 
-        private void RotateLeft()
+        protected void RotateLeft()
         {
             CurrentRotation = CurrentRotation switch
             {
