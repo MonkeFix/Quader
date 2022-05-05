@@ -8,6 +8,8 @@ using Nez.ImGuiTools;
 using Nez.Persistence;
 using Quader.Components;
 using Quader.Debugging.Logging;
+using Quader.Engine;
+using Quader.Engine.Pieces;
 using Quader.Engine.RotationEncoder;
 
 namespace Quader.Scenes
@@ -46,12 +48,12 @@ namespace Quader.Scenes
         {
             base.Initialize();
 
-            _logger.Trace("Initializing");
+            //_logger.Trace("Initializing");
             _logger.Debug("Initializing");
-            _logger.Info("Initializing");
+            /*_logger.Info("Initializing");
             _logger.Warn("Initializing");
             _logger.Error("Initializing");
-            _logger.Critical("Initializing");
+            _logger.Critical("Initializing");*/
 
 
             var imGuiManager = new ImGuiManager();
@@ -60,6 +62,29 @@ namespace Quader.Scenes
             SetDesignResolution(Width, Height, SceneResolutionPolicy.BestFit);
             Screen.SetSize(1920, 1080);
 
+            LoadSrs();
+
+            var board = new Board();
+            board.PushPiece(PieceType.T);
+
+            var boardEntity = new Entity("board-player");
+            boardEntity.AddComponent(new BoardRendererComponent(board));
+            boardEntity.AddComponent(new PieceRendererComponent(board));
+            boardEntity.AddComponent(new PieceHandlerComponent(board));
+            boardEntity.AddComponent(new BoardImGuiComponent(board));
+            
+            boardEntity.Position = new Vector2(128, -460);
+
+            AddEntity(boardEntity);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+        }
+
+        private void LoadSrs()
+        {
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));
 
             using (var sw = new StreamWriter("srs.json", false))
@@ -78,19 +103,15 @@ namespace Quader.Scenes
                 var content = sr.ReadToEnd();
                 rst = Json.FromJson<RotationSystemTable>(content);
             }
-            
 
-            /*var e = new Entity("test").AddComponent<TestComponent>();
 
-            AddEntity(e.Entity);*/
-
-            var e2 = new Entity("board").AddComponent(new BoardComponent());
-            AddEntity(e2.Entity);
-        }
-
-        public override void Update()
-        {
-            base.Update();
+            using var sr2 = new StreamWriter("srs_table.json");
+            sr2.WriteLine(Json.ToJson(new
+            {
+                DefaultPiece = PieceUtils.DefaultWallKickData,
+                IPiece = PieceUtils.PieceIWallKickData,
+                OPiece = PieceUtils.PieceOWallKickData
+            }));
         }
     }
 }

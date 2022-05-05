@@ -21,7 +21,13 @@ namespace Quader.Engine
         public int TotalHeight { get; }
         
         public Queue<Point[]> TestQueue { get; } = new ();
-        
+
+        public event EventHandler<PieceBase>? PieceHardDropped;
+        public event EventHandler<PieceBase>? PiecePushed;
+        public event EventHandler<PieceMovedEventArgs>? PieceMoved;
+        public event EventHandler<PieceBase>? PieceRotated;
+        public event EventHandler<int>? LinesCleared; 
+
 
         private readonly BoardCellContainer _cellContainer;
 
@@ -43,9 +49,16 @@ namespace Quader.Engine
             var pf = new PieceFactory();
             var piece = pf.Create(type);
 
+            PushPiece(piece);
+        }
+
+        public void PushPiece(PieceBase piece)
+        {
             ResetPiece(piece);
-            
+
             CurrentPiece = piece;
+
+            PiecePushed?.Invoke(this, CurrentPiece);
         }
 
         public void ResetPiece(PieceBase piece)
@@ -70,6 +83,8 @@ namespace Quader.Engine
                     CurrentPiece.X -= delta;
             });
             GlobalTimeManager.AddData("MoveLeft", t);
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
         public void MoveRight(int delta = 1)
@@ -80,6 +95,8 @@ namespace Quader.Engine
                     CurrentPiece.X += delta;
             });
             GlobalTimeManager.AddData("MoveRight", t);
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
         public void SoftDrop(int delta = 1)
@@ -90,9 +107,16 @@ namespace Quader.Engine
                     CurrentPiece.Y += delta;
             });
             GlobalTimeManager.AddData("SoftDrop", t);
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
-        public void HardDrop()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>Lines cleared after the hard drop</returns>
+        /// <exception cref="Exception"></exception>
+        public int HardDrop()
         {
             var t = Debug.TimeAction(() =>
             {
@@ -102,14 +126,20 @@ namespace Quader.Engine
                     throw new Exception("Something went wrong while applying the piece");
             });
 
-            var t2 = Debug.TimeAction(() => CheckLineClears());
+            int linesCleared = 0;
+
+            var t2 = Debug.TimeAction(() => linesCleared = CheckLineClears());
+
+            PieceHardDropped?.Invoke(this, CurrentPiece);
 
             ResetPiece(CurrentPiece);
-            
+
             GlobalTimeManager.AddData("HardDrop", t);
             GlobalTimeManager.AddData("CheckLineClears", t2);
-        }
 
+            return linesCleared;
+        }
+        
         public void Rotate(Rotation rotation)
         {
             var t = Debug.TimeAction(() =>
@@ -121,6 +151,8 @@ namespace Quader.Engine
                 });
             });
             GlobalTimeManager.AddData("Rotate", t);
+
+            PieceRotated?.Invoke(this, CurrentPiece);
         }
 
         public int FindNearestY()
@@ -145,7 +177,7 @@ namespace Quader.Engine
         public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
         public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
         public void SetCellAt(int x, int y, BoardCellType cell) => _cellContainer.SetCellAt(x, y, cell);
-        
+        public bool IsOutOfBounds(Point p) => _cellContainer.IsOutOfBounds(p);
         
         private bool TestMovement(int xOffset, int yOffset)
         {
@@ -177,6 +209,9 @@ namespace Quader.Engine
                     MoveDown(y);
                 }
             }
+
+            if (linesCleared > 0)
+                LinesCleared?.Invoke(this, linesCleared);
 
             return linesCleared;
         }
