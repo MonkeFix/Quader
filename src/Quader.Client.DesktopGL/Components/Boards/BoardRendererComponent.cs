@@ -1,7 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.Pieces;
+using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
@@ -14,10 +17,15 @@ namespace Quader.Components.Boards
 
         public Board Board { get; }
 
-        public BoardRendererComponent(Board board, int cellSize = 32)
+        private BoardSkin _boardSkin;
+
+        public BoardRendererComponent(Board board)
         {
             Board = board;
-            CellSize = cellSize;
+            var skin = Core.Services.GetService<Skin>();
+            _boardSkin = skin.Get<BoardSkin>();
+
+            CellSize = _boardSkin.CellSize;
 
             Width = board.Width * CellSize;
             Height = board.TotalHeight * CellSize;
@@ -67,7 +75,7 @@ namespace Quader.Components.Boards
         {
             var size = CellSize;
             var baseX = Entity.Position.X;
-            var baseY = Entity.Position.Y;
+            var baseY = Entity.Position.Y - Board.ExtraHeight * size;
 
             for (int y = 0; y < Board.TotalHeight; y++)
             {
@@ -79,16 +87,21 @@ namespace Quader.Components.Boards
                     var drawY = baseY + y * size;
 
                     if (y >= Board.Height)
+                        //batcher.Draw(_boardSkin[]);
                         batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
 
                     if (p == BoardCellType.None)
                     {
                         if (y >= Board.Height)
+                            //batcher.Draw(_boardSkin[]);
                             batcher.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
                     else
                     {
-                        batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardCell(p));
+                        //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardCell(p));
+                        batcher.Draw(_boardSkin[p], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero,
+                            Vector2.One, SpriteEffects.None, 0);
+                        //batcher.Draw
                     }
                 }
             }
@@ -98,7 +111,7 @@ namespace Quader.Components.Boards
         {
             var size = CellSize;
             var baseX = Entity.Position.X;
-            var baseY = Entity.Position.Y;
+            var baseY = Entity.Position.Y - Board.ExtraHeight * size;
 
             if (SharedSettings.CurrentTest != null)
             {

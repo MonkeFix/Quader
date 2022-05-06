@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
+using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
@@ -18,12 +22,15 @@ namespace Quader.Components.Boards
 
         public PieceBase NextPiece { get; private set; } = null!;
 
+        private readonly BoardSkin _boardSkin;
+
         public PieceQueueComponent(Board board, IPieceGenerator pieceGenerator)
         {
             Width = 1000;
             Height = 1000;
 
             Board = board;
+            _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
             PieceGenerator = pieceGenerator;
             _queue = new Queue<PieceBase>();
 
@@ -48,7 +55,7 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            var y = Entity.Position.Y + 700;
+            var y = Entity.Position.Y;
 
             //batcher.DrawRect(baseX, baseY, 128, 128 * 5, Color.Black);
 
@@ -90,7 +97,8 @@ namespace Quader.Components.Boards
                 var drawX = baseX + p.X * size;
                 var drawY = baseY + p.Y * size;
 
-                batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(piece.Type));
+                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(piece.Type));
                 //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
             }
         }

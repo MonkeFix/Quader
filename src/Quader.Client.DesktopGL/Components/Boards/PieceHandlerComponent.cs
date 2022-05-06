@@ -11,9 +11,27 @@ namespace Quader.Components.Boards
 
         private HeldPieceComponent? _heldPiece;
 
+        private VirtualIntegerAxis _moveInput;
+        private VirtualButton _rotateClockwise;
+        private VirtualButton _rotateCounterClockwise;
+
+        private VirtualButton _moveLeft;
+        private VirtualButton _moveRight;
+
         public PieceHandlerComponent(Board board)
         {
             Board = board;
+
+            _moveInput = new VirtualIntegerAxis()
+                .AddGamePadDPadLeftRight()
+                .AddGamePadLeftStickX()
+                .AddKeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.Left, Keys.Right);
+
+
+            _moveLeft = new VirtualButton().AddKeyboardKey(Keys.Left);
+            _moveLeft.SetRepeat(0.15f, 0.0000001f);
+            _moveRight = new VirtualButton().AddKeyboardKey(Keys.Right);
+            _moveRight.SetRepeat(0.1f, 0.0000001f);
         }
 
         public override void OnAddedToEntity()
@@ -28,7 +46,7 @@ namespace Quader.Components.Boards
                 var linesCleared = Board.HardDrop();
             }
 
-            if (Input.IsKeyPressed(Keys.Left))
+            /*if (Input.IsKeyPressed(Keys.Left))
             {
                 Board.MoveLeft();
             }
@@ -36,7 +54,17 @@ namespace Quader.Components.Boards
             if (Input.IsKeyPressed(Keys.Right))
             {
                 Board.MoveRight();
-            }
+            }*/
+
+            if (_moveLeft.IsPressed || _moveLeft.IsRepeating)
+                Board.MoveLeft();
+
+            if (_moveRight.IsPressed || _moveRight.IsRepeating)
+                Board.MoveRight();
+
+            /*var dir = _moveInput.Value;
+            if (dir != 0)
+                Board.Move(dir);*/
 
             if (Input.IsKeyDown(Keys.Down))
             {

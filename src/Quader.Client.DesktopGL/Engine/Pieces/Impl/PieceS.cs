@@ -5,6 +5,7 @@ namespace Quader.Engine.Pieces.Impl
     public class PieceS : PieceBase
     {
         public override PieceType Type => PieceType.S;
+        public override BoardCellType BoardCellType => BoardCellType.S;
         protected override Point[] SpawnPos { get; }
         protected override Point[] RightPos { get; }
         protected override Point[] Deg180Pos { get; }

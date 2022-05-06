@@ -15,6 +15,7 @@ namespace Quader.Engine.Pieces
     public abstract class PieceBase
     {
         public abstract PieceType Type { get; }
+        public abstract BoardCellType BoardCellType { get; }
         /// <summary>
         /// Gets occupied piece cells for the <b>Spawn</b> position, where (0,0) is the origin
         /// </summary>

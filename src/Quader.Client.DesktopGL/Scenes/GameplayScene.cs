@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
+using Nez.UI;
 using Quader.Components;
 using Quader.Components.Boards;
 using Quader.Debugging.Logging;
@@ -13,6 +14,7 @@ using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
 using Quader.Engine.RotationEncoder;
+using Quader.Skinning;
 
 namespace Quader.Scenes
 {
@@ -51,14 +53,8 @@ namespace Quader.Scenes
         public override void Initialize()
         {
             base.Initialize();
-
-            //_logger.Trace("Initializing");
+            
             _logger.Debug("Initializing");
-            /*_logger.Info("Initializing");
-            _logger.Warn("Initializing");
-            _logger.Error("Initializing");
-            _logger.Critical("Initializing");*/
-
 
             var imGuiManager = new ImGuiManager();
             Core.RegisterGlobalManager(imGuiManager);
@@ -84,13 +80,13 @@ namespace Quader.Scenes
             boardEntity.AddComponent(new HeldPieceComponent(board));
 
 
-            boardEntity.Position = new Vector2(150, -500);
+            boardEntity.Position = new Vector2(256, 128/*-500*/);
 
             AddEntity(boardEntity);
 
             _logger.Debug("Done initializing");
         }
-
+        
         public override void Update()
         {
             base.Update();

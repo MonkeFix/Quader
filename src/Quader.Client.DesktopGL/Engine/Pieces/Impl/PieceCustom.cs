@@ -6,6 +6,8 @@ namespace Quader.Engine.Pieces.Impl
     public class PieceCustom : PieceBase
     {
         public override PieceType Type => PieceType.Custom;
+        public override BoardCellType BoardCellType { get; }
+
         protected override Point[] SpawnPos { get; }
         protected override Point[] RightPos { get; }
         protected override Point[] Deg180Pos { get; }
@@ -20,7 +22,8 @@ namespace Quader.Engine.Pieces.Impl
             Point[] spawn, Point[] right, Point[] deg180, Point[] left,
             OffsetType offsetType = OffsetType.Cell,
             Dictionary<PieceRotationType, Point[]>? wallKickData = null,
-            Color? baseColor = null)
+            Color? baseColor = null,
+            BoardCellType cellType = BoardCellType.Garbage)
         {
             SpawnPos = spawn;
             RightPos = right;
@@ -28,6 +31,7 @@ namespace Quader.Engine.Pieces.Impl
             LeftPos = left;
 
             OffsetType = offsetType;
+            BoardCellType = cellType;
 
             WallKickData = wallKickData ?? PieceUtils.DefaultWallKickData;
             BaseColor = baseColor ?? PieceUtils.ColorGarbage;

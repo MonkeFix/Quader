@@ -99,6 +99,14 @@ namespace Quader.Engine
             PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
+        public void Move(int direction)
+        {
+            if (TestMovement(direction, 0))
+                CurrentPiece.X += direction;
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(direction, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+        }
+
         public void SoftDrop(int delta = 1)
         {
             var t = Debug.TimeAction(() =>

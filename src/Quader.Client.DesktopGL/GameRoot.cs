@@ -4,17 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Systems;
+using Nez.UI;
 using Quader.Debugging.Logging;
 using Quader.Debugging.Logging.Loggers;
 using Quader.Scenes;
+using Quader.Skinning;
 
 namespace Quader
 {
     public class GameRoot : Core
     {
-
-        public static GameTime GameTime { get; private set; }
-
         public GameRoot()
             : base(windowTitle: "Quader")
         {
@@ -36,14 +35,23 @@ namespace Quader
         {
             base.Initialize();
 
+            Skin skin = Skin.CreateDefaultSkin();
+
+            var skinTexture = Content.LoadTexture("skins/default");
+            skin.Add("board_skin", new BoardSkin(skinTexture));
+            Services.AddService(typeof(Skin), skin);
+
             Scene = new GameplayScene();
+        }
+
+        protected override void LoadContent()
+        {
+            base.LoadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
-            GameTime = gameTime;
         }
     }
 }
