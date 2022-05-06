@@ -20,11 +20,12 @@ namespace Quader.Components.Boards
 
         private int _ghostY;
 
-        public PieceRendererComponent(Board board, int cellSize = 32)
+        public PieceRendererComponent(Board board)
         {
             Board = board;
-            CellSize = cellSize;
+            
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
+            CellSize = _boardSkin.CellSize;
 
             Width = Board.Width * CellSize;
             Height = Board.TotalHeight * CellSize;

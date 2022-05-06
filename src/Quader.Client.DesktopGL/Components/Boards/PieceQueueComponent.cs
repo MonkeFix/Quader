@@ -55,7 +55,7 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            var y = Entity.Position.Y;
+            var y = Entity.Position.Y + 92;
 
             //batcher.DrawRect(baseX, baseY, 128, 128 * 5, Color.Black);
 

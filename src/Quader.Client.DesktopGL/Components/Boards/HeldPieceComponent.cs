@@ -84,7 +84,7 @@ namespace Quader.Components.Boards
             if (piece.Type == PieceType.I || piece.Type == PieceType.O)
                 baseX += 32;
 
-            var baseY = Entity.Position.Y;
+            var baseY = Entity.Position.Y + 92;
             var size = 32;
 
             var curPos = piece.CurrentPos;

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
+using Nez.Sprites;
 using Nez.UI;
 using Quader.Components;
 using Quader.Components.Boards;
@@ -71,7 +72,11 @@ namespace Quader.Scenes
 
             var pieceGenerator = new PieceGeneratorBag7(5);
 
+            var boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
+
             var boardEntity = new Entity("board-player");
+            var br = boardEntity.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
+            br.Origin = new Vector2(188, 0);
             boardEntity.AddComponent(new BoardRendererComponent(board));
             boardEntity.AddComponent(new PieceRendererComponent(board));
             boardEntity.AddComponent(new PieceHandlerComponent(board));

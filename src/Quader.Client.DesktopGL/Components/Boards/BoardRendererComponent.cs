@@ -71,7 +71,13 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            batcher.Draw(_renderTarget, Entity.Position, null, Color.White, 0f, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);
+            batcher.Draw(_renderTarget, Entity.Position, null, Color.White, Entity.Rotation, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);
+        }
+
+        public override void DebugRender(Batcher batcher)
+        {
+            if (SharedSettings.DrawPieceRotationTests)
+                RenderRotationTests(batcher);
         }
 
         private void RenderToTexture()
@@ -82,10 +88,8 @@ namespace Quader.Components.Boards
             Core.GraphicsDevice.Clear(Color.Transparent);
 
             _spriteBatch.Begin();
-            RenderCells(_spriteBatch);
 
-            //if (SharedSettings.DrawPieceRotationTests)
-            //    RenderRotationTests(batcher);
+            RenderCells(_spriteBatch);
 
             _spriteBatch.End();
 

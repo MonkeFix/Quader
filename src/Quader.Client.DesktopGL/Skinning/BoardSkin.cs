@@ -12,11 +12,14 @@ namespace Quader.Skinning
 
         public Sprite this[BoardCellType type] => _pieceSpriteMap[type];
 
+        public Texture2D BoardTexture { get; }
+
         public int CellSize { get; }
         public readonly int Count = 12;
 
-        public BoardSkin(Texture2D skinTexture)
+        public BoardSkin(Texture2D skinTexture, Texture2D boardTexture)
         {
+            BoardTexture = boardTexture;
             _pieceSpriteMap = new Dictionary<BoardCellType, Sprite>(Count);
             _spriteList = new List<Sprite>(Count);
 
