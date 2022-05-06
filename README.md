@@ -18,6 +18,7 @@ Online stacker puzzle game.
    - [ ] `HardDrop()` and `Rotate()` are relatively slow (0.02ms and 0.05ms respectively)
  - [ ] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [ ] Move SRS tables to a JSON file
+ - [x] Add skins
  - [ ] Add correct input handling
    - [ ] Handling simultaneous key presses
    - [ ] Correct ARR (Automatic Repeat Rate)
