@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Quader.Engine.Pieces;
@@ -26,8 +27,8 @@ namespace Quader.Engine
         public event EventHandler<PieceBase>? PiecePushed;
         public event EventHandler<PieceMovedEventArgs>? PieceMoved;
         public event EventHandler<PieceBase>? PieceRotated;
-        public event EventHandler<int>? LinesCleared; 
-
+        public event EventHandler<int>? LinesCleared;
+        public event EventHandler? BoardChanged;
 
         private readonly BoardCellContainer _cellContainer;
 
@@ -148,12 +149,6 @@ namespace Quader.Engine
             return linesCleared;
         }
 
-        public void HoldPiece()
-        {
-            
-        }
-
-
         public void Rotate(Rotation rotation)
         {
             var t = Debug.TimeAction(() =>
@@ -171,8 +166,6 @@ namespace Quader.Engine
 
         public int FindNearestY()
         {
-            //return 20;
-
             var y = Math.Max(CurrentPiece.Y, 0);
 
             for (int i = y; i <= TotalHeight; i++)
@@ -190,7 +183,23 @@ namespace Quader.Engine
         public void MoveUp() => _cellContainer.MoveUp();
         public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
         public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
-        public void SetCellAt(int x, int y, BoardCellType cell) => _cellContainer.SetCellAt(x, y, cell);
+
+        public void SetCellAt(int x, int y, BoardCellType cell)
+        {
+            _cellContainer.SetCellAt(x, y, cell);
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void SetCellAtRange(KeyValuePair<Point, BoardCellType>[] cells)
+        {
+            foreach (var kv in cells)
+            {
+                _cellContainer.SetCellAt(kv.Key.X, kv.Key.Y, kv.Value);
+            }
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         public bool IsOutOfBounds(Point p) => _cellContainer.IsOutOfBounds(p);
         
         private bool TestMovement(int xOffset, int yOffset)
@@ -225,7 +234,10 @@ namespace Quader.Engine
             }
 
             if (linesCleared > 0)
+            {
                 LinesCleared?.Invoke(this, linesCleared);
+                BoardChanged?.Invoke(this, EventArgs.Empty);
+            }
 
             return linesCleared;
         }
@@ -287,12 +299,18 @@ namespace Quader.Engine
             foreach (var point in adjusted)
             {
                 var piece = GetCellAt(point.X, point.Y);
+
                 if (piece != BoardCellType.None)
                     return false;
-                
-                // TODO: Convert properly
-                SetCellAt(point.X, point.Y, (BoardCellType)(((int)CurrentPiece.Type) + 1));
+                // SetCellAt(point.X, point.Y, CurrentPiece.BoardCellType);
             }
+
+            SetCellAtRange(
+                adjusted.Select(
+                        point => new KeyValuePair<Point, BoardCellType>(point, CurrentPiece.BoardCellType)
+                    )
+                    .ToArray()
+            );
             
             return true;
         }

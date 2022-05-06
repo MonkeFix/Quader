@@ -18,6 +18,8 @@ namespace Quader.Components.Boards
         public int CellSize { get; }
         private readonly BoardSkin _boardSkin;
 
+        private int _ghostY;
+
         public PieceRendererComponent(Board board, int cellSize = 32)
         {
             Board = board;
@@ -26,6 +28,13 @@ namespace Quader.Components.Boards
 
             Width = Board.Width * CellSize;
             Height = Board.TotalHeight * CellSize;
+
+            CalculateGhostY();
+
+            Board.BoardChanged += (_, _) => CalculateGhostY();
+            Board.PieceMoved += (sender, args) => CalculateGhostY();
+            Board.PiecePushed += (sender, args) => CalculateGhostY();
+            Board.PieceRotated += (sender, args) => CalculateGhostY();
         }
 
         public override void Render(Batcher batcher, Camera camera)
@@ -50,7 +59,7 @@ namespace Quader.Components.Boards
 
 
             // Draw Piece Ghost
-            var dropY = Board.FindNearestY();
+            var dropY = _ghostY; // Board.FindNearestY();
 
             var curX = Board.CurrentPiece.X;
             var curY = dropY;
@@ -86,7 +95,7 @@ namespace Quader.Components.Boards
                     pY += size / 2f;
                 }
 
-                batcher.DrawPixel(pX, pY, Microsoft.Xna.Framework.Color.White, 10);
+                batcher.DrawPixel(pX, pY, Color.White, 10);
             }
 
             // Draw bounding box
@@ -96,6 +105,11 @@ namespace Quader.Components.Boards
                 batcher.DrawHollowRect(baseX + b.X * size, baseY + b.Y * size, b.Width * size, b.Height * size,
                     Microsoft.Xna.Framework.Color.White, 2f);
             }
+        }
+
+        private void CalculateGhostY()
+        {
+            _ghostY = Board.FindNearestY();
         }
     }
 }

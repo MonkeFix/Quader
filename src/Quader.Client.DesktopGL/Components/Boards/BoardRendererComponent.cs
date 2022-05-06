@@ -1,9 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.Textures;
 using Nez.UI;
 using Quader.Engine;
-using Quader.Engine.Pieces;
 using Quader.Skinning;
 
 namespace Quader.Components.Boards
@@ -17,7 +18,11 @@ namespace Quader.Components.Boards
 
         public Board Board { get; }
 
-        private BoardSkin _boardSkin;
+        private readonly BoardSkin _boardSkin;
+
+        private RenderTarget2D _renderTarget = null!;
+
+        private SpriteBatch _spriteBatch = null!;
 
         public BoardRendererComponent(Board board)
         {
@@ -29,16 +34,17 @@ namespace Quader.Components.Boards
 
             Width = board.Width * CellSize;
             Height = board.TotalHeight * CellSize;
+
+            LocalOffset = new Vector2(0, Board.ExtraHeight * CellSize);
+            Board.BoardChanged += (sender, args) => RenderToTexture();
         }
 
-        public void PushPiece(PieceType type)
+        public override void Initialize()
         {
-            Board.PushPiece(type);
-        }
-
-        public void PushPiece(PieceBase piece)
-        {
-            Board.PushPiece(piece);
+            base.Initialize();
+            _spriteBatch = new SpriteBatch(Core.GraphicsDevice);
+            _renderTarget = new RenderTarget2D(Core.GraphicsDevice, (int)Width, (int)Height);
+            RenderToTexture();
         }
 
         public void Update()
@@ -65,17 +71,32 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            RenderCells(batcher);
-
-            if (SharedSettings.DrawPieceRotationTests)
-                RenderRotationTests(batcher);
+            batcher.Draw(_renderTarget, Entity.Position, null, Color.White, 0f, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);
         }
 
-        private void RenderCells(Batcher batcher)
+        private void RenderToTexture()
+        {
+            var oldRt = Core.GraphicsDevice.GetRenderTargets();
+
+            Core.GraphicsDevice.SetRenderTarget(_renderTarget);
+            Core.GraphicsDevice.Clear(Color.Transparent);
+
+            _spriteBatch.Begin();
+            RenderCells(_spriteBatch);
+
+            //if (SharedSettings.DrawPieceRotationTests)
+            //    RenderRotationTests(batcher);
+
+            _spriteBatch.End();
+
+            Core.GraphicsDevice.SetRenderTargets(oldRt);
+        }
+
+        private void RenderCells(SpriteBatch spriteBatch)
         {
             var size = CellSize;
-            var baseX = Entity.Position.X;
-            var baseY = Entity.Position.Y - Board.ExtraHeight * size;
+            var baseX = 0; //Entity.Position.X;
+            var baseY = 0; //-Board.ExtraHeight * size; //Entity.Position.Y - Board.ExtraHeight * size;
 
             for (int y = 0; y < Board.TotalHeight; y++)
             {
@@ -86,23 +107,20 @@ namespace Quader.Components.Boards
                     var drawX = baseX + x * size;
                     var drawY = baseY + y * size;
 
-                    if (y >= Board.Height)
-                        //batcher.Draw(_boardSkin[]);
-                        batcher.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f, 2f);
-
                     if (p == BoardCellType.None)
                     {
                         if (y >= Board.Height)
-                            //batcher.Draw(_boardSkin[]);
-                            batcher.DrawRect(drawX, drawY, size, size, Color.Black);
+                            spriteBatch.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
                     else
                     {
-                        //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByBoardCell(p));
-                        batcher.Draw(_boardSkin[p], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero,
+                        var sprite = _boardSkin[p];
+                        spriteBatch.Draw(sprite.Texture2D, new Vector2(drawX, drawY), sprite.SourceRect, Color.White, 0, Vector2.Zero,
                             Vector2.One, SpriteEffects.None, 0);
-                        //batcher.Draw
                     }
+
+                    if (y >= Board.Height)
+                        spriteBatch.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f);
                 }
             }
         }

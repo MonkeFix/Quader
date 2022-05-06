@@ -14,9 +14,8 @@ Online stacker puzzle game.
  - [x] Fix initial Y position of the incoming pieces
  - [ ] Fix rotation tests for 180 degrees rotation
  - [x] ~~Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow~~
- - [ ] Check if there's a faster variant of `TestRotation` and `MoveDown` methods of the `Board` class:
-   - [ ] `HardDrop()` and `Rotate()` are relatively slow (0.02ms and 0.05ms respectively)
- - [ ] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
+ - [ ] Fix rendering of the pieces: render into `RenderTarget2D` on demand
+ - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [ ] Move SRS tables to a JSON file
  - [x] Add skins
  - [ ] Add correct input handling
