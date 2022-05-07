@@ -88,6 +88,9 @@ namespace Quader.Components.Boards
             else
                 baseX += 16;
 
+            if (piece.Type == PieceType.I)
+                y += 16;
+
             var baseY = y;
             var size = 32;
 

@@ -73,7 +73,7 @@ namespace Quader.Components.Boards
                 /*batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
                     PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type) * 0.5f);*/
 
-                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White * 0.5f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY), PieceUtils.GetColorByPieceType(piece.Type) * 0.5f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
         }
 

@@ -78,6 +78,7 @@ namespace Quader.Scenes
             var boardEntity = new Entity("board-player");
             var br = boardEntity.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
             br.Origin = new Vector2(188, 0);
+            boardEntity.AddComponent(new BoardGridRendererComponent(board));
             boardEntity.AddComponent(new BoardRendererComponent(board));
             boardEntity.AddComponent(new PieceRendererComponent(board));
             boardEntity.AddComponent(new PieceHandlerComponent(board));

@@ -13,6 +13,7 @@ namespace Quader.Skinning
         public Sprite this[BoardCellType type] => _pieceSpriteMap[type];
 
         public Texture2D BoardTexture { get; }
+        public Sprite GhostSprite { get; private set; }
 
         public int CellSize { get; }
         public readonly int Count = 12;
@@ -41,8 +42,10 @@ namespace Quader.Skinning
             var j = _spriteList[5];
             var t = _spriteList[6];
 
+            GhostSprite = _spriteList[7];
             var solid = _spriteList[8];
             var garbage = _spriteList[9];
+
             var fail = _spriteList[11];
 
             _pieceSpriteMap[BoardCellType.Z] = z;
