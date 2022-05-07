@@ -50,4 +50,7 @@
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Persistence\Nez.MG38.Persistence.csproj" />
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Portable\Nez.MG38.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Config\" />
+  </ItemGroup>
 </Project>

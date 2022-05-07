@@ -25,6 +25,11 @@ namespace Quader.Components.Boards
         {
             ImGui.Begin("Piece Handling");
 
+            ImGui.Text($"Delta Time ms: {Time.DeltaTime * 1000:F2}\n" +
+                       $"Total Time: {Time.TotalTime:F3} seconds\n" +
+                       $"Alt Delta Time ms: {Time.AltDeltaTime * 1000:F2}\n" +
+                       $"Frame Count: {Time.FrameCount}");
+
             ImGui.Text($"Time Data:");
 
             var vals = GlobalTimeManager.TimeData.Values;

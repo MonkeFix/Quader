@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Nez;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.RotationEncoder;
 using Quader.InputMgr;
+using Debug = Nez.Debug;
 
 namespace Quader.Engine
 {
@@ -127,10 +128,12 @@ namespace Quader.Engine
         /// <exception cref="Exception"></exception>
         public int HardDrop()
         {
+            int nearestY = 0;
+
+            var t0 = Debug.TimeAction(() => nearestY = FindNearestY());
+
             var t = Debug.TimeAction(() =>
             {
-                var nearestY = FindNearestY();
-
                 if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
                     throw new Exception("Something went wrong while applying the piece");
             });
@@ -143,7 +146,8 @@ namespace Quader.Engine
 
             ResetPiece(CurrentPiece);
 
-            GlobalTimeManager.AddData("HardDrop", t);
+            GlobalTimeManager.AddData("FindNearestY", t0);
+            GlobalTimeManager.AddData("TryApplyPiece", t);
             GlobalTimeManager.AddData("CheckLineClears", t2);
 
             return linesCleared;
@@ -187,7 +191,7 @@ namespace Quader.Engine
         public void SetCellAt(int x, int y, BoardCellType cell)
         {
             _cellContainer.SetCellAt(x, y, cell);
-            BoardChanged?.Invoke(this, EventArgs.Empty);
+            //BoardChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void SetCellAtRange(KeyValuePair<Point, BoardCellType>[] cells)
@@ -294,25 +298,47 @@ namespace Quader.Engine
 
         private bool TryApplyPiece(Point[] points, int x, int y)
         {
-            var adjusted = AdjustPositions(points, new Point(x, y));
+            var adjusted = TimeAction(() => AdjustPositions(points, new Point(x, y)), out var elapsed);
+            GlobalTimeManager.AddData("TryApplyPiece.AdjustPositions", elapsed);
 
-            foreach (var point in adjusted)
+            bool res = true;
+
+            var a = Debug.TimeAction(() =>
             {
-                var piece = GetCellAt(point.X, point.Y);
+                foreach (var point in adjusted)
+                {
+                    var piece = GetCellAt(point.X, point.Y);
 
-                if (piece != BoardCellType.None)
-                    return false;
-                // SetCellAt(point.X, point.Y, CurrentPiece.BoardCellType);
-            }
+                    if (piece != BoardCellType.None)
+                        res = false;
+                    SetCellAt(point.X, point.Y, CurrentPiece.BoardCellType);
+                }
+            });
 
-            SetCellAtRange(
+            GlobalTimeManager.AddData("TryApplyPiece.GetSetCell", a);
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+            /*SetCellAtRange(
                 adjusted.Select(
                         point => new KeyValuePair<Point, BoardCellType>(point, CurrentPiece.BoardCellType)
                     )
                     .ToArray()
-            );
+            );*/
             
-            return true;
+            return res;
+        }
+
+        private T TimeAction<T>(Func<T> func, out TimeSpan elapsed)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
+            var res = func();
+            stopwatch.Stop();
+
+            elapsed = stopwatch.Elapsed;
+
+            return res;
         }
     }
 }

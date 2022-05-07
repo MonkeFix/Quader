@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 using Nez;
+using Quader.Config;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
@@ -18,9 +19,13 @@ namespace Quader.Components.Boards
         private VirtualButton _moveLeft;
         private VirtualButton _moveRight;
 
+        private GameConfig _gameConfig;
+
         public PieceHandlerComponent(Board board)
         {
             Board = board;
+
+            _gameConfig = Core.Services.GetService<GameConfig>();
 
             _moveInput = new VirtualIntegerAxis()
                 .AddGamePadDPadLeftRight()
@@ -41,10 +46,12 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
-            if (Input.IsKeyPressed(Keys.Space))
+            if (Input.IsKeyPressed(_gameConfig.Controls.HardDrop))
             {
                 var linesCleared = Board.HardDrop();
             }
+
+            var dt = Time.DeltaTime * 1000;
 
             /*if (Input.IsKeyPressed(Keys.Left))
             {
@@ -66,27 +73,32 @@ namespace Quader.Components.Boards
             if (dir != 0)
                 Board.Move(dir);*/
 
-            if (Input.IsKeyDown(Keys.Down))
+            if (Input.IsKeyDown(_gameConfig.Controls.SoftDrop))
             {
                 Board.SoftDrop();
             }
 
-            if (Input.IsKeyPressed(Keys.X))
+            if (Input.IsKeyPressed(_gameConfig.Controls.RotateClockwise))
             {
                 Board.Rotate(Rotation.Clockwise);
             }
-            if (Input.IsKeyPressed(Keys.Z))
+            if (Input.IsKeyPressed(_gameConfig.Controls.RotateCounterClockwise))
             {
                 Board.Rotate(Rotation.CounterClockwise);
             }
-            if (Input.IsKeyPressed(Keys.F))
+            if (Input.IsKeyPressed(_gameConfig.Controls.Rotate180Deg))
             {
                 Board.Rotate(Rotation.Deg180);
             }
 
-            if (Input.IsKeyPressed(Keys.C))
+            if (Input.IsKeyPressed(_gameConfig.Controls.Hold))
             {
                 _heldPiece?.HoldPiece();
+            }
+
+            if (Input.IsKeyPressed(_gameConfig.Controls.Restart))
+            {
+                Board.Reset(); // TODO: Restart correctly
             }
         }
     }
