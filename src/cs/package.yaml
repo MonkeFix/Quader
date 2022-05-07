@@ -1,0 +1,134 @@
+name:                cs
+version:             0.1.0.0
+github:              "lunacys/Quader"
+license:             BSD3
+author:              "Savely Krendelhoff"
+maintainer:          "dklaptov@edu.hse.ru"
+copyright:           "2022 Savely Krendelhoff"
+
+#extra-source-files:
+#- README.md
+
+description: Tetris webserver.
+
+dependencies:
+- name: base
+  mixin:
+    - hiding (Prelude)
+- name: universum
+  mixin:
+    - (Universum as Prelude)
+    - hiding ()
+- websockets
+- exceptions
+- mtl
+- text
+- vector
+- text-show
+- bytestring
+- co-log
+- aeson
+- template-haskell
+- th-lift
+- deriving-aeson
+- lens
+- filepath
+- raw-strings-qq
+- file-embed
+- time
+- data-has
+- warp
+- stm
+- wai
+- wai-extra
+- uuid
+- http-types
+- http-api-data
+- path-pieces
+- validation
+- optparse-applicative
+- tagged
+- cryptonite
+- time
+- yaml
+- word8
+- tasty
+- tasty-hspec
+- tasty-hedgehog
+- fmt
+
+default-extensions:
+- OverloadedStrings
+- AllowAmbiguousTypes
+- ApplicativeDo
+- BangPatterns
+- BlockArguments
+- ConstraintKinds
+- DataKinds
+- DefaultSignatures
+- DeriveAnyClass
+- DeriveDataTypeable
+- DeriveFoldable
+- DeriveFunctor
+- DeriveGeneric
+- DeriveTraversable
+- DerivingStrategies
+- DerivingVia
+- EmptyCase
+- FlexibleContexts
+- FlexibleInstances
+- GADTs
+- GeneralizedNewtypeDeriving
+- ImportQualifiedPost
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- NegativeLiterals
+- NumDecimals
+- NumericUnderscores
+- OverloadedLabels
+- PatternSynonyms
+- PolyKinds
+- QuantifiedConstraints
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- RecursiveDo
+- ScopedTypeVariables
+- StandaloneDeriving
+- StandaloneKindSignatures
+- StrictData
+- TemplateHaskell
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- UndecidableInstances
+- UndecidableSuperClasses
+- ViewPatterns
+
+library:
+  source-dirs: src
+
+executables:
+  cs-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs
+
+tests:
+  cs-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs
