@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Quader.Engine.RotationEncoder;
 
 namespace Quader.Engine.Pieces
 {

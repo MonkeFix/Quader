@@ -1,4 +1,4 @@
-﻿namespace Quader.Engine.RotationEncoder
+﻿namespace Quader.Engine.Pieces
 {
     public enum PieceStartPosition
     {

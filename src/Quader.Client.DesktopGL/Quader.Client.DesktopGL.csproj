@@ -49,6 +49,7 @@
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.ImGui\Nez.MG38.ImGui.csproj" />
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Persistence\Nez.MG38.Persistence.csproj" />
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Portable\Nez.MG38.csproj" />
+    <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />

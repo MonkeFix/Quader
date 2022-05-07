@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
-using Quader.Engine.RotationEncoder;
-using Quader.InputMgr;
 using Debug = Nez.Debug;
 
 namespace Quader.Engine
 {
-    public class Board : IInputHandleable
+    public class Board
     {
         /// <summary>
         /// Extra height of the board. Used for cases when player receives garbage with ability to spawn a new piece.

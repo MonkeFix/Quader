@@ -47,18 +47,6 @@ namespace Quader.Components.Boards
 
             var curPos = piece.CurrentPos;
 
-            // Draw piece itself
-            foreach (var p in curPos)
-            {
-                var drawX = baseX + (p.X + piece.X) * size;
-                var drawY = baseY + (p.Y + piece.Y) * size;
-
-                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type));
-                //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
-            }
-
-
             // Draw Piece Ghost
             var dropY = _ghostY; // Board.FindNearestY();
 
@@ -73,8 +61,20 @@ namespace Quader.Components.Boards
                 /*batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
                     PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type) * 0.5f);*/
 
-                batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY), PieceUtils.GetColorByPieceType(piece.Type) * 0.5f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY), PieceUtils.GetColorByPieceType(piece.Type) * 0.9f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
             }
+
+            // Draw piece itself
+            foreach (var p in curPos)
+            {
+                var drawX = baseX + (p.X + piece.X) * size;
+                var drawY = baseY + (p.Y + piece.Y) * size;
+
+                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type));
+                //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
+            }
+
         }
 
         public override void DebugRender(Batcher batcher)

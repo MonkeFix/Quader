@@ -14,7 +14,6 @@ using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
-using Quader.Engine.RotationEncoder;
 using Quader.Skinning;
 
 namespace Quader.Scenes
@@ -101,7 +100,7 @@ namespace Quader.Scenes
 
         private void LoadSrs()
         {
-            _logger.Debug("Loading Rotation Tables..");
+            /*_logger.Debug("Loading Rotation Tables..");
 
             var data = RotationTableConverter.FromTexture2D(Content.Load<Texture2D>("data/srs_rotations"));
 
@@ -133,7 +132,7 @@ namespace Quader.Scenes
                 }
                 , true));
 
-            _logger.Debug("Done loading Rotation Tables");
+            _logger.Debug("Done loading Rotation Tables");*/
         }
     }
 }
