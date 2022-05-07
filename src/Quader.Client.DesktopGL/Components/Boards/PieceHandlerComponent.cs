@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using ImGuiNET;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using Quader.Config;
 using Quader.Engine;
@@ -12,22 +13,36 @@ namespace Quader.Components.Boards
 
         private HeldPieceComponent? _heldPiece;
 
-        private VirtualIntegerAxis _moveInput;
+        /*private VirtualIntegerAxis _moveInput;
         private VirtualButton _rotateClockwise;
         private VirtualButton _rotateCounterClockwise;
 
         private VirtualButton _moveLeft;
-        private VirtualButton _moveRight;
+        private VirtualButton _moveRight;*/
 
-        private GameConfig _gameConfig;
+        private readonly GameConfig _gameConfig;
+        private readonly Controls _controls;
+
+        private float _elapsed;
+        private readonly float _arr;
+        private readonly float _das;
+        private readonly int _sdf;
+
+        private bool _isLeftDown;
+        private bool _isRightDown;
 
         public PieceHandlerComponent(Board board)
         {
             Board = board;
 
             _gameConfig = Core.Services.GetService<GameConfig>();
+            _arr = _gameConfig.Handling.AutomaticRepeatRate;
+            _das = _gameConfig.Handling.DelayedAutoShift;
+            _sdf = _gameConfig.Handling.SoftDropFactor;
 
-            _moveInput = new VirtualIntegerAxis()
+            _controls = _gameConfig.Controls;
+
+            /*_moveInput = new VirtualIntegerAxis()
                 .AddGamePadDPadLeftRight()
                 .AddGamePadLeftStickX()
                 .AddKeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.Left, Keys.Right);
@@ -36,7 +51,7 @@ namespace Quader.Components.Boards
             _moveLeft = new VirtualButton().AddKeyboardKey(Keys.Left);
             _moveLeft.SetRepeat(0.15f, 0.0000001f);
             _moveRight = new VirtualButton().AddKeyboardKey(Keys.Right);
-            _moveRight.SetRepeat(0.1f, 0.0000001f);
+            _moveRight.SetRepeat(0.1f, 0.0000001f);*/
         }
 
         public override void OnAddedToEntity()
@@ -53,53 +68,105 @@ namespace Quader.Components.Boards
 
             var dt = Time.DeltaTime * 1000;
 
-            /*if (Input.IsKeyPressed(Keys.Left))
-            {
+
+            if (Input.IsKeyPressed(_controls.MoveLeft))
                 Board.MoveLeft();
+            if (Input.IsKeyDown(_controls.MoveLeft))
+            {
+                _isLeftDown = true;
+                _elapsed += dt;
+            }
+            if (Input.IsKeyReleased(_controls.MoveLeft))
+            {
+                _elapsed = 0;
+                _isLeftDown = false;
             }
 
-            if (Input.IsKeyPressed(Keys.Right))
-            {
+            if (Input.IsKeyPressed(_controls.MoveRight))
                 Board.MoveRight();
-            }*/
+            if (Input.IsKeyDown(_controls.MoveRight))
+            {
+                _isRightDown = true;
+                _elapsed += dt;
+            }
+            if (Input.IsKeyReleased(_controls.MoveRight))
+            {
+                _isRightDown = false;
+                _elapsed = 0;
+            }
 
-            if (_moveLeft.IsPressed || _moveLeft.IsRepeating)
+            if (_elapsed >= _das)
+            {
+                // TODO: Apply ARR
+
+                var moves = GetMovesPerFrame(dt);
+
+                for (int i = 0; i < moves; i++)
+                {
+                    if (_isLeftDown)
+                    {
+                        Board.MoveLeft();        
+                    }
+
+                    if (_isRightDown) // else if?
+                    {
+                        Board.MoveRight();
+                    }
+                }
+            }
+
+            /*if (_moveLeft.IsPressed || _moveLeft.IsRepeating)
                 Board.MoveLeft();
 
             if (_moveRight.IsPressed || _moveRight.IsRepeating)
-                Board.MoveRight();
+                Board.MoveRight();*/
 
             /*var dir = _moveInput.Value;
             if (dir != 0)
                 Board.Move(dir);*/
 
-            if (Input.IsKeyDown(_gameConfig.Controls.SoftDrop))
+            if (Input.IsKeyDown(_controls.SoftDrop))
             {
-                Board.SoftDrop();
+                Board.SoftDrop(_sdf);
             }
 
-            if (Input.IsKeyPressed(_gameConfig.Controls.RotateClockwise))
+            if (Input.IsKeyPressed(_controls.RotateClockwise))
             {
                 Board.Rotate(Rotation.Clockwise);
             }
-            if (Input.IsKeyPressed(_gameConfig.Controls.RotateCounterClockwise))
+            if (Input.IsKeyPressed(_controls.RotateCounterClockwise))
             {
                 Board.Rotate(Rotation.CounterClockwise);
             }
-            if (Input.IsKeyPressed(_gameConfig.Controls.Rotate180Deg))
+            if (Input.IsKeyPressed(_controls.Rotate180Deg))
             {
                 Board.Rotate(Rotation.Deg180);
             }
 
-            if (Input.IsKeyPressed(_gameConfig.Controls.Hold))
+            if (Input.IsKeyPressed(_controls.Hold))
             {
                 _heldPiece?.HoldPiece();
             }
 
-            if (Input.IsKeyPressed(_gameConfig.Controls.Restart))
+            if (Input.IsKeyPressed(_controls.Restart))
             {
                 Board.Reset(); // TODO: Restart correctly
             }
+        }
+
+        private int GetMovesPerFrame(float dt)
+        {
+            if (_arr == 0)
+                return 10;
+
+            var fps = 60f;
+            var sec = 1f / fps; // ~0.0167
+            var ms = sec * 1000; // ~16.7
+
+            // Test: 0, 1, 2, 3, 4, etc.
+
+
+            return 1;
         }
     }
 }

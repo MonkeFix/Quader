@@ -111,10 +111,13 @@ namespace Quader.Components.Boards
                     var drawX = baseX + x * size;
                     var drawY = baseY + y * size;
 
+                    //if (y >= Board.Height)
+                        //spriteBatch.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f);
+
                     if (p == BoardCellType.None)
                     {
-                        if (y >= Board.Height)
-                            spriteBatch.DrawRect(drawX, drawY, size, size, Color.Black);
+                        //if (y >= Board.Height)
+                        //    spriteBatch.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
                     else
                     {
@@ -123,8 +126,7 @@ namespace Quader.Components.Boards
                             Vector2.One, SpriteEffects.None, 0);
                     }
 
-                    if (y >= Board.Height)
-                        spriteBatch.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f);
+                    
                 }
             }
         }

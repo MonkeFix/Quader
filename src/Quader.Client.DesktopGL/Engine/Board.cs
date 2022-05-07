@@ -113,7 +113,14 @@ namespace Quader.Engine
         {
             var t = Debug.TimeAction(() =>
             {
-                if (TestMovement(0, delta))
+                if (delta > 1)
+                {
+                    var nearestY = FindNearestY();
+                    var offset = Math.Min(nearestY, delta);
+                    CurrentPiece.Y = offset; // TODO: FIXME
+                    //CurrentPiece.Y = Math.Min(CurrentPiece.Y, nearestY);
+                }
+                else if (TestMovement(0, delta))
                     CurrentPiece.Y += delta;
             });
             GlobalTimeManager.AddData("SoftDrop", t);
@@ -125,7 +132,7 @@ namespace Quader.Engine
         /// 
         /// </summary>
         /// <returns>Lines cleared after the hard drop</returns>
-        /// <exception cref="Exception"></exception>
+        /// <exception cref="Exception">Piece cannot be applied</exception>
         public int HardDrop()
         {
             int nearestY = 0;

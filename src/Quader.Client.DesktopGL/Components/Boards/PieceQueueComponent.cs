@@ -85,6 +85,8 @@ namespace Quader.Components.Boards
             var baseX = Entity.Position.X + Board.Width * 32 + 80;
             if (piece.Type == PieceType.I || piece.Type == PieceType.O)
                 baseX += 32;
+            else
+                baseX += 16;
 
             var baseY = y;
             var size = 32;

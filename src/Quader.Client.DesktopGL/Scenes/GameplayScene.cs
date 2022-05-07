@@ -54,6 +54,7 @@ namespace Quader.Scenes
         public override void Initialize()
         {
             base.Initialize();
+            ClearColor = Color.Black;
             
             _logger.Debug("Initializing");
 
