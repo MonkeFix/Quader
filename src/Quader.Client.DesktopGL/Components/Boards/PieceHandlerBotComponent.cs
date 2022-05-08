@@ -66,7 +66,7 @@ namespace Quader.Components.Boards
             var dt = Time.DeltaTime;
             _elapsed += dt;
 
-            if (TargetPps == 0)
+            if (TargetPps <= 0)
             {
                 DoMove();
             }
