@@ -49,6 +49,7 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
+            return; 
             var mp = Input.MousePosition;
             
             var scaledMp = new Point(
