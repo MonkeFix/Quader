@@ -139,7 +139,8 @@ namespace Quader.Engine
             var t = Debug.TimeAction(() =>
             {
                 if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
-                    throw new Exception("Something went wrong while applying the piece");
+                    return;
+                //throw new Exception("Something went wrong while applying the piece");
             });
 
             int linesCleared = 0;
@@ -185,6 +186,13 @@ namespace Quader.Engine
             }
 
             return y;
+        }
+
+        public void ForceUpdate()
+        {
+            CheckLineClears();
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
         }
         
         public void Reset() => _cellContainer.Reset();

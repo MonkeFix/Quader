@@ -1,13 +1,11 @@
-﻿using ImGuiNET;
-using Microsoft.Xna.Framework.Input;
-using Nez;
+﻿using Nez;
 using Quader.Config;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards
 {
-    public class PieceHandlerComponent : Component, IUpdatable
+    public class PieceHandlerPlayerComponent : Component, IUpdatable
     {
         public Board Board { get; }
 
@@ -31,7 +29,7 @@ namespace Quader.Components.Boards
         private bool _isLeftDown;
         private bool _isRightDown;
 
-        public PieceHandlerComponent(Board board)
+        public PieceHandlerPlayerComponent(Board board)
         {
             Board = board;
 

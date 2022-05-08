@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
@@ -22,6 +23,8 @@ namespace Quader.Components.Boards
 
         public PieceBase NextPiece { get; private set; } = null!;
 
+        public IEnumerable<PieceBase> Queue { get; private set; }
+
         private readonly BoardSkin _boardSkin;
 
         public PieceQueueComponent(Board board, IPieceGenerator pieceGenerator)
@@ -42,15 +45,15 @@ namespace Quader.Components.Boards
                 _queue.Enqueue(piece);
             }
 
+            Queue = _queue.ToList();
+
             var p = Request();
             Board.PushPiece(p);
         }
 
         public PieceBase Request()
         {
-            SetPiece();
-
-            return NextPiece;
+            return SetPiece();
         }
 
         public override void Render(Batcher batcher, Camera camera)
@@ -73,11 +76,13 @@ namespace Quader.Components.Boards
             Board.PushPiece(p);
         }
 
-        private void SetPiece()
+        private PieceBase SetPiece()
         {
-            NextPiece = _queue.Dequeue();
+            NextPiece = PieceGenerator.Generate(); 
+            var next = _queue.Dequeue();
 
-            _queue.Enqueue(PieceGenerator.Generate());
+            _queue.Enqueue(NextPiece);
+            return next;
         }
 
         private void DrawPiece(Batcher batcher, PieceBase piece, float y)

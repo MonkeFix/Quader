@@ -37,7 +37,7 @@ namespace Quader.Scenes
     {
         public const int ScreenSpaceRenderLayer = 999;
 
-        public readonly int Width = 1440;
+        public readonly int Width = 1600;
         public readonly int Height = 980;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
@@ -80,15 +80,36 @@ namespace Quader.Scenes
             boardEntity.AddComponent(new BoardGridRendererComponent(board));
             boardEntity.AddComponent(new BoardRendererComponent(board));
             boardEntity.AddComponent(new PieceRendererComponent(board));
-            boardEntity.AddComponent(new PieceHandlerComponent(board));
+            boardEntity.AddComponent(new PieceHandlerPlayerComponent(board));
             boardEntity.AddComponent(new BoardImGuiComponent(board));
             boardEntity.AddComponent(new PieceQueueComponent(board, pieceGenerator));
             boardEntity.AddComponent(new HeldPieceComponent(board));
+            boardEntity.AddComponent(new ScoreHandlerComponent(board));
 
+            boardEntity.Position = new Vector2(200, 128);
 
-            boardEntity.Position = new Vector2(256, 128/*-500*/);
+            var boardBot = new Board();
+            boardBot.PushPiece(PieceType.T);
+            var pg2 = new PieceGeneratorBag7(5);
+            
+            var boardEntityBot = new Entity("board-bot");
+            var br2 = boardEntityBot.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
+            
+            boardEntityBot.AddComponent(new BoardGridRendererComponent(boardBot));
+            boardEntityBot.AddComponent(new BoardRendererComponent(boardBot));
+            boardEntityBot.AddComponent(new PieceHandlerBotComponent(boardBot));
+            boardEntityBot.AddComponent(new PieceRendererComponent(boardBot, false));
+            // boardEntityBot.AddComponent(new PieceHandlerComponent(board));
+            boardEntityBot.AddComponent(new BoardImGuiComponent(boardBot));
+            boardEntityBot.AddComponent(new PieceQueueComponent(boardBot, pg2));
+            boardEntityBot.AddComponent(new HeldPieceComponent(boardBot));
+            boardEntityBot.AddComponent(new ScoreHandlerComponent(boardBot));
+
+            boardEntityBot.Position = new Vector2(256 + 512 + 128 + 64, 128);
+            br2.Origin = new Vector2(188, 0);
 
             AddEntity(boardEntity);
+            AddEntity(boardEntityBot);
 
             _logger.Debug("Done initializing");
         }

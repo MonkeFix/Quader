@@ -20,9 +20,12 @@ namespace Quader.Components.Boards
 
         private int _ghostY;
 
-        public PieceRendererComponent(Board board)
+        public bool RenderGhost { get; set; }
+
+        public PieceRendererComponent(Board board, bool renderGhost = true)
         {
             Board = board;
+            RenderGhost = renderGhost;
             
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
             CellSize = _boardSkin.CellSize;
@@ -48,20 +51,24 @@ namespace Quader.Components.Boards
             var curPos = piece.CurrentPos;
 
             // Draw Piece Ghost
-            var dropY = _ghostY; // Board.FindNearestY();
-
-            var curX = Board.CurrentPiece.X;
-            var curY = dropY;
-            var points = Board.CurrentPiece.CurrentPos;
-
-            foreach (var p in points)
+            if (RenderGhost)
             {
-                var drawX = baseX + (p.X + curX) * size;
-                var drawY = baseY + (p.Y + curY) * size;
-                /*batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
-                    PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type) * 0.5f);*/
+                var dropY = _ghostY; // Board.FindNearestY();
 
-                batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY), PieceUtils.GetColorByPieceType(piece.Type) * 0.9f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                var curX = Board.CurrentPiece.X;
+                var curY = dropY;
+                var points = Board.CurrentPiece.CurrentPos;
+
+                foreach (var p in points)
+                {
+                    var drawX = baseX + (p.X + curX) * size;
+                    var drawY = baseY + (p.Y + curY) * size;
+                    /*batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
+                        PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type) * 0.5f);*/
+
+                    batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY),
+                        PieceUtils.GetColorByPieceType(piece.Type) * 0.9f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                }
             }
 
             // Draw piece itself
