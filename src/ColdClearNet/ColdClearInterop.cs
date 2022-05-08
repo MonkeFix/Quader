@@ -1,11 +1,10 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace ColdClearNet;
 
 internal static class ColdClearInterop
 {
-    public const string DllName = "cold_clear.dll";
+    public const string DllName = "cold_clear";
 
 
     [DllImport(DllName, EntryPoint = "cc_launch_async")]
@@ -15,7 +14,7 @@ internal static class ColdClearInterop
     public static extern IntPtr LaunchWithBoardAsync(Options options, Weights weights, IntPtr book,
         byte[] field, uint bag_remain, ref Piece hold, [MarshalAs(UnmanagedType.U1)] bool b2b, uint combo, Piece[] queue,
         uint count);
-
+    
     [DllImport(DllName, EntryPoint = "cc_destroy_async")]
     public static extern void DestroyAsync(IntPtr bot);
 
