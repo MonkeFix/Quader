@@ -45,8 +45,8 @@ namespace Quader.Scenes
         public GameplayScene()
         {
             _logger.Debug("Constructing, adding renderer");
-
-            AddRenderer(new ScreenSpaceRenderer(100, ScreenSpaceRenderLayer));
+            AddRenderer(new DefaultRenderer(100));
+            //AddRenderer(new ScreenSpaceRenderer(100, ScreenSpaceRenderLayer));
             AddRenderer(new RenderLayerExcludeRenderer(0, ScreenSpaceRenderLayer));
         }
 
