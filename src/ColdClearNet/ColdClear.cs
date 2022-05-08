@@ -1,6 +1,14 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace ColdClearNet;
+
+public class BotMove
+{
+    public Move Move { get; set; }
+    public BotPollStatus PollStatus { get; set; }
+    public IEnumerable<PlanPlacement> PlanPlacement { get; set; }
+}
 
 public sealed class ColdClear : IDisposable
 {
@@ -8,6 +16,8 @@ public sealed class ColdClear : IDisposable
     private static Options? _defaultOptions;
     private static Weights? _defaultWeights;
     private static Weights? _fastWeights;
+
+    private readonly Book? _book;
 
     /// <summary>
     /// Gets the default options
@@ -80,8 +90,16 @@ public sealed class ColdClear : IDisposable
     {
         var queueArr = queue?.ToArray();
 
-        _bot = ColdClearInterop.LaunchAsync(options, weights, book?._book ?? IntPtr.Zero,
-            queueArr == null ? Array.Empty<Piece>() : queueArr, queueArr == null ? 0U : (uint)queueArr.Length);
+        if (book != null)
+            _book = book;
+
+        _bot = ColdClearInterop.LaunchAsync(
+            options,
+            weights,
+            book?._book ?? IntPtr.Zero,
+            queueArr == null ? Array.Empty<Piece>() : queueArr,
+            queueArr == null ? 0U : (uint)queueArr.Length
+        );
     }
 
     /// <summary>
@@ -101,7 +119,7 @@ public sealed class ColdClear : IDisposable
     public ColdClear(
         Options options, 
         Weights weights, 
-        Book book, 
+        Book? book, 
         bool[] field,
         int bagRemain,
         ref Piece hold, 
@@ -112,10 +130,18 @@ public sealed class ColdClear : IDisposable
     {
         var queueArr = queue?.ToArray();
 
+        if (book != null)
+            _book = book;
+
         _bot = ColdClearInterop.LaunchWithBoardAsync(
-            options, weights, book._book,
+            options,
+            weights,
+            book?._book ?? IntPtr.Zero,
             field.Select(b => b ? (byte)1 : (byte)0).ToArray(),
-            (uint)bagRemain, ref hold, backToBack, (uint)combo,
+            (uint)bagRemain, 
+            ref hold, 
+            backToBack, 
+            (uint)combo,
             queueArr == null ? Array.Empty<Piece>() : queueArr,
             queueArr == null ? 0U : (uint)queueArr.Length
         );
@@ -139,20 +165,26 @@ public sealed class ColdClear : IDisposable
     {
         ColdClearInterop.RequestNextMove(_bot, (uint) incomingGarbage);
     }
-
-    public BotPollStatus PollNextMove(Move move, PlanPlacement[] plan)
-    {
-        move = new Move();
-        var planLength = 32U;
-        plan = new PlanPlacement[planLength];
-        var status = ColdClearInterop.PollNextMove(_bot, move, plan, ref planLength);
-        plan = plan.Take((int)planLength).ToArray();
-        return status;
-    }
-
+    
     public BotPollStatus PollNextMove(Move move, PlanPlacement[] plan, ref uint planLength)
     {
         return ColdClearInterop.PollNextMove(_bot, move, plan, ref planLength);
+    }
+
+    public BotMove PollNextMove(int planLength = 0)
+    {
+        Move move = new Move();
+        var pl = (uint)planLength;
+        var pm = new PlanPlacement[planLength == 0 ? 1 : planLength];
+
+        var status = ColdClearInterop.PollNextMove(_bot, move, pm, ref pl);
+
+        return new BotMove
+        {
+            Move = move,
+            PlanPlacement = pm.Take((int)pl).ToList(),
+            PollStatus = status
+        };
     }
     
     /*public async Task<(Move move, PlanPlacement[] plan)?> NextMoveAsync(int incomingGarbage)
@@ -206,8 +238,27 @@ public sealed class ColdClear : IDisposable
         return ColdClearInterop.BlockNextMove(_bot, move, plan, ref planLength);
     }
 
+    public BotMove BlockNextMove(int planLength = 0)
+    {
+        Move move = new Move();
+        var pl = (uint)planLength;
+        var pm = new PlanPlacement[planLength == 0 ? 1 : planLength];
+
+        var status = ColdClearInterop.BlockNextMove(_bot, move, pm, ref pl);
+
+        return new BotMove
+        {
+            Move = move,
+            PlanPlacement = pm.Take((int)pl).ToList(),
+            PollStatus = status
+        };
+    }
+
     private void ReleaseUnmanagedResources()
     {
+        if (_book != null)
+            _book.Dispose();
+
         if (_bot == IntPtr.Zero)
             return;
 
