@@ -2,16 +2,17 @@
 
 namespace ColdClearNet;
 
-public class PlanPlacement
+[StructLayout(LayoutKind.Sequential)]
+public struct PlanPlacement
 {
     public Piece Piece;
     public TspinStatus TSpin;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public bool[] ExpectedX = null!;
+    public byte[] ExpectedX;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public bool[] ExpectedY = null!;
+    public byte[] ExpectedY;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public int[] ClearedLines = null!;
+    public int[] ClearedLines;
 }

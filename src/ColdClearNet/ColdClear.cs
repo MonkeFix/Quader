@@ -1,4 +1,6 @@
-﻿namespace ColdClearNet;
+﻿using System.Runtime.InteropServices;
+
+namespace ColdClearNet;
 
 public sealed class ColdClear : IDisposable
 {
@@ -152,8 +154,8 @@ public sealed class ColdClear : IDisposable
     {
         return ColdClearInterop.PollNextMove(_bot, move, plan, ref planLength);
     }
-
-    public async Task<(Move move, PlanPlacement[] plan)?> NextMoveAsync(int incomingGarbage)
+    
+    /*public async Task<(Move move, PlanPlacement[] plan)?> NextMoveAsync(int incomingGarbage)
     {
         return await Task.Run(() =>
         {
@@ -169,7 +171,7 @@ public sealed class ColdClear : IDisposable
             
             return ((Move, PlanPlacement[])?)null;
         });
-    }
+    }*/
 
     /// <summary>
     /// Resets the playfield, back-to-back status, and combo count.

@@ -29,10 +29,10 @@ internal static class ColdClearInterop
     public static extern void RequestNextMove(IntPtr bot, uint incoming);
 
     [DllImport(DllName, EntryPoint = "cc_poll_next_move")]
-    public static extern BotPollStatus PollNextMove(IntPtr bot, [Out] Move move, [Out] PlanPlacement[] plan, ref uint plan_length);
+    public static extern BotPollStatus PollNextMove(IntPtr bot, [Out] Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
 
     [DllImport(DllName, EntryPoint = "cc_block_next_move")]
-    public static extern BotPollStatus BlockNextMove(IntPtr bot, [Out] Move move, [Out] PlanPlacement[] plan, ref uint plan_length);
+    public static extern BotPollStatus BlockNextMove(IntPtr bot, [Out] Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
     
     [DllImport(DllName, EntryPoint = "cc_default_options")]
     public static extern void DefaultOptions([Out] Options options);
