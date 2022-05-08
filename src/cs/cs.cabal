@@ -31,8 +31,10 @@ library
       AllowAmbiguousTypes
       ApplicativeDo
       BangPatterns
+      FunctionalDependencies
       BlockArguments
       ConstraintKinds
+      ImportQualifiedPost
       DataKinds
       DefaultSignatures
       DeriveAnyClass
@@ -78,64 +80,68 @@ library
       ViewPatterns
   build-depends:
       aeson
+    , async
     , base
     , bytestring
+<<<<<<< HEAD
     , co-log
+<<<<<<< HEAD
     , cryptonite
     , data-has
+=======
+=======
+>>>>>>> aa32e7f (Tech commit)
+    , containers
+>>>>>>> 01329aa ([Server] Init server executable)
     , deriving-aeson
     , exceptions
-    , file-embed
-    , filepath
     , fmt
     , http-api-data
     , http-types
     , lens
     , mtl
+    , network
     , optparse-applicative
     , path-pieces
     , raw-strings-qq
+    , servant
+    , servant-client
     , stm
+<<<<<<< HEAD
+=======
+    , stm-containers
+<<<<<<< HEAD
     , tagged
-    , tasty
-    , tasty-hedgehog
-    , tasty-hspec
     , template-haskell
     , text
     , text-show
-    , th-lift
     , time
     , universum
     , uuid
     , validation
     , vector
     , wai
-    , wai-extra
-    , warp
     , websockets
     , word8
     , yaml
-  mixins:
-      base hiding (Prelude)
-    , universum (Universum as Prelude)
-    , universum hiding ()
   default-language: Haskell2010
 
-executable cs-exe
+executable client
   main-is: Main.hs
   other-modules:
       Paths_cs
-  autogen-modules:
-      Paths_cs
   hs-source-dirs:
-      app
+      client
   default-extensions:
+      NoImplicitPrelude
       OverloadedStrings
       AllowAmbiguousTypes
       ApplicativeDo
       BangPatterns
+      FunctionalDependencies
       BlockArguments
       ConstraintKinds
+      ImportQualifiedPost
       DataKinds
       DefaultSignatures
       DeriveAnyClass
@@ -182,41 +188,254 @@ executable cs-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base
     , bytestring
     , co-log
-    , cryptonite
+    , containers
     , cs
-    , data-has
     , deriving-aeson
     , exceptions
-    , file-embed
-    , filepath
     , fmt
     , http-api-data
     , http-types
     , lens
     , mtl
+    , network
     , optparse-applicative
     , path-pieces
     , raw-strings-qq
+    , servant
+    , servant-client
     , stm
+    , stm-containers
+>>>>>>> b08dfdf (fixup! Project init)
+=======
+>>>>>>> aa32e7f (Tech commit)
+>>>>>>> 01329aa ([Server] Init server executable)
     , tagged
-    , tasty
-    , tasty-hedgehog
-    , tasty-hspec
     , template-haskell
     , text
     , text-show
-    , th-lift
     , time
     , universum
     , uuid
     , validation
     , vector
     , wai
-    , wai-extra
-    , warp
+    , websockets
+    , word8
+    , yaml
+  mixins:
+      base hiding (Prelude)
+    , universum (Universum as Prelude)
+    , universum hiding ()
+  default-language: Haskell2010
+
+executable client
+  main-is: Main.hs
+  other-modules:
+      Paths_cs
+  autogen-modules:
+      Paths_cs
+  hs-source-dirs:
+      client
+  default-extensions:
+      OverloadedStrings
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      FunctionalDependencies
+      BlockArguments
+      ConstraintKinds
+      ImportQualifiedPost
+      DataKinds
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      NegativeLiterals
+      NumDecimals
+      NumericUnderscores
+      OverloadedLabels
+      PatternSynonyms
+      PolyKinds
+      QuantifiedConstraints
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      RecursiveDo
+      ScopedTypeVariables
+      StandaloneDeriving
+      StandaloneKindSignatures
+      StrictData
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+      UndecidableSuperClasses
+      ViewPatterns
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , async
+    , base
+    , bytestring
+<<<<<<< HEAD
+    , co-log
+    , cryptonite
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    , cryptonite
+=======
+    , co-log
+    , containers
+>>>>>>> b08dfdf (fixup! Project init)
+=======
+    , containers
+>>>>>>> aa32e7f (Tech commit)
+>>>>>>> 01329aa ([Server] Init server executable)
+    , cs
+    , deriving-aeson
+    , exceptions
+    , fmt
+    , http-api-data
+    , http-types
+    , lens
+    , mtl
+    , network
+    , optparse-applicative
+    , path-pieces
+    , raw-strings-qq
+    , servant
+    , servant-client
+    , stm
+    , stm-containers
+    , tagged
+    , template-haskell
+    , text
+    , text-show
+    , time
+    , universum
+    , uuid
+    , validation
+    , vector
+    , wai
+    , websockets
+    , word8
+    , yaml
+  default-language: Haskell2010
+
+executable server
+  main-is: Main.hs
+  other-modules:
+      Paths_cs
+  hs-source-dirs:
+      server
+  default-extensions:
+      NoImplicitPrelude
+      OverloadedStrings
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      FunctionalDependencies
+      BlockArguments
+      ConstraintKinds
+      ImportQualifiedPost
+      DataKinds
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DerivingVia
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      ImportQualifiedPost
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      NegativeLiterals
+      NumDecimals
+      NumericUnderscores
+      OverloadedLabels
+      PatternSynonyms
+      PolyKinds
+      QuantifiedConstraints
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      RecursiveDo
+      ScopedTypeVariables
+      StandaloneDeriving
+      StandaloneKindSignatures
+      StrictData
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+      UndecidableSuperClasses
+      ViewPatterns
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , async
+    , base
+    , bytestring
+    , containers
+    , cs
+    , deriving-aeson
+    , exceptions
+    , fmt
+    , http-api-data
+    , http-types
+    , lens
+    , mtl
+    , network
+    , optparse-applicative
+    , path-pieces
+    , raw-strings-qq
+    , servant
+    , servant-client
+    , stm
+    , stm-containers
+    , tagged
+    , template-haskell
+    , text
+    , text-show
+    , time
+    , universum
+    , uuid
+    , validation
+    , vector
+    , wai
     , websockets
     , word8
     , yaml
@@ -240,8 +459,10 @@ test-suite cs-test
       AllowAmbiguousTypes
       ApplicativeDo
       BangPatterns
+      FunctionalDependencies
       BlockArguments
       ConstraintKinds
+      ImportQualifiedPost
       DataKinds
       DefaultSignatures
       DeriveAnyClass
@@ -288,25 +509,34 @@ test-suite cs-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base
     , bytestring
+<<<<<<< HEAD
     , co-log
+<<<<<<< HEAD
     , cryptonite
+=======
+=======
+>>>>>>> aa32e7f (Tech commit)
+    , containers
+>>>>>>> 01329aa ([Server] Init server executable)
     , cs
-    , data-has
     , deriving-aeson
     , exceptions
-    , file-embed
-    , filepath
     , fmt
     , http-api-data
     , http-types
     , lens
     , mtl
+    , network
     , optparse-applicative
     , path-pieces
     , raw-strings-qq
+    , servant
+    , servant-client
     , stm
+    , stm-containers
     , tagged
     , tasty
     , tasty-hedgehog
@@ -314,15 +544,12 @@ test-suite cs-test
     , template-haskell
     , text
     , text-show
-    , th-lift
     , time
     , universum
     , uuid
     , validation
     , vector
     , wai
-    , wai-extra
-    , warp
     , websockets
     , word8
     , yaml

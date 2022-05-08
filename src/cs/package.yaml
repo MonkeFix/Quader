@@ -24,23 +24,23 @@ dependencies:
 - mtl
 - text
 - vector
+- containers
+- async
+- servant
+- servant-client
+- stm-containers
 - text-show
+- network
 - bytestring
 - co-log
 - aeson
 - template-haskell
-- th-lift
 - deriving-aeson
 - lens
-- filepath
 - raw-strings-qq
-- file-embed
 - time
-- data-has
-- warp
 - stm
 - wai
-- wai-extra
 - uuid
 - http-types
 - http-api-data
@@ -48,13 +48,8 @@ dependencies:
 - validation
 - optparse-applicative
 - tagged
-- cryptonite
-- time
 - yaml
 - word8
-- tasty
-- tasty-hspec
-- tasty-hedgehog
 - fmt
 
 default-extensions:
@@ -62,8 +57,10 @@ default-extensions:
 - AllowAmbiguousTypes
 - ApplicativeDo
 - BangPatterns
+- FunctionalDependencies
 - BlockArguments
 - ConstraintKinds
+- ImportQualifiedPost
 - DataKinds
 - DefaultSignatures
 - DeriveAnyClass
@@ -112,9 +109,18 @@ library:
   source-dirs: src
 
 executables:
-  cs-exe:
+  server:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:         server
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cs
+  client:
+    main:                Main.hs
+    source-dirs:         client
     ghc-options:
     - -threaded
     - -rtsopts
@@ -132,3 +138,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - cs
+    - tasty
+    - tasty-hspec
+    - tasty-hedgehog
