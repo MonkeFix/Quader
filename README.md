@@ -2,7 +2,7 @@
 
 [![.NET Client Application](https://github.com/lunacys/Quader/actions/workflows/client-app.yml/badge.svg?branch=master)](https://github.com/lunacys/Quader/actions/workflows/client-app.yml)
 
-Online stacker puzzle game.
+An Online stacker puzzle game.
 
 ## TODOs
 
@@ -14,22 +14,39 @@ Online stacker puzzle game.
  - [x] Fix initial Y position of the incoming pieces
  - [ ] Fix rotation tests for 180 degrees rotation
  - [x] ~~Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow~~
- - [ ] Fix rendering of the pieces: render into `RenderTarget2D` on demand
+ - [ ] Fix rendering of the pieces: render into `RenderTarget2D` on demand:
+	- [x] Render the Board itself
+	- [x] Render Board Grid
+	- [ ] Render Queue
+	- [ ] Render individual pieces
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [ ] Move SRS tables to a JSON file
  - [x] Add skins
- - [ ] Add correct input handling
-   - [ ] Handling simultaneous key presses
+ - [ ] Implement correct input handling
+   - [x] Handling simultaneous key presses
+   - [x] Simple version with `ARR = 0` `SDF = Infinity`
    - [ ] Correct ARR (Automatic Repeat Rate)
-   - [ ] Correct DAS (Delayed Auto Shift)
+   - [x] Correct DAS (Delayed Auto Shift)
    - [ ] Correct DCD (DAS Cut Delay)
    - [ ] Correct SDF (Soft Drop Factor)
  - [x] Add Piece Queue
  - [x] Implement Bag-7 piece generator
+ - [ ] Create a shared bag-7 (same seed for the pieces)
+ - [ ] Add gravity for the pieces
+ - [ ] Add win/lose conditions
+ - [ ] Add garbage sending/receiving mechanisms 
  - [ ] Implement a scoring system (combos, quads, etc)
  - [ ] Handle T-Spins (minis, singles, doubles, triples)
- - [ ] Add ColdClearNet bot
+ - [ ] Add ColdClearNet bot:
+	- [x] Synchronous version (block)
+	- [ ] Asynchronous version (poll)
  - [ ] Add Unit Tests
+ - [ ] Add effects (particles)
+ - [ ] Add sounds
+ - [ ] Add background music
+ - [ ] Add menus and game modes
+ - [ ] Create a good UI
+ - [ ] `Client <-> Server <-> WebAPI` interaction
 
 ## Ideas
 
