@@ -3,7 +3,7 @@ using Quader.Engine;
 
 namespace Quader.Components.Boards
 {
-    public class ScoreHandlerComponent : RenderableComponent, IUpdatable
+    public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent
     {
         public override float Width => 500;
         public override float Height => 500;

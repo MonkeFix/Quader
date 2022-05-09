@@ -7,7 +7,7 @@ using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards
 {
-    public class BoardImGuiComponent : Component
+    public class BoardImGuiComponent : Component, IBoardComponent
     {
         public Board Board { get; }
 

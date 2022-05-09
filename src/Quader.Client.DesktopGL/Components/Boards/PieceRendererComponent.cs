@@ -8,7 +8,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class PieceRendererComponent : RenderableComponent
+    public class PieceRendererComponent : RenderableComponent, IBoardComponent
     {
         public override float Width { get; }
         public override float Height { get; }

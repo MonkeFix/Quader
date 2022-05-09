@@ -9,7 +9,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class BoardRendererComponent : RenderableComponent, IUpdatable
+    public class BoardRendererComponent : RenderableComponent, IUpdatable, IBoardComponent
     {
         public override float Width { get; }
         public override float Height { get; }

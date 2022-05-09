@@ -14,7 +14,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class PieceHandlerBotComponent : RenderableComponent, IUpdatable, IDisposable
+    public class PieceHandlerBotComponent : RenderableComponent, IUpdatable, IDisposable, IBoardComponent
     {
         public override float Width => 1000;
         public override float Height => 1000;
@@ -27,7 +27,7 @@ namespace Quader.Components.Boards
         public float TargetPps { get; set; } = 1;//0.1f;
         private float _elapsed;
 
-        [Inspectable] public bool DrawPlan { get; set; } = true;
+        [Inspectable] public bool DrawPlan { get; set; } = false;
 
         private PieceQueueComponent _queue = null!;
         private HeldPieceComponent _hold = null!;
@@ -135,7 +135,7 @@ namespace Quader.Components.Boards
 
             if (pl > 0)
             {
-                Console.WriteLine();
+                //Console.WriteLine();
             }
 
 
