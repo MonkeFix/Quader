@@ -3,20 +3,20 @@
 namespace ColdClearNet;
 
 [StructLayout(LayoutKind.Sequential)]
-public class Move
+public struct Move
 {
     [MarshalAs(UnmanagedType.U1)] public bool Hold;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public byte[] ExpectedX = null!;
+    public byte[] ExpectedX;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public byte[] ExpectedY = null!;
+    public byte[] ExpectedY;
 
     public byte MovementCount;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-    public Movement[] Movements = null!;
+    public Movement[] Movements;
 
     public uint Nodes;
     public uint Depth;

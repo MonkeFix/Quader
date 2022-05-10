@@ -53,7 +53,7 @@ namespace Quader.Components.Boards
             opt.UseHold = true;
             opt.Speculate = true;
             opt.SpawnRule = SpawnRule.Row21AndFall;
-            opt.MaxNodes = 4096;
+            opt.MaxNodes = (uint) Math.Pow(2, 18);
 
             _coldClear = new ColdClear(
                 opt,
@@ -129,7 +129,7 @@ namespace Quader.Components.Boards
             var pl = 5U;
 
             // TODO: Make bot async via PollNextMove method
-            var pollStatus = _coldClear.BlockNextMove(move, pp, ref pl);
+            var pollStatus = _coldClear.BlockNextMove(out move, pp, ref pl);
 
             _plan = pp;
             _planSize = pl;

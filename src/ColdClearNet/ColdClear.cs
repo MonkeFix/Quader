@@ -168,9 +168,9 @@ public sealed class ColdClear : IDisposable
         ColdClearInterop.RequestNextMove(_bot, (uint) incomingGarbage);
     }
     
-    public BotPollStatus PollNextMove(Move move, PlanPlacement[] plan, ref uint planLength)
+    public BotPollStatus PollNextMove(out Move move, PlanPlacement[] plan, ref uint planLength)
     {
-        return ColdClearInterop.PollNextMove(_bot, move, plan, ref planLength);
+        return ColdClearInterop.PollNextMove(_bot, out move, plan, ref planLength);
     }
 
     public BotMove PollNextMove(int planLength = 0)
@@ -179,7 +179,7 @@ public sealed class ColdClear : IDisposable
         var pl = (uint)planLength;
         var pm = new PlanPlacement[planLength == 0 ? 1 : planLength];
 
-        var status = ColdClearInterop.PollNextMove(_bot, move, pm, ref pl);
+        var status = ColdClearInterop.PollNextMove(_bot, out move, pm, ref pl);
 
         return new BotMove
         {
@@ -235,9 +235,9 @@ public sealed class ColdClear : IDisposable
     /// <param name="plan"></param>
     /// <param name="planLength"></param>
     /// <returns></returns>
-    public BotPollStatus BlockNextMove(Move move, PlanPlacement[] plan, ref uint planLength)
+    public BotPollStatus BlockNextMove(out Move move, PlanPlacement[] plan, ref uint planLength)
     {
-        return ColdClearInterop.BlockNextMove(_bot, move, plan, ref planLength);
+        return ColdClearInterop.BlockNextMove(_bot, out move, plan, ref planLength);
     }
 
     public BotMove BlockNextMove(int planLength = 0)
@@ -246,7 +246,7 @@ public sealed class ColdClear : IDisposable
         var pl = (uint)planLength;
         var pm = new PlanPlacement[planLength == 0 ? 1 : planLength];
 
-        var status = ColdClearInterop.BlockNextMove(_bot, move, pm, ref pl);
+        var status = ColdClearInterop.BlockNextMove(_bot, out move, pm, ref pl);
 
         return new BotMove
         {
