@@ -34,13 +34,13 @@ internal static class ColdClearInterop
     public static extern BotPollStatus BlockNextMove(IntPtr bot, [Out] Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
     
     [DllImport(DllName, EntryPoint = "cc_default_options")]
-    public static extern void DefaultOptions([Out] Options options);
+    public static extern void DefaultOptions(out Options options);
     
     [DllImport(DllName, EntryPoint = "cc_default_weights")]
-    public static extern void DefaultWeights([Out] Weights weights);
+    public static extern void DefaultWeights(out Weights weights);
     
     [DllImport(DllName, EntryPoint = "cc_fast_weights")]
-    public static extern void FastWeights([Out] Weights weights);
+    public static extern void FastWeights(out Weights weights);
 
     [DllImport(DllName, EntryPoint = "cc_load_book_from_file")]
     public static extern IntPtr LoadBookFromFile([MarshalAs(UnmanagedType.LPStr)] string path);

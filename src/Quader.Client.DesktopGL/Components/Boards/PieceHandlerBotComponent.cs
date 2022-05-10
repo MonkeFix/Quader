@@ -53,6 +53,7 @@ namespace Quader.Components.Boards
             opt.UseHold = true;
             opt.Speculate = true;
             opt.SpawnRule = SpawnRule.Row21AndFall;
+            opt.MaxNodes = 4096;
 
             _coldClear = new ColdClear(
                 opt,

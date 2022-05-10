@@ -28,11 +28,12 @@ public sealed class ColdClear : IDisposable
         {
             if (_defaultOptions == null)
             {
-                _defaultOptions = new Options();
-                ColdClearInterop.DefaultOptions(_defaultOptions);
+                ColdClearInterop.DefaultOptions(out var o);
+
+                _defaultOptions = o;
             }
 
-            return _defaultOptions;
+            return _defaultOptions.Value;
         }
     }
 
@@ -45,11 +46,12 @@ public sealed class ColdClear : IDisposable
         {
             if (_defaultWeights == null)
             {
-                _defaultWeights = new Weights();
-                ColdClearInterop.DefaultWeights(_defaultWeights);
+                ColdClearInterop.DefaultWeights(out var w);
+
+                _defaultWeights = w;
             }
 
-            return _defaultWeights;
+            return _defaultWeights.Value;
         }
     }
 
@@ -62,11 +64,11 @@ public sealed class ColdClear : IDisposable
         {
             if (_fastWeights == null)
             {
-                _fastWeights = new Weights();
-                ColdClearInterop.FastWeights(_fastWeights);
+                ColdClearInterop.FastWeights(out var w);
+                _fastWeights = w;
             }
 
-            return _fastWeights;
+            return _fastWeights.Value;
         }
     }
 

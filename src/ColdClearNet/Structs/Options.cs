@@ -3,7 +3,7 @@
 namespace ColdClearNet;
 
 [StructLayout(LayoutKind.Sequential)]
-public class Options
+public struct Options
 {
     public MovementMode Mode;
     public SpawnRule SpawnRule;

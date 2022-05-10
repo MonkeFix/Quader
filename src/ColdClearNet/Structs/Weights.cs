@@ -3,7 +3,7 @@
 namespace ColdClearNet;
 
 [StructLayout(LayoutKind.Sequential)]
-public class Weights
+public struct Weights
 {
     public int BackToBack;
     public int Bumpiness;
@@ -20,11 +20,11 @@ public class Weights
     public int CoveredCells;
     public int CoveredCellsSq;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public int[] TSlot = null!;
+    public int[] TSlot;
     public int WellDepth;
     public int MaxWellDepth;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-    public int[] WellColumn = null!;
+    public int[] WellColumn;
 
     public int B2BClear;
     public int Clear1;
