@@ -53,7 +53,7 @@ namespace Quader.Components.Boards
             opt.UseHold = true;
             opt.Speculate = true;
             opt.SpawnRule = SpawnRule.Row21AndFall;
-            opt.MaxNodes = (uint) Math.Pow(2, 18);
+            opt.MaxNodes = (uint) Math.Pow(2, 20);
 
             _coldClear = new ColdClear(
                 opt,
@@ -124,25 +124,21 @@ namespace Quader.Components.Boards
         private void DoMove()
         {
             _coldClear.RequestNextMove(0);
-            var move = new Move();
-            var pp = new PlanPlacement[5];
-            var pl = 5U;
+            /*var pp = new PlanPlacement[5];
+            var pl = 5;*/
+
+            var pl = 5;
 
             // TODO: Make bot async via PollNextMove method
-            var pollStatus = _coldClear.BlockNextMove(out move, pp, ref pl);
+            var move = _coldClear.BlockNextMove(pl);
 
-            _plan = pp;
-            _planSize = pl;
+            _plan = move.PlanPlacement.ToArray();
+            _planSize = (uint) pl;
 
-            if (pl > 0)
+
+            if (move.PollStatus == BotPollStatus.MoveProvided)
             {
-                //Console.WriteLine();
-            }
-
-
-            if (pollStatus == BotPollStatus.MoveProvided)
-            {
-                if (move.Hold)
+                if (move.Move.Hold)
                 {
                     _hold.HoldPiece();
                     if (!_holdUsed)
@@ -164,8 +160,8 @@ namespace Quader.Components.Boards
                 Board.ForceUpdate();*/
                 //Console.Write("Moves: ");
 
-                var moves = move.Movements;
-                for (int i = 0; i < move.MovementCount; i++)
+                var moves = move.Move.Movements;
+                for (int i = 0; i < move.Move.MovementCount; i++)
                 {
                     var m = moves[i];
                     //Console.Write($"{m}\t");
@@ -202,7 +198,7 @@ namespace Quader.Components.Boards
                 /*if (lines > 0)
                     Console.WriteLine("Cleared Lines by the Bot: " + lines);*/
             }
-            else if (pollStatus == BotPollStatus.Waiting)
+            else if (move.PollStatus == BotPollStatus.Waiting)
             {
                 Console.WriteLine("Bot is waiting");
             }
