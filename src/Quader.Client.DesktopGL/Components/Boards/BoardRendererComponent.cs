@@ -49,25 +49,7 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
-            return; 
-            var mp = Input.MousePosition;
             
-            var scaledMp = new Point(
-                (int)(mp.X - Entity.Position.X) / CellSize,
-                (int)(mp.Y - Entity.Position.Y) / CellSize
-            );
-
-            if (!Board.IsOutOfBounds(scaledMp))
-            {
-                if (Input.LeftMouseButtonDown)
-                {
-                    Board.SetCellAt(scaledMp.X, scaledMp.Y, BoardCellType.Garbage);
-                }
-                else if (Input.RightMouseButtonDown)
-                {
-                    Board.SetCellAt(scaledMp.X, scaledMp.Y, BoardCellType.None);
-                }
-            }
         }
 
         public override void Render(Batcher batcher, Camera camera)

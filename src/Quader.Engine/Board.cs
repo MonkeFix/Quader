@@ -8,6 +8,13 @@ using Debug = Nez.Debug;
 
 namespace Quader.Engine
 {
+    public enum LastMoveType
+    {
+        None = 0,
+        Movement,
+        Rotation
+    }
+
     public class Board
     {
         /// <summary>
@@ -30,7 +37,17 @@ namespace Quader.Engine
 
         private readonly BoardCellContainer _cellContainer;
 
+        private int _piecesOnBoard = 0;
+        public int PiecesOnBoard => _piecesOnBoard;
+
         public PieceBase CurrentPiece { get; private set; }
+
+        public int CurrentCombo { get; private set; }
+        public int CurrentB2B { get; private set; }
+
+        public LastMoveType LastMoveType { get; private set; } = LastMoveType.None;
+
+        public BoardPieceHolder PieceHolder { get; }
 
         public Board(int width = 10, int height = 20)
         {
@@ -39,25 +56,48 @@ namespace Quader.Engine
             TotalHeight = Height + ExtraHeight;
 
             _cellContainer = new BoardCellContainer(Width, TotalHeight);
+            PieceHolder = new BoardPieceHolder();
             CurrentPiece = new PiecePixel();
             ResetPiece(CurrentPiece);
         }
 
-        public void PushPiece(PieceType type)
+        public void SetPiece(PieceType type)
         {
             var pf = new PieceFactory();
             var piece = pf.Create(type);
 
-            PushPiece(piece);
+            SetPiece(piece);
         }
 
-        public void PushPiece(PieceBase piece)
+        public void SetPiece(PieceBase piece)
         {
             ResetPiece(piece);
 
             CurrentPiece = piece;
-
+            
             PiecePushed?.Invoke(this, CurrentPiece);
+        }
+
+        public void MoveLeft(int delta = 1)
+        {
+            if (TestMovement(-delta, 0))
+            {
+                CurrentPiece.X -= delta;
+                LastMoveType = LastMoveType.Movement;
+            }
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+        }
+
+        public void MoveRight(int delta = 1)
+        {
+            if (TestMovement(delta, 0))
+            {
+                CurrentPiece.X += delta;
+                LastMoveType = LastMoveType.Movement;
+            }
+
+            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
         public void ResetPiece(PieceBase piece)
@@ -72,38 +112,8 @@ namespace Quader.Engine
             if (piece.Type == PieceType.I)
                 piece.Y = Height - 1; 
             else piece.Y = Height - 2;
-        }
 
-        public void MoveLeft(int delta = 1)
-        {
-            var t = Debug.TimeAction(() =>
-            {
-                if (TestMovement(-delta, 0))
-                    CurrentPiece.X -= delta;
-            });
-            GlobalTimeManager.AddData("MoveLeft", t);
-
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
-        }
-
-        public void MoveRight(int delta = 1)
-        {
-            var t = Debug.TimeAction(() =>
-            {
-                if (TestMovement(delta, 0))
-                    CurrentPiece.X += delta;
-            });
-            GlobalTimeManager.AddData("MoveRight", t);
-
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
-        }
-
-        public void Move(int direction)
-        {
-            if (TestMovement(direction, 0))
-                CurrentPiece.X += direction;
-
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(direction, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+            LastMoveType = LastMoveType.None;
         }
 
         public void SoftDrop(int delta = 1)
@@ -130,7 +140,7 @@ namespace Quader.Engine
         /// </summary>
         /// <returns>Lines cleared after the hard drop</returns>
         /// <exception cref="Exception">Piece cannot be applied</exception>
-        public int HardDrop()
+        public BoardMove HardDrop()
         {
             int nearestY = 0;
 
@@ -147,25 +157,104 @@ namespace Quader.Engine
 
             var t2 = Debug.TimeAction(() => linesCleared = CheckLineClears());
 
-            PieceHardDropped?.Invoke(this, CurrentPiece);
-
-            ResetPiece(CurrentPiece);
-
             GlobalTimeManager.AddData("FindNearestY", t0);
             GlobalTimeManager.AddData("TryApplyPiece", t);
             GlobalTimeManager.AddData("CheckLineClears", t2);
 
-            return linesCleared;
+            var moveType = BoardMoveType.None;
+
+            if (_piecesOnBoard == 0)
+                moveType |= BoardMoveType.AllClear;
+
+            if (linesCleared == 1)
+                moveType |= BoardMoveType.Single;
+            else if (linesCleared == 2)
+                moveType |= BoardMoveType.Double;
+            else if (linesCleared == 3)
+                moveType |= BoardMoveType.Triple;
+            else if (linesCleared == 4)
+            {
+                moveType |= BoardMoveType.Quad;
+                CurrentB2B++;
+            }
+
+            if (CurrentCombo > 1)
+                moveType |= BoardMoveType.Combo;
+            if (CurrentB2B > 0)
+                moveType |= BoardMoveType.BackToBack;
+
+            if (CurrentPiece.Type == PieceType.T && LastMoveType == LastMoveType.Rotation)
+            {
+                // Handle T-Spins
+                // TODO: Add correct checks for T overhangs and handle T-Spin minis
+                if (linesCleared == 1)
+                {
+                    moveType |= BoardMoveType.TSpinSingle;
+                    CurrentB2B++;
+                }
+                else if (linesCleared == 2)
+                {
+                    moveType |= BoardMoveType.TSpinDouble;
+                    CurrentB2B++;
+                }
+                else if (linesCleared == 3)
+                {
+                    moveType |= BoardMoveType.TSpinTriple;
+                    CurrentB2B++;
+                }
+            }
+
+            //BoardMoveType.TSpinDouble
+            //BoardMoveType.TSpinDoubleMini
+            //BoardMoveType.TSpinSingle
+            //BoardMoveType.TSpinSingleMini
+            //BoardMoveType.TSpinTriple
+
+            if (linesCleared == 0)
+                CurrentCombo = 0;
+
+            if (!moveType.HasFlag(BoardMoveType.Quad) &&
+                !moveType.HasFlag(BoardMoveType.TSpinDouble) &&
+                !moveType.HasFlag(BoardMoveType.TSpinDoubleMini) &&
+                !moveType.HasFlag(BoardMoveType.TSpinSingle) &&
+                !moveType.HasFlag(BoardMoveType.TSpinSingleMini) &&
+                !moveType.HasFlag(BoardMoveType.TSpinTriple)
+               )
+            {
+                CurrentB2B = 0;
+            }
+
+            LastMoveType = LastMoveType.None;
+
+            PieceHardDropped?.Invoke(this, CurrentPiece);
+            ResetPiece(CurrentPiece);
+
+            return new BoardMove
+            {
+                LinesCleared = linesCleared,
+                Type = moveType,
+                Timestamp = DateTime.UtcNow,
+                BackToBack = CurrentB2B,
+                Combo = CurrentCombo++
+            };
         }
 
         public void Rotate(Rotation rotation)
         {
             var t = Debug.TimeAction(() =>
             {
-                CurrentPiece.Rotate(rotation, kickParams => new PieceBase.WallKickCheckResult
+                CurrentPiece.Rotate(rotation, kickParams =>
                 {
-                    Success = TestRotation(kickParams, out Point? test),
-                    WallKickPosition = test
+                    var success = TestRotation(kickParams, out Point? test);
+
+                    if (success)
+                        LastMoveType = LastMoveType.Rotation;
+
+                    return new PieceBase.WallKickCheckResult
+                    {
+                        Success = success,
+                        WallKickPosition = test
+                    };
                 });
             });
             GlobalTimeManager.AddData("Rotate", t);
@@ -179,7 +268,7 @@ namespace Quader.Engine
 
             for (int i = y; i <= TotalHeight; i++)
             {
-                if (_cellContainer.Intersects(AdjustPositions(CurrentPiece.CurrentPos, new Point(CurrentPiece.X, i))))
+                if (_cellContainer.Intersects(BoardUtils.AdjustPositions(CurrentPiece.CurrentPos, new Point(CurrentPiece.X, i))))
                     break;
 
                 y = i;
@@ -195,15 +284,26 @@ namespace Quader.Engine
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }
         
-        public void Reset() => _cellContainer.Reset();
+        public void Reset()
+        {
+            LastMoveType = LastMoveType.None;
+            CurrentB2B = 0;
+            CurrentCombo = 0;
+            _piecesOnBoard = 0;
+
+            _cellContainer.Reset();
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
         public void MoveUp() => _cellContainer.MoveUp();
         public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
         public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
 
-        public void SetCellAt(int x, int y, BoardCellType cell)
+        public void SetCellAt(int x, int y, BoardCellType cell, bool needsUpdate = false)
         {
             _cellContainer.SetCellAt(x, y, cell);
-            //BoardChanged?.Invoke(this, EventArgs.Empty);
+            if (needsUpdate)
+                BoardChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void SetCellAtRange(KeyValuePair<Point, BoardCellType>[] cells)
@@ -217,6 +317,61 @@ namespace Quader.Engine
         }
 
         public bool IsOutOfBounds(Point p) => _cellContainer.IsOutOfBounds(p);
+
+        public BoardEncoding Encode(bool includeQueue = true)
+        {
+            var res = "";
+
+            for (int y = 0; y < TotalHeight; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    res += GetCellAt(x, y) == BoardCellType.None ? " " : "X";
+                }
+            }
+
+            return new BoardEncoding
+            {
+                Code = res,
+                Height = Height,
+                Width = Width,
+                TotalHeight = TotalHeight
+            };
+        }
+
+        public void Decode(BoardEncoding encoding, bool includeQueue = true)
+        {
+            Reset();
+
+            if (encoding.Width != Width)
+                throw new Exception("Invalid Width");
+            if (encoding.Height != Height)
+                throw new Exception("Invalid Height");
+
+            int x = 0;
+            int y = 0;
+            int piecesOnBoard = 0;
+
+            foreach (var ch in encoding.Code)
+            {
+                if (ch == 'X')
+                {
+                    SetCellAt(x, y, BoardCellType.Garbage);
+                    piecesOnBoard++;
+                }
+
+                x++;
+                if (x >= Width)
+                {
+                    y++;
+                    x = 0;
+                }
+            }
+
+            _piecesOnBoard = piecesOnBoard;
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
         
         private bool TestMovement(int xOffset, int yOffset)
         {
@@ -227,7 +382,7 @@ namespace Quader.Engine
             if (b.Y + b.Height + yOffset > TotalHeight)
                 return false;
 
-            var adjusted = AdjustPositions(CurrentPiece.CurrentPos,
+            var adjusted = BoardUtils.AdjustPositions(CurrentPiece.CurrentPos,
                 new Point(CurrentPiece.X + xOffset, CurrentPiece.Y + yOffset));
 
             return !_cellContainer.Intersects(adjusted);
@@ -244,6 +399,7 @@ namespace Quader.Engine
                 if (isFull)
                 {
                     linesCleared++;
+                    _piecesOnBoard -= Width;
                     
                     MoveDown(y);
                 }
@@ -274,7 +430,7 @@ namespace Quader.Engine
                 // TODO: For 180deg rotation we need to perform two consecutive tests:
                 //      Right -> Perform Tests -> Right again -> Perform Tests -> Done
                 
-                var adjusted = AdjustPositions(
+                var adjusted = BoardUtils.AdjustPositions(
                     expectedPos,
                     new Point(CurrentPiece!.X, CurrentPiece!.Y) + test
                 );
@@ -294,23 +450,9 @@ namespace Quader.Engine
             return false;
         }
 
-        private Point[] AdjustPositions(Point[] data, Point offset)
-        {
-            // TODO: Get rid of this method and perform all calculations in the PieceBase class on demand
-            //  as this method takes a lot of memory
-            var newData = new Point[data.Length];
-            
-            for (int i = 0; i < data.Length; i++)
-            {
-                 newData[i] = new Point(data[i].X + offset.X, data[i].Y + offset.Y);
-            }
-
-            return newData;
-        }
-
         private bool TryApplyPiece(Point[] points, int x, int y)
         {
-            var adjusted = TimeAction(() => AdjustPositions(points, new Point(x, y)), out var elapsed);
+            var adjusted = TimeAction(() => BoardUtils.AdjustPositions(points, new Point(x, y)), out var elapsed);
             GlobalTimeManager.AddData("TryApplyPiece.AdjustPositions", elapsed);
 
             bool res = true;
@@ -324,19 +466,21 @@ namespace Quader.Engine
                     if (piece != BoardCellType.None)
                         res = false;
                     SetCellAt(point.X, point.Y, CurrentPiece.BoardCellType);
+                    _piecesOnBoard++;
                 }
             });
 
             GlobalTimeManager.AddData("TryApplyPiece.GetSetCell", a);
 
-            BoardChanged?.Invoke(this, EventArgs.Empty);
+            var bc = Debug.TimeAction(() => BoardChanged?.Invoke(this, EventArgs.Empty));
+            GlobalTimeManager.AddData("TryApplyPiece.BoardChanged.Invoke", bc);
             /*SetCellAtRange(
                 adjusted.Select(
                         point => new KeyValuePair<Point, BoardCellType>(point, CurrentPiece.BoardCellType)
                     )
                     .ToArray()
             );*/
-            
+
             return res;
         }
 

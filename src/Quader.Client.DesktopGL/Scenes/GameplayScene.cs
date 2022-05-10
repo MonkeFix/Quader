@@ -68,7 +68,7 @@ namespace Quader.Scenes
             _logger.Debug("Creating Board Entity...");
 
             var board = new Board();
-            board.PushPiece(PieceType.T);
+            board.SetPiece(PieceType.T);
 
             var pieceGenerator = new PieceGeneratorBag7(5);
 
@@ -89,7 +89,7 @@ namespace Quader.Scenes
             boardEntity.Position = new Vector2(200, 128);
 
             var boardBot = new Board();
-            boardBot.PushPiece(PieceType.T);
+            boardBot.SetPiece(PieceType.T);
             var pg2 = new PieceGeneratorBag7(5);
             
             var boardEntityBot = new Entity("board-bot");
@@ -100,7 +100,7 @@ namespace Quader.Scenes
             boardEntityBot.AddComponent(new PieceHandlerBotComponent(boardBot));
             boardEntityBot.AddComponent(new PieceRendererComponent(boardBot, false));
             // boardEntityBot.AddComponent(new PieceHandlerComponent(board));
-            boardEntityBot.AddComponent(new BoardImGuiComponent(boardBot));
+            //boardEntityBot.AddComponent(new BoardImGuiComponent(boardBot));
             boardEntityBot.AddComponent(new PieceQueueComponent(boardBot, pg2));
             boardEntityBot.AddComponent(new HeldPieceComponent(boardBot));
             boardEntityBot.AddComponent(new ScoreHandlerComponent(boardBot));

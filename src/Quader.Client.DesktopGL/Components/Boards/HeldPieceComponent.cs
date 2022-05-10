@@ -53,13 +53,13 @@ namespace Quader.Components.Boards
             if (_heldPiece == null)
             {
                 _heldPiece = Board.CurrentPiece;
-                Board.PushPiece(_pieceQueue.Request());
+                Board.SetPiece(_pieceQueue.Request());
             }
             else
             {
                 var tmp = Board.CurrentPiece;
 
-                Board.PushPiece(_heldPiece!);
+                Board.SetPiece(_heldPiece!);
                 _heldPiece = tmp;
             }
 

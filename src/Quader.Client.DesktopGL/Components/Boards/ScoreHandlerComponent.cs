@@ -32,7 +32,11 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            batcher.DrawString(Graphics.Instance.BitmapFont, $"TP: {TotalPieces}\nPPS: {Pps:F1}", Entity.Position, Microsoft.Xna.Framework.Color.Red);
+            batcher.DrawString(Graphics.Instance.BitmapFont, 
+                $"TP: {TotalPieces}\n" +
+                $"PPS: {Pps:F1}\n" +
+                $"Pieces on the board: {Board.PiecesOnBoard}", 
+                Entity.Position, Microsoft.Xna.Framework.Color.Red);
         }
     }
 }

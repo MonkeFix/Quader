@@ -11,6 +11,11 @@ namespace Quader.Components.Boards
     {
         public Board Board { get; }
 
+        private bool _isBoardDrawerEnabled = false;
+        private BoardDrawerComponent? _boardDrawer;
+
+        private string _stateFileName = "state.json";
+
         public BoardImGuiComponent(Board board)
         {
             Board = board;
@@ -97,23 +102,57 @@ namespace Quader.Components.Boards
 
             ImGui.Separator();
 
+            if (!_isBoardDrawerEnabled)
+            {
+                if (ImGui.Button("ADD BOARD DRAWER"))
+                {
+                    _boardDrawer = Entity.AddComponent(new BoardDrawerComponent(Board));
+                    _isBoardDrawerEnabled = true;
+                }
+            }
+            else
+            {
+                if (ImGui.Button("REMOVE BOARD DRAWER"))
+                {
+                    Entity.RemoveComponent<BoardDrawerComponent>();
+                    _boardDrawer = null;
+                    _isBoardDrawerEnabled = false;
+                }
+
+                if (ImGui.Button("Draw 4 Wide"))
+                    _boardDrawer?.Draw4Wide();
+                if (ImGui.Button("Draw DT Canon"))
+                    _boardDrawer?.DrawDtCanon();
+
+                ImGui.InputText("State File Name", ref _stateFileName, 64);
+
+                if (ImGui.Button("Save State"))
+                    _boardDrawer?.Save(_stateFileName);
+                ImGui.SameLine();
+                if (ImGui.Button("Load State"))
+                    _boardDrawer?.Load(_stateFileName);
+            }
+
+
+            ImGui.Separator();
+
             if (ImGui.Button("Spawn I"))
-                Board.PushPiece(PieceType.I);
+                Board.SetPiece(PieceType.I);
             ImGui.SameLine();
             if (ImGui.Button("Spawn J"))
-                Board.PushPiece(PieceType.J);
+                Board.SetPiece(PieceType.J);
             if (ImGui.Button("Spawn L"))
-                Board.PushPiece(PieceType.L);
+                Board.SetPiece(PieceType.L);
             ImGui.SameLine();
             if (ImGui.Button("Spawn T"))
-                Board.PushPiece(PieceType.T);
+                Board.SetPiece(PieceType.T);
             if (ImGui.Button("Spawn S"))
-                Board.PushPiece(PieceType.S);
+                Board.SetPiece(PieceType.S);
             ImGui.SameLine();
             if (ImGui.Button("Spawn Z"))
-                Board.PushPiece(PieceType.Z);
+                Board.SetPiece(PieceType.Z);
             if (ImGui.Button("Spawn O"))
-                Board.PushPiece(PieceType.O);
+                Board.SetPiece(PieceType.O);
 
             ImGui.End();
         }

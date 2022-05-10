@@ -48,7 +48,7 @@ namespace Quader.Components.Boards
             Queue = _queue.ToList();
 
             var p = Request();
-            Board.PushPiece(p);
+            Board.SetPiece(p);
         }
 
         public PieceBase Request()
@@ -73,7 +73,7 @@ namespace Quader.Components.Boards
         private void BoardOnPieceHardDropped(object? sender, PieceBase e)
         {
             var p = Request();
-            Board.PushPiece(p);
+            Board.SetPiece(p);
         }
 
         private PieceBase SetPiece()
