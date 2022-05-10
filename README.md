@@ -35,8 +35,11 @@ An Online stacker puzzle game.
  - [ ] Add gravity for the pieces
  - [ ] Add win/lose conditions
  - [ ] Add garbage sending/receiving mechanisms 
+ - [ ] Add stats on the screen
  - [ ] Implement a scoring system (combos, quads, etc)
- - [ ] Handle T-Spins (minis, singles, doubles, triples)
+	- [x] Handle different type of line clears: quads, triples, all clears, etc
+	- [x] Handle B2B's and Combos
+	- [ ] Handle T-Spins correctly (check for overhang and find diffs between minis and regular)
  - [ ] Add ColdClearNet bot:
 	- [x] Synchronous version (block)
 	- [ ] Asynchronous version (poll)
