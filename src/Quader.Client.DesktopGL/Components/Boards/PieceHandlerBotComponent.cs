@@ -124,8 +124,6 @@ namespace Quader.Components.Boards
         private void DoMove()
         {
             _coldClear.RequestNextMove(0);
-            /*var pp = new PlanPlacement[5];
-            var pl = 5;*/
 
             var pl = 5;
 

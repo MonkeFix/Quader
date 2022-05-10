@@ -185,6 +185,8 @@ namespace Quader.Engine
 
             if (CurrentPiece.Type == PieceType.T && LastMoveType == LastMoveType.Rotation)
             {
+                moveType |= BoardMoveType.TSpin;
+
                 // Handle T-Spins
                 // TODO: Add correct checks for T overhangs and handle T-Spin minis
                 if (linesCleared == 1)

@@ -12,13 +12,14 @@ public enum BoardMoveType
     TSpinSingle = 4,
     TSpinDouble = 8,
     TSpinTriple = 16,
-    Single = 32,
-    Double = 64,
-    Triple = 128,
-    Quad = 256,
-    AllClear = 512,
-    BackToBack = 1024,
-    Combo = 2048,
+    TSpin = 32,
+    Single = 64,
+    Double = 128,
+    Triple = 256,
+    Quad = 512,
+    AllClear = 1024,
+    BackToBack = 2028,
+    Combo = 4096,
 }
 // ReSharper enable InconsistentNaming
 

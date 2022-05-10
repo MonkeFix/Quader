@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace ColdClearNet;
 
-public class BotMove
+public struct BotMove
 {
     public Move Move { get; set; }
     public BotPollStatus PollStatus { get; set; }
