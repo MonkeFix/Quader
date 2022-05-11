@@ -14,8 +14,7 @@ namespace Quader.Engine
         {
             Width = width;
             Height = height;
-
-            //_board = new BoardPieceType[Height, Width];
+            
             _board = new BoardCellType[Height][];
             for (int i = 0; i < Height; i++)
             {

@@ -10,6 +10,7 @@ using Nez;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.Pieces;
+using Quader.Engine.Replays;
 using Quader.Skinning;
 
 namespace Quader.Components.Boards

@@ -4,6 +4,8 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
+using Quader.Engine.Replays;
+using Quader.Engine.Serialization;
 using Debug = Nez.Debug;
 
 namespace Quader.Engine
@@ -145,20 +147,16 @@ namespace Quader.Engine
             int nearestY = 0;
 
             var t0 = Debug.TimeAction(() => nearestY = FindNearestY());
-
-            var t = Debug.TimeAction(() =>
-            {
-                if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
-                    return;
+            
+            if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
+                return new BoardMove();
                 //throw new Exception("Something went wrong while applying the piece");
-            });
 
             int linesCleared = 0;
 
             var t2 = Debug.TimeAction(() => linesCleared = CheckLineClears());
 
             GlobalTimeManager.AddData("FindNearestY", t0);
-            GlobalTimeManager.AddData("TryApplyPiece", t);
             GlobalTimeManager.AddData("CheckLineClears", t2);
 
             var moveType = BoardMoveType.None;
@@ -237,7 +235,8 @@ namespace Quader.Engine
                 Type = moveType,
                 Timestamp = DateTime.UtcNow,
                 BackToBack = CurrentB2B,
-                Combo = CurrentCombo++
+                Combo = CurrentCombo++,
+                Success = true
             };
         }
 
@@ -358,82 +357,14 @@ namespace Quader.Engine
 
         public bool IsOutOfBounds(Point p) => _cellContainer.IsOutOfBounds(p);
 
-        public BoardEncoding Encode(bool includeQueue = true)
+        public BoardEncoding Encode()
         {
-            var res = "";
-
-            for (int y = 0; y < TotalHeight; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    char cellCh;
-                    var c = GetCellAt(x, y);
-
-                    if (c == BoardCellType.None)
-                        cellCh = ' ';
-                    else if (c == BoardCellType.Garbage)
-                        cellCh = 'X';
-                    else if (c == BoardCellType.Solid)
-                        cellCh = '#';
-                    else
-                        cellCh = c.ToString()[0];
-
-                    res += cellCh;
-                }
-            }
-
-            return new BoardEncoding
-            {
-                Code = res,
-                Height = Height,
-                Width = Width,
-                TotalHeight = TotalHeight
-            };
+            return this.Serialize();
         }
 
-        public void Decode(BoardEncoding encoding, bool includeQueue = true)
+        public void Decode(BoardEncoding encoding)
         {
-            Reset();
-
-            if (encoding.Width != Width)
-                throw new Exception("Invalid Width");
-            if (encoding.Height != Height)
-                throw new Exception("Invalid Height");
-
-            int x = 0;
-            int y = 0;
-            int piecesOnBoard = 0;
-
-            foreach (var ch in encoding.Code)
-            {
-                if (ch != ' ')
-                {
-                    if (ch == 'X')
-                    {
-                        SetCellAt(x, y, BoardCellType.Garbage);
-                    }
-                    else if (ch == '#')
-                    {
-                        SetCellAt(x, y, BoardCellType.Solid);
-                    }
-                    else
-                    {
-                        var res = (BoardCellType)Enum.Parse(typeof(BoardCellType), ch.ToString());
-                        SetCellAt(x, y, res);
-                    }
-
-                    piecesOnBoard++;
-                }
-
-                x++;
-                if (x >= Width)
-                {
-                    y++;
-                    x = 0;
-                }
-            }
-
-            _piecesOnBoard = piecesOnBoard;
+            this.Deserialize(encoding, out _piecesOnBoard);
 
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -497,7 +428,7 @@ namespace Quader.Engine
                 
                 var adjusted = BoardUtils.AdjustPositions(
                     expectedPos,
-                    new Point(CurrentPiece!.X, CurrentPiece!.Y) + test
+                    new Point(CurrentPiece.X, CurrentPiece.Y) + test
                 );
                 
                 TestQueue.Enqueue(adjusted);

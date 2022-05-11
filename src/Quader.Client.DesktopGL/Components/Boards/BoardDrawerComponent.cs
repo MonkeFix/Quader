@@ -5,6 +5,7 @@ using Nez;
 using Nez.Persistence;
 using Nez.UI;
 using Quader.Engine;
+using Quader.Engine.Serialization;
 using Quader.Skinning;
 
 namespace Quader.Components.Boards

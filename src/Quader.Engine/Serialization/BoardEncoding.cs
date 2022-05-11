@@ -1,6 +1,6 @@
 ﻿using Nez.Persistence;
 
-namespace Quader.Engine;
+namespace Quader.Engine.Serialization;
 
 public class BoardEncoding
 {

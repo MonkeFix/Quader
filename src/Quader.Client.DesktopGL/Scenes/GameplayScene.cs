@@ -109,7 +109,7 @@ namespace Quader.Scenes
             br2.Origin = new Vector2(188, 0);
 
             AddEntity(boardEntity);
-            AddEntity(boardEntityBot);
+            //AddEntity(boardEntityBot);
 
             _logger.Debug("Done initializing");
         }
