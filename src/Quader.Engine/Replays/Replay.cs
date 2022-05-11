@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Quader.Engine.Replays;
 
-namespace Quader.Engine;
+namespace Quader.Engine.Replays;
 
 public class Replay
 {
