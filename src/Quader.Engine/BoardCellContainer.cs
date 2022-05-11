@@ -70,7 +70,8 @@ namespace Quader.Engine
         {
             for (int i = 0; i < Width; i++)
             {
-                if (GetCellAt(i, y) == BoardCellType.None)
+                var c = GetCellAt(i, y);
+                if (c == BoardCellType.None || c == BoardCellType.Solid)
                     return false;
             }
 
