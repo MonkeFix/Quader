@@ -15,6 +15,7 @@ namespace Quader.Components.Boards
         private BoardDrawerComponent? _boardDrawer;
 
         private string _stateFileName = "state.json";
+        private int _garbageLines = 4;
 
         public BoardImGuiComponent(Board board)
         {
@@ -65,6 +66,17 @@ namespace Quader.Components.Boards
             ImGui.Text($"Board Size: {Board.Width}x{Board.Height}");
             if (ImGui.Button("RESET BOARD"))
                 Board.Reset();
+
+            //ImGui.InputInt("Garbage Lines", ref _garbageLines, 1);
+            ImGui.DragInt("Garbage Lines", ref _garbageLines, 1, 1, 20);
+            if (ImGui.Button("Push Garbage"))
+                Board.PushGarbage(_garbageLines);
+            ImGui.SameLine();
+            if (ImGui.Button("Move Up"))
+                Board.MoveUp();
+            ImGui.SameLine();
+            if (ImGui.Button("Move Down"))
+                Board.MoveDown();
 
             ImGui.Separator();
 

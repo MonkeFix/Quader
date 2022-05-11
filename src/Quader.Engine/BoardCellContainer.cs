@@ -32,7 +32,16 @@ namespace Quader.Engine
         
         public void MoveUp()
         {
-            
+            for (int y = 1; y < Height; y++)
+            {
+                var empty = new BoardCellType[Width];
+                var cur = _board[y];
+                var tmp = new BoardCellType[Width];
+                Array.Copy(cur, tmp, Width);
+
+                _board[y] = empty;
+                _board[y - 1] = tmp;
+            }
         }
 
         public void MoveDown(int fromY = 0)
@@ -83,7 +92,8 @@ namespace Quader.Engine
         
         public BoardCellType GetCellAt(int x, int y) => _board[y][x];
         public void SetCellAt(int x, int y, BoardCellType cell) => _board[y][x] = cell;
-        
+
+        public void SetLine(int y, BoardCellType[] row) => _board[y] = row;
         
         private void ForEach(Action<int, int> action)
         {

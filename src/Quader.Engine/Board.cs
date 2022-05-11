@@ -279,6 +279,40 @@ namespace Quader.Engine
             return y;
         }
 
+        private int _lastGarbageLineX = -1;
+        public void PushGarbage(int garbageLines, int messiness = 0)
+        {
+            int garbageHoleX;
+
+            if (_lastGarbageLineX == -1)
+                garbageHoleX = Random.Shared.Next(0, Width);
+            else
+                garbageHoleX = _lastGarbageLineX; // TODO: Fix messiness
+
+            for (int i = 0; i < garbageLines; i++)
+            {
+                MoveUp();
+                _cellContainer.SetLine(TotalHeight - 1, CreateGarbageRow(garbageHoleX));
+            }
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private BoardCellType[] CreateGarbageRow(int holeX)
+        {
+            BoardCellType[] row = new BoardCellType[Width];
+
+            for (int i = 0; i < Width; i++)
+            {
+                if (i == holeX)
+                    row[i] = BoardCellType.None;
+                else
+                    row[i] = BoardCellType.Garbage;
+            }
+
+            return row;
+        }
+
         public void ForceUpdate()
         {
             CheckLineClears();
@@ -297,7 +331,11 @@ namespace Quader.Engine
 
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }
-        public void MoveUp() => _cellContainer.MoveUp();
+        public void MoveUp()
+        {
+            _cellContainer.MoveUp();
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
         public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
         public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
 
