@@ -366,7 +366,19 @@ namespace Quader.Engine
             {
                 for (int x = 0; x < Width; x++)
                 {
-                    res += GetCellAt(x, y) == BoardCellType.None ? " " : "X";
+                    char cellCh;
+                    var c = GetCellAt(x, y);
+
+                    if (c == BoardCellType.None)
+                        cellCh = ' ';
+                    else if (c == BoardCellType.Garbage)
+                        cellCh = 'X';
+                    else if (c == BoardCellType.Solid)
+                        cellCh = '#';
+                    else
+                        cellCh = c.ToString()[0];
+
+                    res += cellCh;
                 }
             }
 
@@ -394,9 +406,22 @@ namespace Quader.Engine
 
             foreach (var ch in encoding.Code)
             {
-                if (ch == 'X')
+                if (ch != ' ')
                 {
-                    SetCellAt(x, y, BoardCellType.Garbage);
+                    if (ch == 'X')
+                    {
+                        SetCellAt(x, y, BoardCellType.Garbage);
+                    }
+                    else if (ch == '#')
+                    {
+                        SetCellAt(x, y, BoardCellType.Solid);
+                    }
+                    else
+                    {
+                        var res = (BoardCellType)Enum.Parse(typeof(BoardCellType), ch.ToString());
+                        SetCellAt(x, y, res);
+                    }
+
                     piecesOnBoard++;
                 }
 
