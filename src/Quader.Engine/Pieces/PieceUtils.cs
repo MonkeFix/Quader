@@ -20,12 +20,14 @@ namespace Quader.Engine.Pieces
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0), new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) } },
-            { PieceRotationType.RightToDeg180, new[] { new Point(0, 0), new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) } },
+            { PieceRotationType.RightToDeg180, new[] { new Point(0, 0), new Point(1, 0), new Point(1, -1), new Point(0, 1), new Point(0, 2)  } },
             { PieceRotationType.Deg180ToRight, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) } },
             { PieceRotationType.Deg180ToLeft, new[] { new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) } },
             { PieceRotationType.LeftToDeg180, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) } },
             { PieceRotationType.LeftToSpawn, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) } }, 
-            { PieceRotationType.SpawnToLeft, new[] { new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) } }
+            { PieceRotationType.SpawnToLeft, new[] { new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) } },
+            { PieceRotationType.SpawnToDeg180, new[] { new Point(0, 0), new Point(0, 1), new Point(0, 2) } },
+            { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
         
         public static readonly Dictionary<PieceRotationType, Point[]> PieceIWallKickData = new()
@@ -37,7 +39,9 @@ namespace Quader.Engine.Pieces
             {PieceRotationType.Deg180ToLeft, new [] {new Point(0, 0), new Point( 2, 0), new Point(-1, 0), new Point( 2, 1), new Point(-1,-2)}},
             {PieceRotationType.LeftToDeg180, new [] {new Point(0, 0), new Point(-2, 0), new Point( 1, 0), new Point(-2,-1), new Point( 1, 2)}},
             {PieceRotationType.LeftToSpawn, new [] {new Point(0, 0), new Point( 1, 0), new Point(-2, 0), new Point( 1,-2), new Point(-2, 1)}},
-            {PieceRotationType.SpawnToLeft, new [] {new Point(0, 0), new Point(-1, 0), new Point( 2, 0), new Point(-1, 2), new Point( 2,-1)}}
+            {PieceRotationType.SpawnToLeft, new [] {new Point(0, 0), new Point(-1, 0), new Point( 2, 0), new Point(-1, 2), new Point( 2,-1)}},
+            { PieceRotationType.SpawnToDeg180, new[] { new Point(0, 0), new Point(0, 1), new Point(0, 2) } },
+            { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
 
         public static readonly Dictionary<PieceRotationType, Point[]> PieceOWallKickData = new()
@@ -49,7 +53,9 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToLeft, new[] { new Point(0, 0), } },
             { PieceRotationType.LeftToDeg180, new[] { new Point(0, 0), } },
             { PieceRotationType.LeftToSpawn, new[] { new Point(0, 0), } },
-            { PieceRotationType.SpawnToLeft, new[] { new Point(0, 0), } }
+            { PieceRotationType.SpawnToLeft, new[] { new Point(0, 0), } },
+            { PieceRotationType.SpawnToDeg180, new[] { new Point(0, 0), } },
+            { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), } },
         };
 
         public static Color GetColorByPieceType(PieceType type)

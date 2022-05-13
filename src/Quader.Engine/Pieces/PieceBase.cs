@@ -186,7 +186,7 @@ namespace Quader.Engine.Pieces
                 {
                     Rotation.Clockwise => (PieceRotationType.SpawnToRight, RightPos),
                     Rotation.CounterClockwise => (PieceRotationType.SpawnToLeft, LeftPos),
-                    Rotation.Deg180 => (PieceRotationType.RightToDeg180, Deg180Pos),
+                    Rotation.Deg180 => (PieceRotationType.SpawnToDeg180, Deg180Pos),
                     _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
                 },
                 PieceStartPosition.RotationClockwise => rotation switch
@@ -200,7 +200,7 @@ namespace Quader.Engine.Pieces
                 {
                     Rotation.Clockwise => (PieceRotationType.Deg180ToLeft, LeftPos),
                     Rotation.CounterClockwise => (PieceRotationType.Deg180ToRight, RightPos),
-                    Rotation.Deg180 => (PieceRotationType.LeftToSpawn, SpawnPos),
+                    Rotation.Deg180 => (PieceRotationType.Deg180ToSpawn, SpawnPos),
                     _ => throw new ArgumentOutOfRangeException(nameof(rotation), rotation, null)
                 },
                 PieceStartPosition.RotationCounterClockwise => rotation switch
