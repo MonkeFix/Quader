@@ -41,7 +41,7 @@ namespace Quader
 
             Skin skin = Skin.CreateDefaultSkin();
 
-            var skinTexture = Content.LoadTexture("skins/default");
+            var skinTexture = Content.LoadTexture("skins/default_3");
             var boardTexture = Content.LoadTexture("skins/board_default");
             skin.Add("board_skin", new BoardSkin(skinTexture, boardTexture));
             Services.AddService(typeof(Skin), skin);
