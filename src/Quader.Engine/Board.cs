@@ -466,9 +466,10 @@ namespace Quader.Engine
         private int CheckLineClears()
         {
             int linesCleared = 0;
-            
-            // TODO: Check only affected Y's
-            for (int y = 0; y < TotalHeight; y++)
+
+            var b = CurrentPiece.Bounds;
+
+            for (int y = Math.Max(b.Top, 0); y < TotalHeight; y++)
             {
                 var isFull = _cellContainer.IsLineFull(y);
                 if (isFull)
@@ -500,11 +501,9 @@ namespace Quader.Engine
 
             foreach (var t in tests)
             {
-                var test = new Point(t.X, -t.Y); // TODO: We need to revert the Y axis to perform correct checks
-                
-                // TODO: For 180deg rotation we need to perform two consecutive tests:
-                //      Right -> Perform Tests -> Right again -> Perform Tests -> Done
-                
+                // We need to revert the Y axis in order to perform correct checks
+                var test = new Point(t.X, -t.Y);
+
                 var adjusted = BoardUtils.AdjustPositions(
                     expectedPos,
                     new Point(CurrentPiece.X, CurrentPiece.Y) + test
@@ -549,12 +548,6 @@ namespace Quader.Engine
 
             var bc = Debug.TimeAction(() => BoardChanged?.Invoke(this, EventArgs.Empty));
             GlobalTimeManager.AddData("TryApplyPiece.BoardChanged.Invoke", bc);
-            /*SetCellAtRange(
-                adjusted.Select(
-                        point => new KeyValuePair<Point, BoardCellType>(point, CurrentPiece.BoardCellType)
-                    )
-                    .ToArray()
-            );*/
 
             return res;
         }
