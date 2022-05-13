@@ -6,13 +6,13 @@ namespace Quader.Engine.Pieces
 {
     public static class PieceUtils
     {
-        public static readonly Color ColorI = new (5, 195, 195);
-        public static readonly Color ColorZ = new (211, 12, 37);
-        public static readonly Color ColorS = new (5, 211, 5);
-        public static readonly Color ColorL = new (237, 133, 1);
-        public static readonly Color ColorJ = new (4, 24, 208);
-        public static readonly Color ColorT = new (141, 16, 191);
-        public static readonly Color ColorO = new (217, 205, 4);
+        public static readonly Color ColorI = new (49, 178, 131);
+        public static readonly Color ColorZ = new (179, 51, 58);
+        public static readonly Color ColorS = new (129, 177, 48);
+        public static readonly Color ColorL = new (178, 98, 49);
+        public static readonly Color ColorJ = new (82, 57, 206);
+        public static readonly Color ColorT = new (165, 62, 155);
+        public static readonly Color ColorO = new (178, 153, 49);
 
         public static readonly Color ColorGarbage = new (102, 102, 102);
 
