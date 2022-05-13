@@ -188,24 +188,6 @@ public sealed class ColdClear : IDisposable
             PollStatus = status
         };
     }
-    
-    /*public async Task<(Move move, PlanPlacement[] plan)?> NextMoveAsync(int incomingGarbage)
-    {
-        return await Task.Run(() =>
-        {
-            RequestNextMove(incomingGarbage);
-
-            var move = new Move();
-            var planLength = 32U;
-            var plan = new PlanPlacement[planLength];
-            var status = ColdClearInterop.BlockNextMove(_bot, move, plan, ref planLength);
-
-            if (status == BotPollStatus.MoveProvided)
-                return (move, plan.Take((int)planLength).ToArray());
-            
-            return ((Move, PlanPlacement[])?)null;
-        });
-    }*/
 
     /// <summary>
     /// Resets the playfield, back-to-back status, and combo count.
