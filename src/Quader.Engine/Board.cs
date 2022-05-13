@@ -30,7 +30,7 @@ namespace Quader.Engine
         
         public Queue<Point[]> TestQueue { get; } = new ();
 
-        public event EventHandler<PieceBase>? PieceHardDropped;
+        public event EventHandler<BoardMove>? PieceHardDropped;
         public event EventHandler<PieceBase>? PiecePushed;
         public event EventHandler<PieceMovedEventArgs>? PieceMoved;
         public event EventHandler<PieceBase>? PieceRotated;
@@ -80,6 +80,10 @@ namespace Quader.Engine
             PiecePushed?.Invoke(this, CurrentPiece);
         }
 
+        /// <summary>
+        /// Moves the current piece left by specified delta
+        /// </summary>
+        /// <param name="delta">Move left delta offset. Must be positive</param>
         public void MoveLeft(int delta = 1)
         {
             if (TestMovement(-delta, 0))
@@ -91,6 +95,10 @@ namespace Quader.Engine
             PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
+        /// <summary>
+        /// Moves the current piece right by specified delta
+        /// </summary>
+        /// <param name="delta">Move right delta offset. Must be positive</param>
         public void MoveRight(int delta = 1)
         {
             if (TestMovement(delta, 0))
@@ -137,11 +145,6 @@ namespace Quader.Engine
             PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>Lines cleared after the hard drop</returns>
-        /// <exception cref="Exception">Piece cannot be applied</exception>
         public BoardMove HardDrop()
         {
             int nearestY = 0;
@@ -150,94 +153,109 @@ namespace Quader.Engine
             
             if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
                 return new BoardMove();
-                //throw new Exception("Something went wrong while applying the piece");
 
-            int linesCleared = 0;
+            var moveType = BoardMoveModificators.None;
 
-            var t2 = Debug.TimeAction(() => linesCleared = CheckLineClears());
+            TSpinType tSpinType = TSpinType.None;
 
-            GlobalTimeManager.AddData("FindNearestY", t0);
-            GlobalTimeManager.AddData("CheckLineClears", t2);
-
-            var moveType = BoardMoveType.None;
-
-            if (_piecesOnBoard == 0)
-                moveType |= BoardMoveType.AllClear;
-
-            if (linesCleared == 1)
-                moveType |= BoardMoveType.Single;
-            else if (linesCleared == 2)
-                moveType |= BoardMoveType.Double;
-            else if (linesCleared == 3)
-                moveType |= BoardMoveType.Triple;
-            else if (linesCleared == 4)
-            {
-                moveType |= BoardMoveType.Quad;
-                CurrentB2B++;
-            }
-
-            if (CurrentCombo > 1)
-                moveType |= BoardMoveType.Combo;
-            if (CurrentB2B > 0)
-                moveType |= BoardMoveType.BackToBack;
-
+            // Handle T-Spins - the last move must be a rotation.
+            // If there's an overhang - it's a regular T-Spin, if not, it's a T-Spin Mini
             if (CurrentPiece.Type == PieceType.T && LastMoveType == LastMoveType.Rotation)
             {
-                moveType |= BoardMoveType.TSpin;
+                tSpinType = CheckTOverhang();
 
-                // Handle T-Spins
-                // TODO: Add correct checks for T overhangs and handle T-Spin minis
-                if (linesCleared == 1)
-                {
-                    moveType |= BoardMoveType.TSpinSingle;
-                    CurrentB2B++;
-                }
-                else if (linesCleared == 2)
-                {
-                    moveType |= BoardMoveType.TSpinDouble;
-                    CurrentB2B++;
-                }
-                else if (linesCleared == 3)
-                {
-                    moveType |= BoardMoveType.TSpinTriple;
-                    CurrentB2B++;
-                }
+                if (tSpinType == TSpinType.Full)
+                    moveType |= BoardMoveModificators.TSpin;
+                else if (tSpinType == TSpinType.Mini)
+                    moveType |= BoardMoveModificators.TSpinMini;
             }
 
-            //BoardMoveType.TSpinDouble
-            //BoardMoveType.TSpinDoubleMini
-            //BoardMoveType.TSpinSingle
-            //BoardMoveType.TSpinSingleMini
-            //BoardMoveType.TSpinTriple
+            var linesCleared = CheckLineClears();
 
-            if (linesCleared == 0)
-                CurrentCombo = 0;
+            GlobalTimeManager.AddData("FindNearestY", t0);
 
-            if (!moveType.HasFlag(BoardMoveType.Quad) &&
-                !moveType.HasFlag(BoardMoveType.TSpinDouble) &&
-                !moveType.HasFlag(BoardMoveType.TSpinDoubleMini) &&
-                !moveType.HasFlag(BoardMoveType.TSpinSingle) &&
-                !moveType.HasFlag(BoardMoveType.TSpinSingleMini) &&
-                !moveType.HasFlag(BoardMoveType.TSpinTriple)
-               )
-            {
-                CurrentB2B = 0;
-            }
+            CreateBoardMoveType(ref moveType, linesCleared, tSpinType);
 
             LastMoveType = LastMoveType.None;
 
-            PieceHardDropped?.Invoke(this, CurrentPiece);
-            ResetPiece(CurrentPiece);
-
-            return new BoardMove
+            var bm = new BoardMove
             {
                 LinesCleared = linesCleared,
-                Type = moveType,
+                Modificators = moveType,
                 Timestamp = DateTime.UtcNow,
                 BackToBack = CurrentB2B,
                 Combo = CurrentCombo++,
                 Success = true
             };
+
+            PieceHardDropped?.Invoke(this, bm);
+            ResetPiece(CurrentPiece);
+
+            return bm;
+        }
+
+        private BoardMoveModificators CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
+        {
+            // All Clear - No pieces on the board after a move
+            if (_piecesOnBoard == 0)
+                moveType |= BoardMoveModificators.AllClear;
+
+            // Basic clears - 4 lines is the max
+            if (linesCleared == 1)
+                moveType |= BoardMoveModificators.Single;
+            else if (linesCleared == 2)
+                moveType |= BoardMoveModificators.Double;
+            else if (linesCleared == 3)
+                moveType |= BoardMoveModificators.Triple;
+            else if (linesCleared == 4)
+            {
+                moveType |= BoardMoveModificators.Quad;
+                CurrentB2B++;
+            }
+
+            // Combo handling - the higher the combo - the bigger the spike
+            if (CurrentCombo > 1)
+                moveType |= BoardMoveModificators.Combo1;
+            if (CurrentCombo >= 6)
+                moveType |= BoardMoveModificators.Combo2;
+            if (CurrentCombo >= 10)
+                moveType |= BoardMoveModificators.Combo3;
+            if (CurrentCombo >= 15)
+                moveType |= BoardMoveModificators.Combo4;
+            if (CurrentCombo >= 18)
+                moveType |= BoardMoveModificators.Combo5;
+
+            // If move does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
+            if (
+                linesCleared > 0 &&
+                !moveType.HasFlag(BoardMoveModificators.Quad) &&
+                !moveType.HasFlag(BoardMoveModificators.TSpin) &&
+                !moveType.HasFlag(BoardMoveModificators.TSpinMini)
+            )
+            {
+                CurrentB2B = 0;
+            }
+
+            // Multiple successive T-Spins (including minis) or Quads
+            if (CurrentB2B > 0)
+                moveType |= BoardMoveModificators.BackToBack1;
+            if (CurrentB2B >= 5)
+                moveType |= BoardMoveModificators.BackToBack2;
+            if (CurrentB2B >= 10)
+                moveType |= BoardMoveModificators.BackToBack3;
+            if (CurrentB2B >= 30)
+                moveType |= BoardMoveModificators.BackToBack4;
+            if (CurrentB2B >= 60)
+                moveType |= BoardMoveModificators.BackToBack5;
+
+            if (tSpinType != TSpinType.None)
+                CurrentB2B++;
+
+            // Break the combo if cleared 0 lines
+            if (linesCleared == 0)
+                CurrentCombo = 0;
+
+            return moveType;
         }
 
         public void Rotate(Rotation rotation)
@@ -310,6 +328,67 @@ namespace Quader.Engine
             }
 
             return row;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        enum TSpinType
+        {
+            None, Full, Mini
+        }
+
+        public Point[] PointsChecked = new Point[4];
+
+
+        private TSpinType CheckTOverhang()
+        {
+            // Safety check
+            if (CurrentPiece.Type != PieceType.T)
+                return TSpinType.None;
+
+            // A block must be in any of the blocks in this graph:
+            // #T#
+            // TTT
+            // #T#
+            // T - T Piece
+            // # - Block
+
+            var pieceX = CurrentPiece.X;
+            var pieceY = CurrentPiece.Y;
+
+            var topLeft = new Point(pieceX - 1, pieceY - 1);
+            var topRight = new Point(pieceX + 1, pieceY - 1);
+            var bottomLeft = new Point(pieceX - 1, pieceY + 1);
+            var bottomRight = new Point(pieceX + 1, pieceY + 1);
+
+            var pArr = new[] { topLeft, topRight, bottomLeft, bottomRight };
+
+            PointsChecked = pArr;
+                
+            var oobOverhangs = 0; // out of bounds
+            var nonOobOverhangs = 0;
+
+            foreach (var p in pArr)
+            {
+                if (IsOutOfBounds(p))
+                    oobOverhangs++;
+                else
+                {
+                    var cell = GetCellAt(p.X, p.Y);
+                    if (cell != BoardCellType.None)
+                        nonOobOverhangs++;
+                }
+            }
+
+            if (oobOverhangs + nonOobOverhangs > 4) // We cannot have more than 4 blocks checked in any case!
+                throw new Exception("Something went wrong!");
+
+            if (oobOverhangs > 0 && nonOobOverhangs > 0)
+                return TSpinType.Mini;
+
+            if (oobOverhangs == 0 && nonOobOverhangs == 3)
+                return TSpinType.Full;
+
+            return TSpinType.None;
         }
 
         public void ForceUpdate()

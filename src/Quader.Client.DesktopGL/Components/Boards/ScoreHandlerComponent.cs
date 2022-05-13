@@ -1,4 +1,5 @@
-﻿using Nez;
+﻿using System;
+using Nez;
 using Quader.Engine;
 
 namespace Quader.Components.Boards
@@ -16,9 +17,11 @@ namespace Quader.Components.Boards
         {
             Board = board;
 
-            Board.PieceHardDropped += (sender, args) =>
+            Board.PieceHardDropped += (sender, boardMove) =>
             {
                 TotalPieces++;
+
+                Console.WriteLine($"Combo: {boardMove.Combo}. B2B: {boardMove.BackToBack}. Lines Cleared: {boardMove.LinesCleared}. Modificators: {boardMove.Modificators}");
             };
         }
 

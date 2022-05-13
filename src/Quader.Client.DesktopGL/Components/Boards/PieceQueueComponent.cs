@@ -7,6 +7,7 @@ using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
+using Quader.Engine.Replays;
 using Quader.Skinning;
 
 namespace Quader.Components.Boards
@@ -70,7 +71,7 @@ namespace Quader.Components.Boards
             }
         }
 
-        private void BoardOnPieceHardDropped(object? sender, PieceBase e)
+        private void BoardOnPieceHardDropped(object? sender, BoardMove e)
         {
             var p = Request();
             Board.SetPiece(p);

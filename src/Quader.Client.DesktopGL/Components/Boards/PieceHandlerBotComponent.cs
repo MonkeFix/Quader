@@ -189,11 +189,11 @@ namespace Quader.Components.Boards
                 //Console.WriteLine();
 
                 var lines = Board.HardDrop();
-                if (lines.Type.HasFlag(BoardMoveType.AllClear))
+                if (lines.Modificators.HasFlag(BoardMoveModificators.AllClear))
                     Console.WriteLine("ALL CLEAR!");
 
                 if (lines.LinesCleared > 0)
-                    Console.WriteLine($"Lines Cleared: {lines.LinesCleared}. B2B: {lines.BackToBack}. Combo: {lines.Combo}. Type: {lines.Type}");
+                    Console.WriteLine($"Lines Cleared: {lines.LinesCleared}. B2B: {lines.BackToBack}. Combo: {lines.Combo}. Type: {lines.Modificators}");
                 /*if (lines > 0)
                     Console.WriteLine("Cleared Lines by the Bot: " + lines);*/
             }

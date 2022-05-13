@@ -61,6 +61,13 @@ namespace Quader.Components.Boards
         {
             if (SharedSettings.DrawPieceRotationTests)
                 RenderRotationTests(batcher);
+
+            var baseX = Entity.Position.X;
+            var baseY = Entity.Position.Y - Board.ExtraHeight * 32;
+            foreach (var p in Board.PointsChecked)
+            {
+                batcher.DrawRect(baseX + p.X * 32, baseY + p.Y * 32, 32, 32, Color.Red * 0.1f);
+            }
         }
 
         private void RenderToTexture()
