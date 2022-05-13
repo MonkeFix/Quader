@@ -167,10 +167,10 @@ namespace Quader.Components.Boards
                     switch (m)
                     {
                         case Movement.Left:
-                            Board.MoveLeft();
+                            Board.PieceMoveLeft();
                             break;
                         case Movement.Right:
-                            Board.MoveRight();
+                            Board.PieceMoveRight();
                             break;
                         case Movement.Clockwise:
                             Board.Rotate(Rotation.Clockwise);

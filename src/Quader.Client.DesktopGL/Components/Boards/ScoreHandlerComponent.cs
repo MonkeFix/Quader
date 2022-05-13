@@ -38,7 +38,9 @@ namespace Quader.Components.Boards
             batcher.DrawString(Graphics.Instance.BitmapFont, 
                 $"TP: {TotalPieces}\n" +
                 $"PPS: {Pps:F1}\n" +
-                $"Pieces on the board: {Board.PiecesOnBoard}", 
+                $"Pieces on the board: {Board.PiecesOnBoard}\n" +
+                $"Current Gravity: {Board.CurrentGravity}\n" +
+                $"Current Lock: {Board.CurrentLock}", 
                 Entity.Position, Microsoft.Xna.Framework.Color.Red);
         }
     }

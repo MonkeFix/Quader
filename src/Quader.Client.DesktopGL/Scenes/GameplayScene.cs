@@ -14,6 +14,7 @@ using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
+using Quader.Engine.Settings;
 using Quader.Skinning;
 
 namespace Quader.Scenes
@@ -67,7 +68,9 @@ namespace Quader.Scenes
 
             _logger.Debug("Creating Board Entity...");
 
-            var board = new Board();
+            var gameSettings = GameSettings.Default;
+
+            var board = new Board(gameSettings);
             board.SetPiece(PieceType.T);
 
             var pieceGenerator = new PieceGeneratorBag7(5);
@@ -85,10 +88,11 @@ namespace Quader.Scenes
             boardEntity.AddComponent(new PieceQueueComponent(board, pieceGenerator));
             boardEntity.AddComponent(new HeldPieceComponent(board));
             boardEntity.AddComponent(new ScoreHandlerComponent(board));
+            boardEntity.AddComponent(new BoardGravityComponent(board));
 
             boardEntity.Position = new Vector2(200, 128);
 
-            var boardBot = new Board();
+            var boardBot = new Board(gameSettings);
             boardBot.SetPiece(PieceType.T);
             var pg2 = new PieceGeneratorBag7(5);
             

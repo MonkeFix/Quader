@@ -6,6 +6,7 @@ using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.Replays;
 using Quader.Engine.Serialization;
+using Quader.Engine.Settings;
 using Debug = Nez.Debug;
 
 namespace Quader.Engine
@@ -39,7 +40,7 @@ namespace Quader.Engine
 
         private readonly BoardCellContainer _cellContainer;
 
-        private int _piecesOnBoard = 0;
+        private int _piecesOnBoard;
         public int PiecesOnBoard => _piecesOnBoard;
 
         public PieceBase CurrentPiece { get; private set; }
@@ -47,11 +48,19 @@ namespace Quader.Engine
         public int CurrentCombo { get; private set; }
         public int CurrentB2B { get; private set; }
 
+        public float CurrentGravity { get; private set; }
+        public float CurrentLock { get; private set; }
+
         public LastMoveType LastMoveType { get; private set; } = LastMoveType.None;
 
         public BoardPieceHolder PieceHolder { get; }
 
-        public Board(int width = 10, int height = 20)
+        // Used for smooth gravity handling
+        private float _intermediateY;
+
+        public GravitySettings GravitySettings { get; }
+
+        /*public Board(int width = 10, int height = 20)
         {
             Width = width;
             Height = height;
@@ -61,6 +70,26 @@ namespace Quader.Engine
             PieceHolder = new BoardPieceHolder();
             CurrentPiece = new PiecePixel();
             ResetPiece(CurrentPiece);
+        }*/
+
+        public Board(GameSettings settings)
+        {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings),
+                    "Settings cannot be null. Use GameSettings.Default");
+
+            GravitySettings = settings.Gravity;
+
+            Width = settings.Board.BoardWidth;
+            Height = settings.Board.BoardHeight;
+            TotalHeight = settings.Board.BoardHeight * 2;
+
+            _cellContainer = new BoardCellContainer(Width, TotalHeight);
+            PieceHolder = new BoardPieceHolder();
+            CurrentPiece = new PiecePixel();
+            ResetPiece(CurrentPiece);
+
+            CurrentGravity = settings.Gravity.BaseGravity;
         }
 
         public void SetPiece(PieceType type)
@@ -84,7 +113,7 @@ namespace Quader.Engine
         /// Moves the current piece left by specified delta
         /// </summary>
         /// <param name="delta">Move left delta offset. Must be positive</param>
-        public void MoveLeft(int delta = 1)
+        public void PieceMoveLeft(int delta = 1)
         {
             if (TestMovement(-delta, 0))
             {
@@ -99,7 +128,7 @@ namespace Quader.Engine
         /// Moves the current piece right by specified delta
         /// </summary>
         /// <param name="delta">Move right delta offset. Must be positive</param>
-        public void MoveRight(int delta = 1)
+        public void PieceMoveRight(int delta = 1)
         {
             if (TestMovement(delta, 0))
             {
@@ -112,6 +141,7 @@ namespace Quader.Engine
 
         public void ResetPiece(PieceBase piece)
         {
+            _intermediateY = 0;
             piece.CurrentRotation = PieceStartPosition.Initial;
 
             if (piece.OffsetType == OffsetType.BetweenCells)
@@ -124,10 +154,15 @@ namespace Quader.Engine
             else piece.Y = Height - 2;
 
             LastMoveType = LastMoveType.None;
+
+            _intermediateY = 0;
+            CurrentLock = GravitySettings.LockDelay;
         }
 
-        public void SoftDrop(int delta = 1)
+        public bool SoftDrop(int delta = 1)
         {
+            var res = true;
+
             var t = Debug.TimeAction(() =>
             {
                 if (delta > 1)
@@ -139,10 +174,14 @@ namespace Quader.Engine
                 }
                 else if (TestMovement(0, delta))
                     CurrentPiece.Y += delta;
+                else
+                    res = false;
             });
             GlobalTimeManager.AddData("SoftDrop", t);
 
             PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
+
+            return res;
         }
 
         public BoardMove HardDrop()
@@ -194,7 +233,39 @@ namespace Quader.Engine
             return bm;
         }
 
-        private BoardMoveModificators CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
+        /// <summary>
+        /// Helper method that updates gravity and position of the current piece.
+        /// Meant to be called every update cycle tick (once in 1/FPS seconds)
+        /// </summary>
+        /// <param name="dt">Delta time, time difference between current and previous frames</param>
+        public void UpdateGravity(float dt)
+        {
+            _intermediateY += CurrentGravity * dt;
+
+            bool softDropTest = true;
+            if (_intermediateY > 1.0f)
+            {
+                var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
+                for (int i = 0; i < diff; i++)
+                {
+                    softDropTest = SoftDrop();
+                }
+                
+                _intermediateY = 0;
+            }
+
+            if (!softDropTest)
+            {
+                CurrentLock -= 1 * (dt * 1000);
+            }
+
+            if (CurrentLock <= 0)
+                HardDrop();
+
+            CurrentGravity += GravitySettings.GravityIncrease * dt;
+        }
+
+        private void CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
         {
             // All Clear - No pieces on the board after a move
             if (_piecesOnBoard == 0)
@@ -254,8 +325,6 @@ namespace Quader.Engine
             // Break the combo if cleared 0 lines
             if (linesCleared == 0)
                 CurrentCombo = 0;
-
-            return moveType;
         }
 
         public void Rotate(Rotation rotation)
@@ -385,7 +454,7 @@ namespace Quader.Engine
             if (oobOverhangs > 0 && nonOobOverhangs > 0)
                 return TSpinType.Mini;
 
-            if (oobOverhangs == 0 && nonOobOverhangs == 3)
+            if (oobOverhangs == 0 && nonOobOverhangs >= 3)
                 return TSpinType.Full;
 
             return TSpinType.None;
@@ -404,6 +473,8 @@ namespace Quader.Engine
             CurrentB2B = 0;
             CurrentCombo = 0;
             _piecesOnBoard = 0;
+            _intermediateY = 0;
+            _lastGarbageLineX = -1;
 
             _cellContainer.Reset();
 

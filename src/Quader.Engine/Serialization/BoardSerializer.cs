@@ -1,4 +1,5 @@
 ﻿using System;
+using Quader.Engine.Settings;
 
 namespace Quader.Engine.Serialization;
 
@@ -82,7 +83,11 @@ public static class BoardSerializer
 
     public static Board Deserialize(BoardEncoding encoding, out int piecesOnBoard)
     {
-        var board = new Board(encoding.Width, encoding.Height);
+        var gs = GameSettings.Default;
+        gs.Board.BoardWidth = encoding.Width;
+        gs.Board.BoardHeight = encoding.Height;
+
+        var board = new Board(gs);
         Deserialize(board, encoding, out piecesOnBoard);
 
         return board;

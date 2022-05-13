@@ -61,14 +61,14 @@ namespace Quader.Components.Boards
         {
             if (Input.IsKeyPressed(_gameConfig.Controls.HardDrop))
             {
-                var linesCleared = Board.HardDrop();
+                Board.HardDrop();
             }
 
             var dt = Time.DeltaTime * 1000;
 
 
             if (Input.IsKeyPressed(_controls.MoveLeft))
-                Board.MoveLeft();
+                Board.PieceMoveLeft();
             if (Input.IsKeyDown(_controls.MoveLeft))
             {
                 _isLeftDown = true;
@@ -81,7 +81,7 @@ namespace Quader.Components.Boards
             }
 
             if (Input.IsKeyPressed(_controls.MoveRight))
-                Board.MoveRight();
+                Board.PieceMoveRight();
             if (Input.IsKeyDown(_controls.MoveRight))
             {
                 _isRightDown = true;
@@ -103,12 +103,12 @@ namespace Quader.Components.Boards
                 {
                     if (_isLeftDown)
                     {
-                        Board.MoveLeft();        
+                        Board.PieceMoveLeft();        
                     }
 
                     if (_isRightDown) // else if?
                     {
-                        Board.MoveRight();
+                        Board.PieceMoveRight();
                     }
                 }
             }
