@@ -39,8 +39,8 @@ namespace Quader.Components.Boards
                 $"TP: {TotalPieces}\n" +
                 $"PPS: {Pps:F1}\n" +
                 $"Pieces on the board: {Board.PiecesOnBoard}\n" +
-                $"Current Gravity: {Board.CurrentGravity}\n" +
-                $"Current Lock: {Board.CurrentLock}", 
+                $"Current Gravity: {Board.CurrentGravity:F3}\n" +
+                $"Current Lock: {Board.CurrentLock:F2}", 
                 Entity.Position, Microsoft.Xna.Framework.Color.Red);
         }
     }

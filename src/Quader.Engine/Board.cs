@@ -181,6 +181,8 @@ namespace Quader.Engine
 
             PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
 
+            _yNeedsUpdate = true;
+
             return res;
         }
 
@@ -233,6 +235,9 @@ namespace Quader.Engine
             return bm;
         }
 
+        private bool _yNeedsUpdate = true;
+        private int _yToCheck = 0;
+
         /// <summary>
         /// Helper method that updates gravity and position of the current piece.
         /// Meant to be called every update cycle tick (once in 1/FPS seconds)
@@ -240,29 +245,40 @@ namespace Quader.Engine
         /// <param name="dt">Delta time, time difference between current and previous frames</param>
         public void UpdateGravity(float dt)
         {
-            _intermediateY += CurrentGravity * dt;
-
-            bool softDropTest = true;
-            if (_intermediateY > 1.0f)
+            var r = Debug.TimeAction(() =>
             {
-                var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
-                for (int i = 0; i < diff; i++)
+                _intermediateY += CurrentGravity * dt;
+
+                if (_yNeedsUpdate)
                 {
-                    softDropTest = SoftDrop();
+                    _yToCheck = FindNearestY();
+                    _yNeedsUpdate = false;
                 }
-                
-                _intermediateY = 0;
-            }
 
-            if (!softDropTest)
-            {
-                CurrentLock -= 1 * (dt * 1000);
-            }
+                if (_intermediateY > 1.0f)
+                {
+                    var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
+                    for (int i = 0; i < diff; i++)
+                    {
+                        SoftDrop();
+                        _yNeedsUpdate = true;
+                    }
 
-            if (CurrentLock <= 0)
-                HardDrop();
+                    _intermediateY = 0;
+                }
 
-            CurrentGravity += GravitySettings.GravityIncrease * dt;
+                if (_yToCheck == CurrentPiece.Y)
+                {
+                    CurrentLock -= 1 * (dt * 40); //+ Math.Min((float)Math.Log(CurrentGravity), 2);
+                }
+
+                if (CurrentLock <= 0)
+                    HardDrop();
+
+                CurrentGravity += GravitySettings.GravityIncrease * dt;
+            });
+
+            GlobalTimeManager.AddData("UpdateGravity", r);
         }
 
         private void CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
