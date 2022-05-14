@@ -30,7 +30,7 @@
  - [x] Add Piece Queue
  - [x] Implement Bag-7 piece generator
  - [ ] Create a shared bag-7 (same seed for the pieces)
- - [x]] Add gravity for the pieces
+ - [x] Add gravity for the pieces
  - [ ] Add win/lose conditions
  - [ ] Add garbage sending/receiving mechanisms 
    - [x] Push garbage method
