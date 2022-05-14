@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Systems;
 using Nez.UI;
+using Quader.Audio;
 using Quader.Config;
 using Quader.Debugging.Logging;
 using Quader.Debugging.Logging.Loggers;
@@ -33,6 +34,8 @@ namespace Quader
             
             IsFixedTimeStep = false;
             TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 240.0);
+
+            FMODManager.Init(FMODMode.Core, "Content");
         }
         
         protected override void Initialize()
