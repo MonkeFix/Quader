@@ -82,11 +82,15 @@ namespace Quader
 
             var gc = Services.GetService<GameConfig>();
             GameConfig.SaveToFile(gc, _configFilePath);
+
+            FMODManager.Unload();
         }
 
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
+            FMODManager.Update();
         }
     }
 }

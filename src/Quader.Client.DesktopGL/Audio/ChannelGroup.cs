@@ -5,7 +5,7 @@ namespace Quader.Audio
 {
 	public class ChannelGroup : IDisposable, IChannelControl
 	{
-		public readonly FMOD.ChannelGroup Native;
+		public FMOD.ChannelGroup Native;
 
 		internal readonly PointerLinker<ChannelGroup> _linker = new PointerLinker<ChannelGroup>();
 

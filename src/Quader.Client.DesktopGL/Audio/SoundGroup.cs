@@ -4,7 +4,7 @@ namespace Quader.Audio
 {
 	public class SoundGroup : IDisposable
 	{
-		public readonly FMOD.SoundGroup Native;
+		public FMOD.SoundGroup Native;
 
 		/// <summary>
 		/// Contains all references to all sound grorup objects.

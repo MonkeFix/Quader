@@ -13,7 +13,7 @@ namespace Quader.Audio
 	/// </summary>
 	public class Sound : I3DControl, IDisposable
 	{
-		public readonly FMOD.Sound Native;
+		public FMOD.Sound Native;
 
 		/// <summary>
 		/// Contains all references to all sound objects.

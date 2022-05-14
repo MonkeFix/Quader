@@ -15,7 +15,7 @@ namespace Quader.Audio
 		/// <summary>
 		/// FMOD channel object. Use it if you need full FMOD functionality.
 		/// </summary>
-		public readonly FMOD.Channel Native;
+		public FMOD.Channel Native;
 
 		/// <summary>
 		/// Sound, from which this channel has been created.
