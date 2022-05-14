@@ -9,9 +9,9 @@
  - [x] Fix rotation tests for 180 degrees rotation
  - [x] ~~Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow~~
  - [ ] Fix rendering of the pieces: render into `RenderTarget2D` on demand:
-	- [ ] Render the Board itself
+	- [x] Render the Board itself
     	- [x] Re-render all board
-    	- [ ] Re-render only affected cells
+    	- [x] Re-render only affected cells
 	- [x] Render Board Grid
 	- [ ] Render Queue
 	- [ ] Render individual pieces
