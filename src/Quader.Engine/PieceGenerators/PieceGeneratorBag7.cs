@@ -24,6 +24,8 @@ namespace Quader.Engine.PieceGenerators
 
         public IEnumerable<PieceBase> Initialize()
         {
+            _pieceQueue.Clear();
+
             var bag = GenerateBag();
             var bag2 = GenerateBag();
 

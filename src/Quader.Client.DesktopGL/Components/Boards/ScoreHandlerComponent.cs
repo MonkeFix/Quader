@@ -25,6 +25,11 @@ namespace Quader.Components.Boards
             };
         }
 
+        public void Restart()
+        {
+
+        }
+
         public void Update()
         {
             if (TotalPieces != 0)

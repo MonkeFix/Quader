@@ -52,6 +52,11 @@ namespace Quader.Components.Boards
             Board.SetPiece(p);
         }
 
+        public void Restart()
+        {
+
+        }
+
         public PieceBase Request()
         {
             return SetPiece();
@@ -67,7 +72,7 @@ namespace Quader.Components.Boards
             {
                 DrawPiece(batcher, piece, y);
 
-                y += 32 * 3;
+                y += _boardSkin.CellSize * 3;
             }
         }
 
@@ -90,15 +95,15 @@ namespace Quader.Components.Boards
         {
             var baseX = Entity.Position.X + Board.Width * 32 + 80;
             if (piece.Type == PieceType.I || piece.Type == PieceType.O)
-                baseX += 32;
+                baseX += _boardSkin.CellSize;
             else
-                baseX += 16;
+                baseX += _boardSkin.CellSize / 2;
 
             if (piece.Type == PieceType.I)
-                y += 16;
+                y += _boardSkin.CellSize;
 
             var baseY = y;
-            var size = 32;
+            var size = _boardSkin.CellSize;
 
             var curPos = piece.CurrentPos;
 

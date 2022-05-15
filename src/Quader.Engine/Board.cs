@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
+using Nez;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.Replays;
 using Quader.Engine.Serialization;
 using Quader.Engine.Settings;
 using Debug = Nez.Debug;
+using Random = System.Random;
 
 namespace Quader.Engine
 {
@@ -37,6 +40,10 @@ namespace Quader.Engine
         public event EventHandler<PieceBase>? PieceRotated;
         public event EventHandler<int>? LinesCleared;
         public event EventHandler? BoardChanged;
+        /// <summary>
+        /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
+        /// </summary>
+        public event EventHandler? PieceCannotBeSpawned; 
 
         private readonly BoardCellContainer _cellContainer;
 
@@ -57,6 +64,8 @@ namespace Quader.Engine
 
         // Used for smooth gravity handling
         private float _intermediateY;
+
+        public BoardMove LastMove { get; private set; }
 
         public GravitySettings GravitySettings { get; }
 
@@ -191,9 +200,20 @@ namespace Quader.Engine
             int nearestY = 0;
 
             var t0 = Debug.TimeAction(() => nearestY = FindNearestY());
-            
+
             if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
+            {
+                PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
                 return new BoardMove();
+            }
+
+            var linesCleared = CheckLineClears();
+
+            if (nearestY < Height && LastMove.LinesCleared == 0 && linesCleared.Length == 0)
+            {
+                PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
+                return new BoardMove();
+            }
 
             var moveType = BoardMoveModificators.None;
 
@@ -211,23 +231,25 @@ namespace Quader.Engine
                     moveType |= BoardMoveModificators.TSpinMini;
             }
 
-            var linesCleared = CheckLineClears();
+            ClearLines(linesCleared);
 
             GlobalTimeManager.AddData("FindNearestY", t0);
 
-            CreateBoardMoveType(ref moveType, linesCleared, tSpinType);
+            CreateBoardMoveType(ref moveType, linesCleared.Length, tSpinType);
 
             LastMoveType = LastMoveType.None;
 
             var bm = new BoardMove
             {
-                LinesCleared = linesCleared,
+                LinesCleared = linesCleared.Length,
                 Modificators = moveType,
                 Timestamp = DateTime.UtcNow,
                 BackToBack = CurrentB2B,
                 Combo = CurrentCombo++,
                 Success = true
             };
+
+            LastMove = bm;
 
             PieceHardDropped?.Invoke(this, bm);
             ResetPiece(CurrentPiece);
@@ -464,8 +486,8 @@ namespace Quader.Engine
                 }
             }
 
-            if (oobOverhangs + nonOobOverhangs > 4) // We cannot have more than 4 blocks checked in any case!
-                throw new Exception("Something went wrong!");
+            // We cannot have more than 4 blocks checked in any case!
+            Insist.IsFalse(oobOverhangs + nonOobOverhangs > 4);
 
             if (oobOverhangs > 0 && nonOobOverhangs > 0)
                 return TSpinType.Mini;
@@ -476,13 +498,6 @@ namespace Quader.Engine
             return TSpinType.None;
         }
 
-        public void ForceUpdate()
-        {
-            CheckLineClears();
-
-            BoardChanged?.Invoke(this, EventArgs.Empty);
-        }
-        
         public void Reset()
         {
             LastMoveType = LastMoveType.None;
@@ -550,9 +565,9 @@ namespace Quader.Engine
             return !_cellContainer.Intersects(adjusted);
         }
         
-        private int CheckLineClears()
+        private int[] CheckLineClears()
         {
-            int linesCleared = 0;
+            List<int> linesCleared = new List<int>();
 
             var b = CurrentPiece.Bounds;
 
@@ -561,20 +576,26 @@ namespace Quader.Engine
                 var isFull = _cellContainer.IsLineFull(y);
                 if (isFull)
                 {
-                    linesCleared++;
-                    _piecesOnBoard -= Width;
-                    
-                    MoveDown(y);
+                    linesCleared.Add(y);
                 }
             }
+            
+            return linesCleared.ToArray();
+        }
 
-            if (linesCleared > 0)
+        private void ClearLines(int[] ys)
+        {
+            foreach (var y in ys)
             {
-                LinesCleared?.Invoke(this, linesCleared);
-                BoardChanged?.Invoke(this, EventArgs.Empty);
+                _piecesOnBoard -= Width;
+                MoveDown(y);
             }
 
-            return linesCleared;
+            if (ys.Length > 0)
+            {
+                LinesCleared?.Invoke(this, ys.Length);
+                BoardChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)

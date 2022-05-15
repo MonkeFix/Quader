@@ -45,6 +45,11 @@ namespace Quader.Components.Boards
                 throw new Exception("Piece Queue is null");
         }
 
+        public void Restart()
+        {
+
+        }
+
         public void HoldPiece()
         {
             if (_isHoldUsed)

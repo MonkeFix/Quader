@@ -5,5 +5,7 @@ namespace Quader.Components.Boards
     public interface IBoardComponent
     {
         Board Board { get; }
+
+        void Restart();
     }
 }

@@ -52,6 +52,11 @@ namespace Quader.Components.Boards
             
         }
 
+        public void Restart()
+        {
+
+        }
+
         public override void Render(Batcher batcher, Camera camera)
         {
             batcher.Draw(_renderTarget, Entity.Position, null, Color.White, Entity.Rotation, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);

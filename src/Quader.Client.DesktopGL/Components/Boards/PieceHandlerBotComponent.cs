@@ -42,6 +42,11 @@ namespace Quader.Components.Boards
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
         }
 
+        public void Restart()
+        {
+
+        }
+
         public override void OnAddedToEntity()
         {
             _queue = Entity.GetComponent<PieceQueueComponent>();

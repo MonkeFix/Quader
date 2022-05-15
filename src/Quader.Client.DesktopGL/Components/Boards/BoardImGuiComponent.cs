@@ -24,7 +24,12 @@ namespace Quader.Components.Boards
 
         public override void OnAddedToEntity()
         {
-            Core.GetGlobalManager<ImGuiManager>().RegisterDrawCommand(ImGuiDraw);
+            Core.GetGlobalManager<ImGuiManager>()?.RegisterDrawCommand(ImGuiDraw);
+        }
+
+        public void Restart()
+        {
+
         }
 
         private void ImGuiDraw()

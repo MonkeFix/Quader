@@ -57,6 +57,11 @@ namespace Quader.Components.Boards
             _heldPiece = Entity.GetComponent<HeldPieceComponent>();
         }
 
+        public void Restart()
+        {
+
+        }
+
         public void Update()
         {
             if (Input.IsKeyPressed(_gameConfig.Controls.HardDrop))

@@ -43,6 +43,11 @@ namespace Quader.Components.Boards
             batcher.Draw(_renderTarget, Entity.Position, null, Color.White * 0.1f, Entity.Rotation, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);
         }
 
+        public void Restart()
+        {
+
+        }
+
         private void RenderToTexture()
         {
             var oldRt = Core.GraphicsDevice.GetRenderTargets();
