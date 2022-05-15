@@ -86,12 +86,13 @@ namespace Quader.Scenes
             boardEntityBot.AddComponent(new PieceQueueComponent(boardBot, pg2));
             boardEntityBot.AddComponent(new HeldPieceComponent(boardBot));
             boardEntityBot.AddComponent(new ScoreHandlerComponent(boardBot));
+            boardEntityBot.AddComponent(new BoardGravityComponent(boardBot));
 
             boardEntityBot.Position = new Vector2(256 + 512 + 128 + 64, 128);
             br2.Origin = new Vector2(188, 0);
 
             AddEntity(boardEntity);
-            //AddEntity(boardEntityBot);
+            AddEntity(boardEntityBot);
 
             _logger.Debug("Done initializing");
         }

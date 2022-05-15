@@ -31,8 +31,8 @@ namespace Quader.Components.Boards
 
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
 
-            Width = 1000;
-            Height = 1000;
+            Width = 200;
+            Height = 150;
 
             Board.PieceHardDropped += (sender, piece) => { _isHoldUsed = false; };
         }
