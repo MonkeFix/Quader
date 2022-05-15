@@ -22,7 +22,11 @@ namespace Quader
                 new FileLogger()
             };
 
-            var logger = LoggerFactory.GetLogger("Main");
+            var logger = LoggerFactory.GetLogger("Kernel");
+
+            logger.Info("\nStarting up Quader\n" +
+                        $"Startup Time: {DateTimeOffset.Now}\n" +
+                        $"Working Directory: {WorkingDirectory}\n");
 
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {

@@ -40,9 +40,6 @@ namespace Quader.Scenes
             
             _logger.Debug("Initializing");
 
-            var imGuiManager = new ImGuiManager();
-            Core.RegisterGlobalManager(imGuiManager);
-            
             SetDesignResolution(Width, Height, SceneResolutionPolicy.BestFit);
             Screen.SetSize(1920, 1080);
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Nez;
+using Nez.ImGuiTools;
 using Nez.Persistence;
 using Nez.Systems;
 using Nez.UI;
@@ -24,16 +25,22 @@ namespace Quader
 
         public static JsonSettings DefaultJsonSettings { get; private set; } = null!;
 
+        private readonly ILogger _logger = LoggerFactory.GetLogger<GameRoot>();
+
         public GameRoot()
             : base(windowTitle: "Quader")
         {
+            _logger.Debug("Setting up");
+
             Window.AllowUserResizing = false;
 
             IsFixedTimeStep = false;
             TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 240.0);
 
+            _logger.Info("Initializing FMOD");
             FMODManager.Init(FMODMode.Core, "Content");
 
+            _logger.Info("Loading Piece Settings");
             DefaultJsonSettings = new JsonSettings
             {
                 TypeConverters = new JsonTypeConverter[]
@@ -49,6 +56,7 @@ namespace Quader
 
             if (!File.Exists(pieceSettingsFilename))
             {
+                _logger.Warn($"Piece Settings file does not exist ({pieceSettingsFilename}), taking the defaults");
                 using var sw = new StreamWriter(pieceSettingsFilename, false);
                 pieceSettings = new PieceSettings();
                 sw.WriteLine(Json.ToJson(pieceSettings, DefaultJsonSettings));
@@ -58,6 +66,7 @@ namespace Quader
                 using var sr = new StreamReader(pieceSettingsFilename);
                 var json = sr.ReadToEnd();
                 pieceSettings = Json.FromJson<PieceSettings>(json, DefaultJsonSettings);
+                _logger.Info("Successfully loaded Piece Settings from file");
             }
 
             PieceUtils.PieceSettings = pieceSettings;
@@ -65,10 +74,18 @@ namespace Quader
         
         protected override void Initialize()
         {
+            _logger.Info("Initializing");
+
             base.Initialize();
 
+            _logger.Info("Creating global ImGUI Manager");
+            var imGuiManager = new ImGuiManager();
+            Core.RegisterGlobalManager(imGuiManager);
+
+            _logger.Info("Creating skin");
             Skin skin = Skin.CreateDefaultSkin();
 
+            _logger.Info("Loading content files");
             var skinTexture = Content.LoadTexture("Content/skins/default_3.png");
             var boardTexture = Content.LoadTexture("Content/skins/board_default.png");
             skin.Add("board_skin", new BoardSkin(skinTexture, boardTexture));
@@ -79,6 +96,7 @@ namespace Quader
             channel.Volume = 0.1f;
             channel.Looping = true;*/
 
+            _logger.Info($"Loading Game Config ({_configFilePath})");
             GameConfig gc;
 
             try
@@ -97,6 +115,7 @@ namespace Quader
 
             Services.AddService(gc);
 
+            _logger.Info("Changing current scene");
             Scene = new GameplayScene();
         }
 
@@ -108,6 +127,8 @@ namespace Quader
         protected override void UnloadContent()
         {
             base.UnloadContent();
+
+            _logger.Info("Unloading content");
 
             var gc = Services.GetService<GameConfig>();
             GameConfig.SaveToFile(gc, _configFilePath);
