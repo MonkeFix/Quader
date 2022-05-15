@@ -86,7 +86,7 @@ namespace Quader.Scenes
             boardEntityBot.AddComponent(new BoardGridRendererComponent(boardBot));
             boardEntityBot.AddComponent(new BoardRendererComponent(boardBot));
             boardEntityBot.AddComponent(new PieceHandlerBotComponent(boardBot));
-            boardEntityBot.AddComponent(new PieceRendererComponent(boardBot, false));
+            boardEntityBot.AddComponent(new PieceRendererComponent(boardBot, true));
             // boardEntityBot.AddComponent(new PieceHandlerComponent(board));
             //boardEntityBot.AddComponent(new BoardImGuiComponent(boardBot));
             boardEntityBot.AddComponent(new PieceQueueComponent(boardBot, pg2));

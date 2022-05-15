@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading;
@@ -153,55 +155,12 @@ namespace Quader.Components.Boards
                     }
                 }
 
-                /*for (int i = 0; i < 4; i++)
-                {
-                    var rawX = move.ExpectedX[i];
-                    var rawY = move.ExpectedY[i];
-
-                    Board.SetCellAt(rawX, 39 - rawY, Board.CurrentPiece.BoardCellType);
-                    
-                }
-                Board.PushPiece(_queue.Request());
-                Board.ForceUpdate();*/
-                //Console.Write("Moves: ");
-
-                var moves = move.Move.Movements;
                 for (int i = 0; i < move.Move.MovementCount; i++)
                 {
-                    var m = moves[i];
-                    //Console.Write($"{m}\t");
-                    switch (m)
-                    {
-                        case Movement.Left:
-                            Board.PieceMoveLeft();
-                            break;
-                        case Movement.Right:
-                            Board.PieceMoveRight();
-                            break;
-                        case Movement.Clockwise:
-                            Board.Rotate(Rotation.Clockwise);
-                            break;
-                        case Movement.CounterClockwise:
-                            Board.Rotate(Rotation.CounterClockwise);
-                            break;
-                        case Movement.Drop:
-                            Board.SoftDrop(100);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    DoMove(move.Move.Movements[i]);
                 }
 
-                //Console.WriteLine();
-
-                var lines = Board.HardDrop();
-                if (lines.Modificators.HasFlag(BoardMoveModificators.AllClear))
-                    Console.WriteLine("ALL CLEAR!");
-
-                if (lines.LinesCleared > 0)
-                    Console.WriteLine($"Lines Cleared: {lines.LinesCleared}. B2B: {lines.BackToBack}. Combo: {lines.Combo}. Type: {lines.Modificators}");
-                /*if (lines > 0)
-                    Console.WriteLine("Cleared Lines by the Bot: " + lines);*/
+                Board.HardDrop();
             }
             else if (move.PollStatus == BotPollStatus.Waiting)
             {
@@ -214,6 +173,30 @@ namespace Quader.Components.Boards
 
             var np = _queue.NextPiece;
             _coldClear.AddNextPieceAsync(PieceTypeToPiece(np.Type));
+        }
+
+        private void DoMove(Movement m)
+        {
+            switch (m)
+            {
+                case Movement.Left:
+                    Board.PieceMoveLeft();
+                    break;
+                case Movement.Right:
+                    Board.PieceMoveRight();
+                    break;
+                case Movement.Clockwise:
+                    Board.Rotate(Rotation.Clockwise);
+                    break;
+                case Movement.CounterClockwise:
+                    Board.Rotate(Rotation.CounterClockwise);
+                    break;
+                case Movement.Drop:
+                    Board.SoftDrop(100);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private Piece PieceTypeToPiece(PieceType type)
