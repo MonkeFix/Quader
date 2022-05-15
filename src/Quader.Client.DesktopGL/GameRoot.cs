@@ -38,6 +38,7 @@ namespace Quader
             TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 240.0);
 
             _logger.Info("Initializing FMOD");
+            
             FMODManager.Init(FMODMode.Core, "Content");
 
             _logger.Info("Loading Piece Settings");
