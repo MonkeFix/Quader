@@ -9,7 +9,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class BoardRendererComponent : RenderableComponent, IUpdatable, IBoardComponent
+    public class BoardRendererComponent : RenderableComponent, IBoardComponent
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -45,16 +45,6 @@ namespace Quader.Components.Boards
             _spriteBatch = new SpriteBatch(Core.GraphicsDevice);
             _renderTarget = new RenderTarget2D(Core.GraphicsDevice, (int)Width, (int)Height);
             RenderToTexture();
-        }
-
-        public void Update()
-        {
-            
-        }
-
-        public void Restart()
-        {
-
         }
 
         public override void Render(Batcher batcher, Camera camera)

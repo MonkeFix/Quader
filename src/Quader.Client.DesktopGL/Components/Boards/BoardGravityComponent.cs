@@ -16,10 +16,5 @@ namespace Quader.Components.Boards
         {
             Board.UpdateGravity(Time.DeltaTime);
         }
-
-        public void Restart()
-        {
-
-        }
     }
 }

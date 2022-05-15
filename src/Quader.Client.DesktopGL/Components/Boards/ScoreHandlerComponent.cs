@@ -4,7 +4,7 @@ using Quader.Engine;
 
 namespace Quader.Components.Boards
 {
-    public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent
+    public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent, IResetable
     {
         public override float Width => 500;
         public override float Height => 500;
@@ -25,9 +25,10 @@ namespace Quader.Components.Boards
             };
         }
 
-        public void Restart()
+        public void Reset()
         {
-
+            Pps = 0;
+            TotalPieces = 0;
         }
 
         public void Update()

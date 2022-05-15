@@ -15,7 +15,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class PieceHandlerBotComponent : RenderableComponent, IUpdatable, IDisposable, IBoardComponent
+    public class PieceHandlerBotComponent : RenderableComponent, IUpdatable, IDisposable, IBoardComponent, IResetable
     {
         public override float Width => 1000;
         public override float Height => 1000;
@@ -42,7 +42,7 @@ namespace Quader.Components.Boards
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
         }
 
-        public void Restart()
+        public void Reset()
         {
 
         }

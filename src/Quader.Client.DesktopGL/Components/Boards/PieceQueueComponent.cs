@@ -12,7 +12,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class PieceQueueComponent : RenderableComponent, IBoardComponent
+    public class PieceQueueComponent : RenderableComponent, IBoardComponent, IResetable
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -52,7 +52,7 @@ namespace Quader.Components.Boards
             Board.SetPiece(p);
         }
 
-        public void Restart()
+        public void Reset()
         {
 
         }

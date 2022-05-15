@@ -209,7 +209,7 @@ namespace Quader.Engine
 
             var linesCleared = CheckLineClears();
 
-            if (nearestY < Height && LastMove.LinesCleared == 0 && linesCleared.Length == 0)
+            if (nearestY <= Height && LastMove.LinesCleared == 0 && linesCleared.Length == 0)
             {
                 PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
                 return new BoardMove();
@@ -506,6 +506,8 @@ namespace Quader.Engine
             _piecesOnBoard = 0;
             _intermediateY = 0;
             _lastGarbageLineX = -1;
+
+            CurrentGravity = GravitySettings.BaseGravity;
 
             _cellContainer.Reset();
 

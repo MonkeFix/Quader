@@ -9,7 +9,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class HeldPieceComponent : RenderableComponent, IBoardComponent
+    public class HeldPieceComponent : RenderableComponent, IBoardComponent, IResetable
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -45,7 +45,7 @@ namespace Quader.Components.Boards
                 throw new Exception("Piece Queue is null");
         }
 
-        public void Restart()
+        public void Reset()
         {
 
         }

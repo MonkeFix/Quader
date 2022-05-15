@@ -27,11 +27,6 @@ namespace Quader.Components.Boards
             Core.GetGlobalManager<ImGuiManager>()?.RegisterDrawCommand(ImGuiDraw);
         }
 
-        public void Restart()
-        {
-
-        }
-
         private void ImGuiDraw()
         {
             ImGui.Begin("Piece Handling");

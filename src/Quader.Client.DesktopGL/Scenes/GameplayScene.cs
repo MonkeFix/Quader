@@ -124,8 +124,7 @@ namespace Quader.Scenes
             var br = boardEntity.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
             br.Origin = new Vector2(188, 0);
 
-            Component[] comps = new Component[]
-            {
+            Component[] comps = {
                 new BoardGridRendererComponent(board),
                 new BoardRendererComponent(board),
                 new PieceRendererComponent(board),
@@ -143,8 +142,8 @@ namespace Quader.Scenes
             {
                 foreach (var component in comps)
                 {
-                    if (component is IBoardComponent boardComponent)
-                        boardComponent.Restart();
+                    if (component is IResetable boardComponent)
+                        boardComponent.Reset();
                 }
             }));
 

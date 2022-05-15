@@ -20,13 +20,13 @@ namespace Quader.Components.Boards
 
         public void Restart()
         {
-
+            Console.WriteLine("RESTART");
         }
 
         private void BoardOnPieceCannotBeSpawned(object? sender, EventArgs e)
         {
             Console.WriteLine("CANNOT SPAWN A NEW PIECE!");
-
+            Board.Reset();
             _restartAction.Invoke();
         }
     }

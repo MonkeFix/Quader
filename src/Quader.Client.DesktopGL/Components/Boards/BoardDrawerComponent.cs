@@ -24,7 +24,7 @@ namespace Quader.Components.Boards
 
         public void Draw4Wide()
         {
-
+            
         }
 
         public void DrawDtCanon()
@@ -72,11 +72,6 @@ namespace Quader.Components.Boards
             {
                 Board.SetCellAt(scaledMp.X, scaledMp.Y, BoardCellType.None, true);
             }
-        }
-
-        public void Restart()
-        {
-
         }
     }
 }

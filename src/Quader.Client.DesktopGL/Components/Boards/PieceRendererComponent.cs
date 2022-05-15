@@ -41,11 +41,6 @@ namespace Quader.Components.Boards
             Board.PieceRotated += (sender, args) => CalculateGhostY();
         }
 
-        public void Restart()
-        {
-
-        }
-
         public override void Render(Batcher batcher, Camera camera)
         {
             var piece = Board.CurrentPiece;
