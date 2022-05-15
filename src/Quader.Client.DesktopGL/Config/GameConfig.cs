@@ -7,6 +7,8 @@ namespace Quader.Config
     {
         [JsonInclude] public Handling Handling { get; set; } = new Handling().Defaults();
         [JsonInclude] public Controls Controls { get; set; } = new Controls().Defaults();
+        [JsonInclude] public Audio Audio { get; set; } = new Audio().Defaults();
+        [JsonInclude] public Gameplay Gameplay { get; set; } = new Gameplay().Defaults();
 
         
         public static GameConfig LoadFromFile(string filename)
