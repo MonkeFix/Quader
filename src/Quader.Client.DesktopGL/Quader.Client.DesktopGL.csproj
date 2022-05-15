@@ -19,10 +19,16 @@
     <RepositoryUrl>https://github.com/lunacys/Quader</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <NeutralLanguage>en</NeutralLanguage>
+    <Company>loonacuse</Company>
+    <Copyright>loonacuse</Copyright>
+    <PackageIcon>Icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />
@@ -54,5 +60,11 @@
   <ItemGroup>
     <Folder Include="Config\" />
     <Folder Include="Serialization\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 </Project>
