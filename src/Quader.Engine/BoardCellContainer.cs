@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace Quader.Engine
@@ -75,6 +76,21 @@ namespace Quader.Engine
             }
 
             return true;
+        }
+
+        public bool[] ToBoolArray()
+        {
+            List<bool> res = new List<bool>();
+
+            for (int y = Height - 1; y >= 0; y--)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    res.Add(GetCellAt(x, y) != BoardCellType.None);
+                }
+            }
+
+            return res.ToArray();
         }
 
         public bool Intersects(Point[] points)

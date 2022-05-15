@@ -5,6 +5,7 @@ using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
 using Nez.Sprites;
+using Nez.Timers;
 using Nez.UI;
 using Quader.Components.Boards;
 using Quader.Debugging.Logging;
@@ -104,6 +105,10 @@ namespace Quader.Scenes
             AddEntity(boardEntity);
             AddEntity(boardEntityBot);
 
+            Core.Schedule(.1f, true, boardBot, (timer) =>
+            {
+                timer.GetContext<Board>().PushGarbage(1);
+            });
 
             _logger.Debug("Done initializing");
         }

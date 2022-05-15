@@ -27,7 +27,7 @@ namespace Quader.Components.Boards
         private ColdClear _coldClear = null!;
 
         [Inspectable]
-        public float TargetPps { get; set; } = 1;//0.1f;
+        public float TargetPps { get; set; } = 50;//0.1f;
         private float _elapsed;
 
         [Inspectable] public bool DrawPlan { get; set; } = false;
@@ -36,24 +36,44 @@ namespace Quader.Components.Boards
         private HeldPieceComponent _hold = null!;
 
         private BoardSkin _boardSkin;
+        private BoardMove _lastMove;
+
+        private bool _holdUsed = false;
+        private PlanPlacement[] _plan;
+        private uint _planSize;
 
         public PieceHandlerBotComponent(Board board)
         {
             Board = board;
 
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
+
+            Board.GarbageReceived += (sender, lines) =>
+            {
+                _coldClear?.Reset(Board.ToBoolArray(), _lastMove.Combo, _lastMove.BackToBack > 0);
+            };
         }
 
         public void Reset()
         {
             _elapsed = 0;
+            _holdUsed = false;
             _coldClear.Reset(new bool[400], 0, false);
+            InitColdClear();
         }
 
         public override void OnAddedToEntity()
         {
             _queue = Entity.GetComponent<PieceQueueComponent>();
             _hold = Entity.GetComponent<HeldPieceComponent>();
+
+            InitColdClear();
+        }
+
+        private void InitColdClear()
+        {
+            if (_coldClear != null)
+                _coldClear.Dispose();
 
             var q = _queue.Queue.Select(p => PieceTypeToPiece(p.Type)).ToList();
             q.Add(PieceTypeToPiece(_queue.NextPiece.Type));
@@ -62,7 +82,7 @@ namespace Quader.Components.Boards
             opt.UseHold = true;
             opt.Speculate = true;
             opt.SpawnRule = SpawnRule.Row21AndFall;
-            opt.MaxNodes = (uint) Math.Pow(2, 20);
+            opt.MaxNodes = (uint)Math.Pow(2, 20);
 
             _coldClear = new ColdClear(
                 opt,
@@ -126,10 +146,6 @@ namespace Quader.Components.Boards
             _coldClear?.Dispose();
         }
 
-        private bool _holdUsed = false;
-        private PlanPlacement[] _plan;
-        private uint _planSize;
-
         private void DoMove()
         {
             _coldClear.RequestNextMove(0);
@@ -160,7 +176,7 @@ namespace Quader.Components.Boards
                     DoMove(move.Move.Movements[i]);
                 }
 
-                Board.HardDrop();
+                _lastMove = Board.HardDrop();
             }
             else if (move.PollStatus == BotPollStatus.Waiting)
             {

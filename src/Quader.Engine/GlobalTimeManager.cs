@@ -13,6 +13,8 @@ namespace Quader.Engine
 
         private List<TimeSpan> AllTimes { get; } = new ();
         public double _average;
+        public double _min;
+        public double _max;
 
         public void Add(TimeSpan ts)
         {
@@ -23,11 +25,15 @@ namespace Quader.Engine
         private void Recalc()
         {
             _average = AllTimes.Select(span => span.TotalMilliseconds).Average();
+            _min = AllTimes.Select(span => span.TotalMilliseconds).Min();
+            _max = AllTimes.Select(span => span.TotalMilliseconds).Max();
         }
 
         public override string ToString()
         {
-            return $"{MethodName}:    Last: {LastTime.TotalMilliseconds} | Mean: {_average:F6} ({AllTimes.Count})";
+            return $"{MethodName}:    Last: {LastTime.TotalMilliseconds:F6} |" +
+                   $" Mean: {_average:F6} ({AllTimes.Count}) " +
+                   $"Min: {_min:F6} | Max: {_max}";
         }
     }
     

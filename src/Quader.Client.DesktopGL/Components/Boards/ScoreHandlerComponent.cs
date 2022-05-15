@@ -12,6 +12,7 @@ namespace Quader.Components.Boards
 
         public float Pps { get; private set; }
         public int TotalPieces { get; private set; }
+        public int LinesCleared { get; private set; }
 
         public ScoreHandlerComponent(Board board)
         {
@@ -23,12 +24,18 @@ namespace Quader.Components.Boards
 
                 Console.WriteLine($"Combo: {boardMove.Combo}. B2B: {boardMove.BackToBack}. Lines Cleared: {boardMove.LinesCleared}. Modificators: {boardMove.Modificators}");
             };
+
+            Board.LinesCleared += (sender, i) =>
+            {
+                LinesCleared += i;
+            };
         }
 
         public void Reset()
         {
             Pps = 0;
             TotalPieces = 0;
+            LinesCleared = 0;
         }
 
         public void Update()
@@ -45,6 +52,7 @@ namespace Quader.Components.Boards
                 $"TP: {TotalPieces}\n" +
                 $"PPS: {Pps:F1}\n" +
                 $"Pieces on the board: {Board.PiecesOnBoard}\n" +
+                $"Lines Cleared: {LinesCleared}\n" +
                 $"Current Gravity: {Board.CurrentGravity:F3}\n" +
                 $"Current Lock: {Board.CurrentLock:F2}", 
                 Entity.Position, Microsoft.Xna.Framework.Color.Red);

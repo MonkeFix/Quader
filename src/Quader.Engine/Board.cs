@@ -40,6 +40,8 @@ namespace Quader.Engine
         public event EventHandler<PieceBase>? PieceRotated;
         public event EventHandler<int>? LinesCleared;
         public event EventHandler? BoardChanged;
+        public event EventHandler<int>? GarbageReceived; 
+
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
         /// </summary>
@@ -427,7 +429,10 @@ namespace Quader.Engine
                 _cellContainer.SetLine(TotalHeight - 1, CreateGarbageRow(garbageHoleX));
             }
 
+            _piecesOnBoard += Width - 1;
+
             BoardChanged?.Invoke(this, EventArgs.Empty);
+            GarbageReceived?.Invoke(this, garbageLines);
         }
 
         private BoardCellType[] CreateGarbageRow(int holeX)
@@ -528,6 +533,7 @@ namespace Quader.Engine
         }
         public void MoveDown(int fromY = 0) => _cellContainer.MoveDown(fromY);
         public BoardCellType GetCellAt(int x, int y) => _cellContainer.GetCellAt(x, y);
+        public bool[] ToBoolArray() => _cellContainer.ToBoolArray();
 
         public void SetCellAt(int x, int y, BoardCellType cell, bool needsUpdate = false)
         {

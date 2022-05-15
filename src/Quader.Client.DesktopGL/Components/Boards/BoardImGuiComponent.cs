@@ -30,36 +30,39 @@ namespace Quader.Components.Boards
         private void ImGuiDraw()
         {
             ImGui.Begin("Piece Handling");
-
+            
             ImGui.Text($"Delta Time ms: {Time.DeltaTime * 1000:F2}\n" +
                        $"Total Time: {Time.TotalTime:F3} seconds\n" +
                        $"Alt Delta Time ms: {Time.AltDeltaTime * 1000:F2}\n" +
                        $"Frame Count: {Time.FrameCount}");
-
-            ImGui.Text($"Time Data:");
-
-            var vals = GlobalTimeManager.TimeData.Values;
-            foreach (var val in vals)
+            
+            if (ImGui.CollapsingHeader("Time Data"))
             {
-                ImGui.Text(val.ToString());
+                ImGui.Text($"Time Data:");
+
+                var vals = GlobalTimeManager.TimeData.Values;
+                foreach (var val in vals)
+                {
+                    ImGui.Text(val.ToString());
+                }
+
+                var totalLast = vals.Select(data => data.LastTime);
+                var totalMean = vals.Select(data => data._average);
+
+                double tl = 0, tm = 0;
+
+                foreach (var l in totalLast)
+                {
+                    tl += l.TotalMilliseconds;
+                }
+
+                foreach (var timeSpan in totalMean)
+                {
+                    tm += timeSpan;
+                }
+
+                ImGui.Text($"Total: Last: {tl:F6}, Mean: {tm:F6}");
             }
-
-            var totalLast = vals.Select(data => data.LastTime);
-            var totalMean = vals.Select(data => data._average);
-
-            double tl = 0, tm = 0;
-
-            foreach (var l in totalLast)
-            {
-                tl += l.TotalMilliseconds;
-            }
-
-            foreach (var timeSpan in totalMean)
-            {
-                tm += timeSpan;
-            }
-
-            ImGui.Text($"Total: Last: {tl:F6}, Mean: {tm:F6}");
 
             ImGui.Separator();
 
@@ -148,23 +151,26 @@ namespace Quader.Components.Boards
 
             ImGui.Separator();
 
-            if (ImGui.Button("Spawn I"))
-                Board.SetPiece(PieceType.I);
-            ImGui.SameLine();
-            if (ImGui.Button("Spawn J"))
-                Board.SetPiece(PieceType.J);
-            if (ImGui.Button("Spawn L"))
-                Board.SetPiece(PieceType.L);
-            ImGui.SameLine();
-            if (ImGui.Button("Spawn T"))
-                Board.SetPiece(PieceType.T);
-            if (ImGui.Button("Spawn S"))
-                Board.SetPiece(PieceType.S);
-            ImGui.SameLine();
-            if (ImGui.Button("Spawn Z"))
-                Board.SetPiece(PieceType.Z);
-            if (ImGui.Button("Spawn O"))
-                Board.SetPiece(PieceType.O);
+            if (ImGui.CollapsingHeader("Piece Spawner"))
+            {
+                if (ImGui.Button("Spawn I"))
+                    Board.SetPiece(PieceType.I);
+                ImGui.SameLine();
+                if (ImGui.Button("Spawn J"))
+                    Board.SetPiece(PieceType.J);
+                if (ImGui.Button("Spawn L"))
+                    Board.SetPiece(PieceType.L);
+                ImGui.SameLine();
+                if (ImGui.Button("Spawn T"))
+                    Board.SetPiece(PieceType.T);
+                if (ImGui.Button("Spawn S"))
+                    Board.SetPiece(PieceType.S);
+                ImGui.SameLine();
+                if (ImGui.Button("Spawn Z"))
+                    Board.SetPiece(PieceType.Z);
+                if (ImGui.Button("Spawn O"))
+                    Board.SetPiece(PieceType.O);
+            }
 
             ImGui.End();
         }

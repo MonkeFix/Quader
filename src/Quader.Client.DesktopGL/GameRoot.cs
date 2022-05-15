@@ -71,6 +71,8 @@ namespace Quader
             }
 
             PieceUtils.PieceSettings = pieceSettings;
+
+            PauseOnFocusLost = false;
         }
         
         protected override void Initialize()
