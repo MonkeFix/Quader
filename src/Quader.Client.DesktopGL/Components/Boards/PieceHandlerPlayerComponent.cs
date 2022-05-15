@@ -5,7 +5,7 @@ using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards
 {
-    public class PieceHandlerPlayerComponent : Component, IUpdatable, IBoardComponent
+    public class PieceHandlerPlayerComponent : Component, IUpdatable, IBoardComponent, IResetable
     {
         public Board Board { get; }
 
@@ -57,7 +57,7 @@ namespace Quader.Components.Boards
             _heldPiece = Entity.GetComponent<HeldPieceComponent>();
         }
 
-        public void Restart()
+        public void Reset()
         {
 
         }

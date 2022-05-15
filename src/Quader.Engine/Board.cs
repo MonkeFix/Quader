@@ -124,13 +124,18 @@ namespace Quader.Engine
         /// <param name="delta">Move left delta offset. Must be positive</param>
         public void PieceMoveLeft(int delta = 1)
         {
-            if (TestMovement(-delta, 0))
-            {
-                CurrentPiece.X -= delta;
-                LastMoveType = LastMoveType.Movement;
-            }
+            delta = Math.Min(delta, Width);
 
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+            for (int i = 0; i < delta; i++)
+            {
+                if (TestMovement(-1, 0))
+                {
+                    CurrentPiece.X -= 1;
+                    LastMoveType = LastMoveType.Movement;
+
+                    PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+                }
+            }
         }
 
         /// <summary>
@@ -139,13 +144,18 @@ namespace Quader.Engine
         /// <param name="delta">Move right delta offset. Must be positive</param>
         public void PieceMoveRight(int delta = 1)
         {
-            if (TestMovement(delta, 0))
-            {
-                CurrentPiece.X += delta;
-                LastMoveType = LastMoveType.Movement;
-            }
+            delta = Math.Min(delta, Width);
 
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(delta, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+            for (int i = 0; i < delta; i++)
+            {
+                if (TestMovement(1, 0))
+                {
+                    CurrentPiece.X += 1;
+                    LastMoveType = LastMoveType.Movement;
+
+                    PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+                }
+            }
         }
 
         public void ResetPiece(PieceBase piece)
@@ -172,19 +182,17 @@ namespace Quader.Engine
         {
             var res = true;
 
+            delta = Math.Min(delta, _yToCheck);
+
             var t = Debug.TimeAction(() =>
             {
-                if (delta > 1)
+                for (int i = 0; i < delta; i++)
                 {
-                    var nearestY = FindNearestY();
-                    var offset = Math.Min(nearestY, delta);
-                    CurrentPiece.Y = offset; // TODO: FIXME
-                    //CurrentPiece.Y = Math.Min(CurrentPiece.Y, nearestY);
+                    if (TestMovement(0, 1))
+                        CurrentPiece.Y += 1;
+                    else
+                        res = false;
                 }
-                else if (TestMovement(0, delta))
-                    CurrentPiece.Y += delta;
-                else
-                    res = false;
             });
             GlobalTimeManager.AddData("SoftDrop", t);
 

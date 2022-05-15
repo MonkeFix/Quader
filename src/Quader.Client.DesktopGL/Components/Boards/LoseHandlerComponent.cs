@@ -18,11 +18,6 @@ namespace Quader.Components.Boards
             Board.PieceCannotBeSpawned += BoardOnPieceCannotBeSpawned;
         }
 
-        public void Restart()
-        {
-            Console.WriteLine("RESTART");
-        }
-
         private void BoardOnPieceCannotBeSpawned(object? sender, EventArgs e)
         {
             Console.WriteLine("CANNOT SPAWN A NEW PIECE!");
