@@ -13,7 +13,7 @@ namespace Quader.Engine.Pieces.Impl
         protected override Point[] Deg180Pos { get; }
         protected override Point[] LeftPos { get; }
 
-        public override Dictionary<PieceRotationType, Point[]> WallKickData => PieceUtils.PieceIWallKickData;
+        public override Dictionary<PieceRotationType, Point[]> WallKickData => PieceUtils.PieceSettings!.PieceIWallKickData;
 
         public PieceI()
         {

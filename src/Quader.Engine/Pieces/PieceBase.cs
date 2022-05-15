@@ -90,7 +90,7 @@ namespace Quader.Engine.Pieces
 
         public PieceStartPosition CurrentRotation { get; set; } = PieceStartPosition.Initial;
 
-        public virtual Dictionary<PieceRotationType, Point[]> WallKickData { get; } = PieceUtils.DefaultWallKickData;
+        public virtual Dictionary<PieceRotationType, Point[]> WallKickData { get; } = PieceUtils.PieceSettings!.DefaultWallKickData;
 
         public class WallKickCheckParams
         {
