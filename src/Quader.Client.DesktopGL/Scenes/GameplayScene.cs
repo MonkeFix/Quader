@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Nez;
@@ -128,7 +129,6 @@ namespace Quader.Scenes
                 new BoardGridRendererComponent(board),
                 new BoardRendererComponent(board),
                 new PieceRendererComponent(board),
-                new PieceHandlerPlayerComponent(board),
                 new BoardImGuiComponent(board),
                 new PieceQueueComponent(board, pieceGenerator),
                 new HeldPieceComponent(board),
@@ -138,14 +138,16 @@ namespace Quader.Scenes
 
             boardEntity.AddComponents(comps);
 
-            boardEntity.AddComponent(new LoseHandlerComponent(board, () =>
+            void RestartAction()
             {
                 foreach (var component in comps)
                 {
-                    if (component is IResetable boardComponent)
-                        boardComponent.Reset();
+                    if (component is IResetable boardComponent) boardComponent.Reset();
                 }
-            }));
+            }
+
+            boardEntity.AddComponent(new PieceHandlerPlayerComponent(board, RestartAction));
+            boardEntity.AddComponent(new LoseHandlerComponent(board, RestartAction));
 
             return boardEntity;
         }

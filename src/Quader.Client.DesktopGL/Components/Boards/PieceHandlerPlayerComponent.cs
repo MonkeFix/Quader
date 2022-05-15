@@ -1,4 +1,5 @@
-﻿using Nez;
+﻿using System;
+using Nez;
 using Quader.Config;
 using Quader.Engine;
 using Quader.Engine.Pieces;
@@ -29,9 +30,12 @@ namespace Quader.Components.Boards
         private bool _isLeftDown;
         private bool _isRightDown;
 
-        public PieceHandlerPlayerComponent(Board board)
+        private readonly Action _restartAction;
+
+        public PieceHandlerPlayerComponent(Board board, Action restartAction)
         {
             Board = board;
+            _restartAction = restartAction;
 
             _gameConfig = Core.Services.GetService<GameConfig>();
             _arr = _gameConfig.Handling.AutomaticRepeatRate;
@@ -156,6 +160,7 @@ namespace Quader.Components.Boards
             if (Input.IsKeyPressed(_controls.Restart))
             {
                 Board.Reset(); // TODO: Restart correctly
+                _restartAction.Invoke();
             }
         }
 
