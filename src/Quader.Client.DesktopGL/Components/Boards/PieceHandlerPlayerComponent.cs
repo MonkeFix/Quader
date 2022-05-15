@@ -59,7 +59,9 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
-
+            _elapsed = 0;
+            _isLeftDown = false;
+            _isRightDown = false;
         }
 
         public void Update()

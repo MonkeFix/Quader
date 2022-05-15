@@ -44,7 +44,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
-
+            _elapsed = 0;
+            _coldClear.Reset(new bool[400], 0, false);
         }
 
         public override void OnAddedToEntity()

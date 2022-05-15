@@ -15,7 +15,7 @@ namespace Quader.Engine.PieceGenerators
             PieceType.I, PieceType.O, PieceType.T, PieceType.J, PieceType.L, PieceType.Z, PieceType.S
         };
 
-        private readonly Queue<PieceBase> _pieceQueue = new ();
+        private Queue<PieceBase> _pieceQueue = new ();
 
         public PieceGeneratorBag7(int queueSize)
         {
@@ -25,6 +25,7 @@ namespace Quader.Engine.PieceGenerators
         public IEnumerable<PieceBase> Initialize()
         {
             _pieceQueue.Clear();
+            _pieceQueue = new Queue<PieceBase>();
 
             var bag = GenerateBag();
             var bag2 = GenerateBag();

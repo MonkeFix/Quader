@@ -47,7 +47,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
-
+            _isHoldUsed = false;
+            _heldPiece = null;
         }
 
         public void HoldPiece()

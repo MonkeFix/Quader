@@ -20,7 +20,7 @@ namespace Quader.Components.Boards
         public IPieceGenerator PieceGenerator { get; }
         public Board Board { get; }
 
-        private readonly Queue<PieceBase> _queue;
+        private Queue<PieceBase> _queue;
 
         public PieceBase NextPiece { get; private set; } = null!;
 
@@ -40,21 +40,15 @@ namespace Quader.Components.Boards
 
             Board.PieceHardDropped += BoardOnPieceHardDropped;
 
-            var pieces = PieceGenerator.Initialize();
-            foreach (var piece in pieces)
-            {
-                _queue.Enqueue(piece);
-            }
-
-            Queue = _queue.ToList();
-
-            var p = Request();
-            Board.SetPiece(p);
+            Init();
         }
 
         public void Reset()
         {
+            _queue.Clear();
+            _queue = new Queue<PieceBase>();
 
+            Init();
         }
 
         public PieceBase Request()
@@ -74,6 +68,20 @@ namespace Quader.Components.Boards
 
                 y += _boardSkin.CellSize * 3;
             }
+        }
+
+        private void Init()
+        {
+            var pieces = PieceGenerator.Initialize();
+            foreach (var piece in pieces)
+            {
+                _queue.Enqueue(piece);
+            }
+
+            Queue = _queue.ToList();
+
+            var p = Request();
+            Board.SetPiece(p);
         }
 
         private void BoardOnPieceHardDropped(object? sender, BoardMove e)
