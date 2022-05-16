@@ -42,6 +42,8 @@ namespace Quader.Components.Boards
         private PlanPlacement[] _plan;
         private uint _planSize;
 
+        private int _incomingGarbage = 0;
+
         public PieceHandlerBotComponent(Board board)
         {
             Board = board;
@@ -51,6 +53,12 @@ namespace Quader.Components.Boards
             Board.GarbageReceived += (sender, lines) =>
             {
                 _coldClear?.Reset(Board.ToBoolArray(), _lastMove.Combo, _lastMove.BackToBack > 0);
+            };
+
+            Board.AttackReceived += (sender, attack) =>
+            {
+                _incomingGarbage = attack;
+                //_coldClear?.RequestNextMove(attack);
             };
         }
 
@@ -110,6 +118,9 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
+            batcher.DrawString(Graphics.Instance.BitmapFont, $"Incoming Garbage: {_incomingGarbage}", new Vector2(0, 0),
+                Color.White);
+
             if (DrawPlan)
             {
                 for (int i = 0; i < _planSize; i++)
@@ -148,7 +159,7 @@ namespace Quader.Components.Boards
 
         private void DoMove()
         {
-            _coldClear.RequestNextMove(0);
+            _coldClear.RequestNextMove(_incomingGarbage);
 
             var pl = 5;
 
@@ -177,6 +188,8 @@ namespace Quader.Components.Boards
                 }
 
                 _lastMove = Board.HardDrop();
+
+                _incomingGarbage = 0;  //Math.Max(0, _incomingGarbage - Board.CalculateAttack(_lastMove));
             }
             else if (move.PollStatus == BotPollStatus.Waiting)
             {

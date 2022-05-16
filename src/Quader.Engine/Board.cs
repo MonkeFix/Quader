@@ -39,7 +39,8 @@ namespace Quader.Engine
         public event EventHandler<PieceBase>? PieceRotated;
         public event EventHandler<int>? LinesCleared;
         public event EventHandler? BoardChanged;
-        public event EventHandler<int>? GarbageReceived; 
+        public event EventHandler<int>? GarbageReceived;
+        public event EventHandler<int>? AttackReceived; 
 
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
@@ -117,7 +118,10 @@ namespace Quader.Engine
             ResetPiece(piece);
 
             CurrentPiece = piece;
-            
+
+            if (!TestMovement(0, 0))
+                PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
+
             PiecePushed?.Invoke(this, CurrentPiece);
         }
 
@@ -504,7 +508,10 @@ namespace Quader.Engine
         public void Attack(int attackLines)
         {
             if (attackLines > 0)
+            {
                 _attackQueue.Enqueue(attackLines);
+                AttackReceived?.Invoke(this, attackLines);
+            }
         }
 
         private readonly Queue<int> _attackQueue = new Queue<int>();
