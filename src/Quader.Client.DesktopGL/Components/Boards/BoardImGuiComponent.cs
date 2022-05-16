@@ -81,6 +81,11 @@ namespace Quader.Components.Boards
             if (ImGui.Button("Move Down"))
                 Board.MoveDown();
 
+            if (ImGui.Button("Send Attack"))
+            {
+                Board.Attack(_garbageLines);
+            }
+
             ImGui.Separator();
 
             if (Core.DebugRenderEnabled)

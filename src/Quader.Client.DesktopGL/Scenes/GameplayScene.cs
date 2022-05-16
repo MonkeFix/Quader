@@ -30,8 +30,8 @@ namespace Quader.Scenes
         public GameplayScene()
         {
             _logger.Debug("Constructing, adding renderer");
-            AddRenderer(new DefaultRenderer(100));
-            //AddRenderer(new ScreenSpaceRenderer(100, ScreenSpaceRenderLayer));
+            AddRenderer(new DefaultRenderer(0));
+            AddRenderer(new ScreenSpaceRenderer(100, ScreenSpaceRenderLayer));
             AddRenderer(new RenderLayerExcludeRenderer(0, ScreenSpaceRenderLayer));
         }
 
@@ -111,9 +111,10 @@ namespace Quader.Scenes
 
             boardEntityBot.Position = new Vector2(256 + 512 + 128 + 64, 128);
             br2.Origin = new Vector2(188, 0);
+            br2.LayerDepth = 1f;
 
             AddEntity(boardEntity.Item1);
-            AddEntity(boardEntityBot);
+            //AddEntity(boardEntityBot);
 
             /*Core.Schedule(.1f, true, boardBot, (timer) =>
             {
@@ -138,7 +139,9 @@ namespace Quader.Scenes
 
             var boardEntity = new Entity(name);
             var br = boardEntity.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
+            
             br.Origin = new Vector2(188, 0);
+            br.LayerDepth = 1f;
 
             Component[] comps = {
                 new BoardGridRendererComponent(board),
@@ -148,7 +151,8 @@ namespace Quader.Scenes
                 new PieceQueueComponent(board, pieceGenerator),
                 new HeldPieceComponent(board),
                 new ScoreHandlerComponent(board),
-                new BoardGravityComponent(board)
+                new BoardGravityComponent(board),
+                
             };
 
             boardEntity.AddComponents(comps);
@@ -163,6 +167,8 @@ namespace Quader.Scenes
 
             boardEntity.AddComponent(new PieceHandlerPlayerComponent(board, RestartAction));
             boardEntity.AddComponent(new LoseHandlerComponent(board, RestartAction));
+            var dm = boardEntity.AddComponent(new DamageMeterComponent(board));
+            //dm.Transform.Rotation = (float)Math.PI;
 
             return (boardEntity, board);
         }

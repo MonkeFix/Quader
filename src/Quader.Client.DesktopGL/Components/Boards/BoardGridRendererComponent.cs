@@ -4,6 +4,7 @@ using Nez;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Skinning;
+using Quader.Utils;
 
 namespace Quader.Components.Boards
 {
@@ -15,8 +16,6 @@ namespace Quader.Components.Boards
         private readonly BoardSkin _boardSkin;
 
         private RenderTarget2D _renderTarget = null!;
-
-        private SpriteBatch _spriteBatch = null!;
 
         public Board Board { get; }
 
@@ -32,10 +31,9 @@ namespace Quader.Components.Boards
         public override void Initialize()
         {
             base.Initialize();
-
-            _spriteBatch = new SpriteBatch(Core.GraphicsDevice);
+            
             _renderTarget = new RenderTarget2D(Core.GraphicsDevice, (int)Width, (int)Height);
-            RenderToTexture();
+            _renderTarget.RenderFrom(RenderCells);
         }
 
         public override void Render(Batcher batcher, Camera camera)
@@ -43,23 +41,7 @@ namespace Quader.Components.Boards
             batcher.Draw(_renderTarget, Entity.Position, null, Color.White * 0.1f, Entity.Rotation, LocalOffset, Entity.Scale, SpriteEffects.None, 0f);
         }
 
-        private void RenderToTexture()
-        {
-            var oldRt = Core.GraphicsDevice.GetRenderTargets();
-
-            Core.GraphicsDevice.SetRenderTarget(_renderTarget);
-            Core.GraphicsDevice.Clear(Color.Transparent);
-
-            _spriteBatch.Begin();
-
-            RenderCells(_spriteBatch);
-
-            _spriteBatch.End();
-
-            Core.GraphicsDevice.SetRenderTargets(oldRt);
-        }
-
-        private void RenderCells(SpriteBatch spriteBatch)
+        private void RenderCells(Batcher spriteBatch)
         {
             var size = _boardSkin.CellSize;
             var baseX = 0; //Entity.Position.X;

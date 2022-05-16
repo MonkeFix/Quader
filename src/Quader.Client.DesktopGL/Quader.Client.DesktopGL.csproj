@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />
+    <Folder Include="Utils\" />
     <Folder Include="Serialization\" />
   </ItemGroup>
   <ItemGroup>
