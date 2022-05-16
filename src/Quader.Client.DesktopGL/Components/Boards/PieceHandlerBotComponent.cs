@@ -27,7 +27,7 @@ namespace Quader.Components.Boards
         private ColdClear _coldClear = null!;
 
         [Inspectable]
-        public float TargetPps { get; set; } = 50;//0.1f;
+        public float TargetPps { get; set; } = 1;//0.1f;
         private float _elapsed;
 
         [Inspectable] public bool DrawPlan { get; set; } = false;

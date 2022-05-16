@@ -22,7 +22,7 @@ namespace Quader.Components.Boards
             {
                 TotalPieces++;
 
-                Console.WriteLine($"Combo: {boardMove.Combo}. B2B: {boardMove.BackToBack}. Lines Cleared: {boardMove.LinesCleared}. Modificators: {boardMove.Modificators}");
+                Console.WriteLine($"Attack: {boardMove.Attack}. Combo: {boardMove.Combo}. B2B: {boardMove.BackToBack}. Lines Cleared: {boardMove.LinesCleared}. Modificators: {boardMove.Modificators}");
             };
 
             Board.LinesCleared += (sender, i) =>
@@ -54,7 +54,8 @@ namespace Quader.Components.Boards
                 $"Pieces on the board: {Board.PiecesOnBoard}\n" +
                 $"Lines Cleared: {LinesCleared}\n" +
                 $"Current Gravity: {Board.CurrentGravity:F3}\n" +
-                $"Current Lock: {Board.CurrentLock:F2}", 
+                $"Current Lock: {Board.CurrentLock:F2}\n" +
+                $"Incoming Damage: {string.Join(',', Board.IncomingDamage)}", 
                 Entity.Position, Microsoft.Xna.Framework.Color.Red);
         }
     }

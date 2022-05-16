@@ -75,4 +75,8 @@ public struct BoardMove
     /// Gets whether or not was the move successful. If not, it usually means that the player just lost
     /// </summary>
     public bool Success { get; set; }
+    /// <summary>
+    /// Gets outgoing attack
+    /// </summary>
+    public int Attack { get; set; }
 }

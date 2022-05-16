@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Quader.Engine.Pieces;
@@ -70,6 +69,7 @@ namespace Quader.Engine
         public BoardMove LastMove { get; private set; }
 
         public GravitySettings GravitySettings { get; }
+        public AttackSettings AttackSettings { get; }
 
         /*public Board(int width = 10, int height = 20)
         {
@@ -90,6 +90,7 @@ namespace Quader.Engine
                     "Settings cannot be null. Use GameSettings.Default");
 
             GravitySettings = settings.Gravity;
+            AttackSettings = settings.Attack;
 
             Width = settings.Board.BoardWidth;
             Height = settings.Board.BoardHeight;
@@ -256,8 +257,27 @@ namespace Quader.Engine
                 Timestamp = DateTime.UtcNow,
                 BackToBack = CurrentB2B,
                 Combo = CurrentCombo++,
-                Success = true
+                Success = true,
+                Attack = 0
             };
+
+            if (_attackQueue.Count > 0) // TODO: subtract all the attacks
+            {
+                var attack = _attackQueue.Dequeue();
+
+                var damageCancel = CalculateAttack(bm);
+                
+                var diff = attack - damageCancel;
+
+                if (diff > 0)
+                    PushGarbage(diff);
+                else
+                    bm.Attack = -diff;
+            }
+            else
+            {
+                bm.Attack = CalculateAttack(bm);
+            }
 
             LastMove = bm;
 
@@ -268,7 +288,7 @@ namespace Quader.Engine
         }
 
         private bool _yNeedsUpdate = true;
-        private int _yToCheck = 0;
+        private int _yToCheck;
 
         /// <summary>
         /// Helper method that updates gravity and position of the current piece.
@@ -413,6 +433,84 @@ namespace Quader.Engine
             return y;
         }
 
+        public int CalculateAttack(BoardMove move)
+        {
+            int attack = AttackSettings.Lines0;
+
+            if (move.LinesCleared == 0)
+                return attack;
+
+            var mods = move.Modificators;
+
+            if (mods.HasFlag(BoardMoveModificators.Combo1))
+                attack += AttackSettings.Combos[0];
+            if (mods.HasFlag(BoardMoveModificators.Combo2))
+                attack += AttackSettings.Combos[1];
+            if (mods.HasFlag(BoardMoveModificators.Combo3))
+                attack += AttackSettings.Combos[2];
+            if (mods.HasFlag(BoardMoveModificators.Combo4))
+                attack += AttackSettings.Combos[3];
+            if (mods.HasFlag(BoardMoveModificators.Combo5))
+                attack += AttackSettings.Combos[4];
+
+            if (mods.HasFlag(BoardMoveModificators.AllClear))
+                attack += AttackSettings.AllClear;
+
+            if (mods.HasFlag(BoardMoveModificators.BackToBack1))
+                attack += AttackSettings.BackToBacks[0];
+            if (mods.HasFlag(BoardMoveModificators.BackToBack2))
+                attack += AttackSettings.BackToBacks[1];
+            if (mods.HasFlag(BoardMoveModificators.BackToBack3))
+                attack += AttackSettings.BackToBacks[2];
+            if (mods.HasFlag(BoardMoveModificators.BackToBack4))
+                attack += AttackSettings.BackToBacks[3];
+            if (mods.HasFlag(BoardMoveModificators.BackToBack5))
+                attack += AttackSettings.BackToBacks[4];
+
+            if (mods.HasFlag(BoardMoveModificators.TSpin))
+            {
+                if (mods.HasFlag(BoardMoveModificators.Single))
+                    attack += AttackSettings.TSpinSingle;
+                if (mods.HasFlag(BoardMoveModificators.Double))
+                    attack += AttackSettings.TSpinDouble;
+                if (mods.HasFlag(BoardMoveModificators.Triple))
+                    attack += AttackSettings.TSpinDouble;
+            }
+            else if (mods.HasFlag(BoardMoveModificators.TSpinMini))
+            {
+                if (mods.HasFlag(BoardMoveModificators.Single))
+                    attack += AttackSettings.TSpinSingleMini;
+            }
+            else
+            {
+                if (mods.HasFlag(BoardMoveModificators.Single))
+                    attack += AttackSettings.Lines1;
+                if (mods.HasFlag(BoardMoveModificators.Double))
+                    attack += AttackSettings.Lines2;
+                if (mods.HasFlag(BoardMoveModificators.Triple))
+                    attack += AttackSettings.Lines3;
+                if (mods.HasFlag(BoardMoveModificators.Quad))
+                    attack += AttackSettings.Lines4;
+            }
+
+            return attack;
+        }
+
+        public void Attack(BoardMove move)
+        {
+            Attack(CalculateAttack(move));
+        }
+
+        public void Attack(int attackLines)
+        {
+            if (attackLines > 0)
+                _attackQueue.Enqueue(attackLines);
+        }
+
+        private readonly Queue<int> _attackQueue = new Queue<int>();
+
+        public IEnumerable<int> IncomingDamage => _attackQueue.ToArray();
+
         private int _lastGarbageLineX = -1;
         public void PushGarbage(int garbageLines, int messiness = 0)
         {
@@ -523,6 +621,8 @@ namespace Quader.Engine
             CurrentGravity = GravitySettings.BaseGravity;
 
             _cellContainer.Reset();
+            _attackQueue.Clear();
+            
 
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }

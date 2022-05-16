@@ -72,7 +72,7 @@ namespace Quader.Scenes
 
             var boardEntity = CreateBoard("board-player", pieceGenerator);
 
-            boardEntity.Position = new Vector2(200, 128);
+            boardEntity.Item1.Position = new Vector2(200, 128);
 
 
             var pg2 = new PieceGeneratorBag7(queueSize);
@@ -83,32 +83,42 @@ namespace Quader.Scenes
             
             var boardEntityBot = new Entity("board-bot");
             var br2 = boardEntityBot.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
-            
-            boardEntityBot.AddComponent(new BoardGridRendererComponent(boardBot));
-            boardEntityBot.AddComponent(new BoardRendererComponent(boardBot));
-            boardEntityBot.AddComponent(new PieceHandlerBotComponent(boardBot));
-            boardEntityBot.AddComponent(new PieceRendererComponent(boardBot, true));
-            // boardEntityBot.AddComponent(new PieceHandlerComponent(board));
-            //boardEntityBot.AddComponent(new BoardImGuiComponent(boardBot));
-            boardEntityBot.AddComponent(new PieceQueueComponent(boardBot, pg2));
-            boardEntityBot.AddComponent(new HeldPieceComponent(boardBot));
-            boardEntityBot.AddComponent(new ScoreHandlerComponent(boardBot));
-            boardEntityBot.AddComponent(new BoardGravityComponent(boardBot));
-            boardEntityBot.AddComponent(new LoseHandlerComponent(boardBot, () =>
+
+            Component[] comps = new Component[]
             {
-                pieceGenerator = new PieceGeneratorBag7(queueSize);
-            }));
+                new BoardGridRendererComponent(boardBot),
+                new BoardRendererComponent(boardBot),
+                new PieceRendererComponent(boardBot),
+                new PieceQueueComponent(boardBot, pg2),
+                new HeldPieceComponent(boardBot),
+                new ScoreHandlerComponent(boardBot),
+                new BoardGravityComponent(boardBot),
+                new PieceHandlerBotComponent(boardBot),
+            };
+
+            boardEntityBot.AddComponents(comps);
+
+            void RestartAction()
+            {
+                foreach (var component in comps)
+                {
+                    if (component is IResetable boardComponent) boardComponent.Reset();
+                }
+            }
+
+            boardEntityBot.AddComponent(new PvpControllerComponent(boardBot, boardEntity.Item2));
+            boardEntityBot.AddComponent(new LoseHandlerComponent(boardBot, RestartAction));
 
             boardEntityBot.Position = new Vector2(256 + 512 + 128 + 64, 128);
             br2.Origin = new Vector2(188, 0);
 
-            AddEntity(boardEntity);
+            AddEntity(boardEntity.Item1);
             AddEntity(boardEntityBot);
 
-            Core.Schedule(.1f, true, boardBot, (timer) =>
+            /*Core.Schedule(.1f, true, boardBot, (timer) =>
             {
                 timer.GetContext<Board>().PushGarbage(1);
-            });
+            });*/
 
             _logger.Debug("Done initializing");
         }
@@ -118,7 +128,7 @@ namespace Quader.Scenes
             base.Update();
         }
 
-        private Entity CreateBoard(string name, IPieceGenerator pieceGenerator)
+        private (Entity, Board) CreateBoard(string name, IPieceGenerator pieceGenerator)
         {
             var gameSettings = GameSettings.Default;
 
@@ -154,7 +164,7 @@ namespace Quader.Scenes
             boardEntity.AddComponent(new PieceHandlerPlayerComponent(board, RestartAction));
             boardEntity.AddComponent(new LoseHandlerComponent(board, RestartAction));
 
-            return boardEntity;
+            return (boardEntity, board);
         }
     }
 }
