@@ -17,7 +17,7 @@
 	- [ ] Render individual pieces
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [x] Board Serialization/Deserialization
- - [ ] Move SRS tables to a JSON file
+ - [x] Move SRS tables to a JSON file
  - [x] Add skins
  - [x] Add Game Settings (Gravity, Board Resolution, etc.)
  - [ ] Implement correct input handling
@@ -31,10 +31,10 @@
  - [x] Implement Bag-7 piece generator
  - [ ] Create a shared bag-7 (same seed for the pieces)
  - [x] Add gravity for the pieces
- - [ ] Add win/lose conditions
- - [ ] Add garbage sending/receiving mechanisms 
+ - [x] Add win/lose conditions
+ - [x] Add garbage sending/receiving mechanisms 
    - [x] Push garbage method
-   - [ ] Send/receive garbage
+   - [x] Send/receive garbage
    - [ ] Practicing methods (cheese layer, backfire, garbage on timer, etc)
  - [ ] Add stats on the screen
  - [x] Implement a scoring system (combos, quads, etc)
