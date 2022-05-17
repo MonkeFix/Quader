@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Quader.Engine.Pieces;
@@ -265,18 +266,34 @@ namespace Quader.Engine
                 Attack = 0
             };
 
-            if (_attackQueue.Count > 0) // TODO: subtract all the attacks
+            if (_attackQueue.Count > 0) 
             {
-                var attack = _attackQueue.Dequeue();
+                if (bm.LinesCleared > 0)
+                {
+                    var damageCancel = CalculateAttack(bm);
+                    var res = false;
 
-                var damageCancel = CalculateAttack(bm);
-                
-                var diff = attack - damageCancel;
+                    while (_attackQueue.Count > 0)
+                    {
+                        var attack = _attackQueue.RemoveFront();
+                        damageCancel -= attack;
 
-                if (diff > 0)
-                    PushGarbage(diff);
+                        if (damageCancel <= 0)
+                        {
+                            if (damageCancel != 0)
+                                _attackQueue.AddFront(-damageCancel);
+                            res = true;
+                            break;
+                        }
+                    }
+
+                    if (!res)
+                        bm.Attack = Math.Max(0, damageCancel);
+                }
                 else
-                    bm.Attack = -diff;
+                {
+                    PushGarbage(_attackQueue.RemoveFront());
+                }
             }
             else
             {
@@ -325,7 +342,7 @@ namespace Quader.Engine
 
                 if (_yToCheck == CurrentPiece.Y)
                 {
-                    CurrentLock -= 1 * (dt * 40); //+ Math.Min((float)Math.Log(CurrentGravity), 2);
+                    CurrentLock -= 1 * (dt * 10); //+ Math.Min((float)Math.Log(CurrentGravity), 2);
                 }
 
                 if (CurrentLock <= 0)
@@ -509,12 +526,12 @@ namespace Quader.Engine
         {
             if (attackLines > 0)
             {
-                _attackQueue.Enqueue(attackLines);
+                _attackQueue.AddBack(attackLines);
                 AttackReceived?.Invoke(this, attackLines);
             }
         }
 
-        private readonly Queue<int> _attackQueue = new Queue<int>();
+        private readonly Deque<int> _attackQueue = new ();
 
         public IEnumerable<int> IncomingDamage => _attackQueue.ToArray();
 
