@@ -31,6 +31,10 @@ namespace Quader.Components.Boards
             {
                 _renderTarget?.RenderFrom(RenderToTexture);
             };
+            Board.Reseted += (sender, args) =>
+            {
+                _renderTarget?.RenderFrom(RenderToTexture);
+            };
         }
 
         public override void Initialize()

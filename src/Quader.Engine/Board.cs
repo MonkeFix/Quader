@@ -41,7 +41,8 @@ namespace Quader.Engine
         public event EventHandler<int>? LinesCleared;
         public event EventHandler? BoardChanged;
         public event EventHandler<int>? GarbageReceived;
-        public event EventHandler<int>? AttackReceived; 
+        public event EventHandler<int>? AttackReceived;
+        public event EventHandler? Reseted; 
 
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
@@ -647,7 +648,7 @@ namespace Quader.Engine
             _cellContainer.Reset();
             _attackQueue.Clear();
             
-
+            Reseted?.Invoke(this, EventArgs.Empty);
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }
         public void MoveUp()
