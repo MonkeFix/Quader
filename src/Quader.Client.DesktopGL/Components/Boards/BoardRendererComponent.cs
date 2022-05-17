@@ -41,7 +41,7 @@ namespace Quader.Components.Boards
         public override void Initialize()
         {
             base.Initialize();
-            _renderTarget = new RenderTarget2D(Core.GraphicsDevice, (int)Width, (int)Height);
+            _renderTarget = RenderTarget.Create((int)Width, (int)Height);
             _renderTarget.RenderFrom(RenderCells);
         }
 
