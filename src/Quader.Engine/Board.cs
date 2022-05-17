@@ -343,7 +343,7 @@ namespace Quader.Engine
 
                 if (_yToCheck == CurrentPiece.Y)
                 {
-                    CurrentLock -= 1 * (dt * 10); //+ Math.Min((float)Math.Log(CurrentGravity), 2);
+                    CurrentLock -= 1 * dt; 
                 }
 
                 if (CurrentLock <= 0)

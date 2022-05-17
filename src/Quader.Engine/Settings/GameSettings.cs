@@ -23,7 +23,7 @@ public class GameSettings
                     {
                         BaseGravity = 0.8f,
                         GravityIncrease = 0.007f,
-                        LockDelay = 30f,
+                        LockDelay = 1f,
                         ConstantGravity = 0
                     },
                     Attack = new AttackSettings

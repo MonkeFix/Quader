@@ -21,8 +21,8 @@ public class GravitySettings
     public float GravityIncrease { get; set; } = 0.007f;
 
     /// <summary>
-    /// Gets or sets number of frames until a piece locks down when touching the ground
+    /// Gets or sets number of seconds until a piece locks down when touching the ground
     /// </summary>
     [JsonInclude]
-    public float LockDelay { get; set; } = 30;
+    public float LockDelay { get; set; } = 1;
 }
