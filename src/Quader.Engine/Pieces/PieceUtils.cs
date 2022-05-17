@@ -69,6 +69,27 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.SpawnToDeg180, new[] { new Point(0, 0), } },
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), } },
         };
+
+        public Dictionary<PieceType, Point[]> DefaultPieceCellPositioning { get; set; } = new()
+        {
+            { PieceType.I, new[] { new Point(-1, -1), new Point(-2, -1), new Point(1, -1), new Point(0, -1) } },
+            { PieceType.S, new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(1, -1) } },
+            { PieceType.Z, new[] { new Point(0, 0), new Point(-1, -1), new Point(0, -1), new Point(1, 0) } },
+            { PieceType.J, new[] { new Point(0, 0), new Point(1, 0), new Point(-1, 0), new Point(-1, -1) } },
+            { PieceType.L, new[] { new Point(0, 0), new Point(-1, 0), new Point(1, 0), new Point(1, -1) } },
+            { PieceType.O, new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) } },
+            {
+                PieceType.T,
+                new[]
+                {
+                    new Point(0, 0),
+                    new Point(-1, 0),
+                    new Point(1, 0),
+                    new Point(0, -1)
+                }
+            },
+            { PieceType.Pixel, new[] { Point.Zero } },
+        };
     }
 
     public static class PieceUtils
@@ -94,6 +115,44 @@ namespace Quader.Engine.Pieces
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
+
+        public static BoardCellType GetBoardCellTypeByPieceType(PieceType type)
+        {
+            switch (type)
+            {
+                case PieceType.I: return BoardCellType.I;
+                case PieceType.O: return BoardCellType.O;
+                case PieceType.T: return BoardCellType.T;
+                case PieceType.L: return BoardCellType.L;
+                case PieceType.J: return BoardCellType.J;
+                case PieceType.S: return BoardCellType.S;
+                case PieceType.Z: return BoardCellType.Z;
+                case PieceType.Pixel: return BoardCellType.Garbage;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
+        public static Point[] GetPiecePointsByType(PieceType type)
+        {
+            if (PieceSettings == null)
+                throw new ArgumentNullException(nameof(PieceSettings), "PieceSettings object is not initialized");
+
+            switch (type)
+            {
+                case PieceType.I:
+                case PieceType.O:
+                case PieceType.T:
+                case PieceType.L:
+                case PieceType.J:
+                case PieceType.S:
+                case PieceType.Z: 
+                case PieceType.Pixel: return PieceSettings.DefaultPieceCellPositioning[type];
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
         /*public static Color GetColorByBoardCell(BoardCellType type)
         {
             switch (type)
