@@ -11,7 +11,7 @@ namespace Quader.Components.Boards
     public class DamageMeterComponent : RenderableComponent, IBoardComponent, IResetable
     {
         public override float Width => 16;
-        public override float Height => 1000;
+        public override float Height { get; }
 
         public Board Board { get; }
 
@@ -20,6 +20,8 @@ namespace Quader.Components.Boards
         public DamageMeterComponent(Board board)
         {
             Board = board;
+
+            Height = Board.TotalHeight * 32;
 
             Board.AttackReceived += (sender, attack) =>
             {
@@ -64,11 +66,11 @@ namespace Quader.Components.Boards
             if (_renderTarget != null)
             {
                 var drawPos = new Vector2(
-                    Entity.Position.X + 320,
-                    Entity.Position.Y - Height /2f + 140
+                    Entity.Position.X + ((338 - _renderTarget.Width / 2) * Entity.Scale.X),
+                    Entity.Position.Y - Board.ExtraHeight * 32 * Entity.Scale.Y
                 );
 
-                batcher.Draw(_renderTarget, drawPos, null, Color.White, 0f, Vector2.Zero, 1,
+                batcher.Draw(_renderTarget, drawPos, null, Color.White, 0f, Vector2.Zero, Entity.Scale,
                     SpriteEffects.FlipVertically, 0f);
             }
         }

@@ -8,7 +8,7 @@
  - [x] Fix initial Y position of the incoming pieces
  - [x] Fix rotation tests for 180 degrees rotation
  - [x] ~~Change the way pieces handle their position. Now it is handled by relative coordinates and you need to manually add offsets to them which is relatively slow~~
- - [ ] Fix rendering of the pieces: render into `RenderTarget2D` on demand:
+ - [x] Fix rendering of the pieces: render into `RenderTarget2D` on demand:
 	- [x] Render the Board itself
     	- [x] Re-render all board
     	- [x] Re-render only affected cells
@@ -17,8 +17,7 @@
 	- [x] Render Hold
 	- [x] Render individual pieces
 	- [x] Render piece ghosts
-	- [ ] Render damage meter
-	- [ ] Render stats
+	- [x] Render damage meter
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [x] Board Serialization/Deserialization
  - [x] Move SRS tables to a JSON file
@@ -40,7 +39,7 @@
    - [x] Push garbage method
    - [x] Send/receive garbage
    - [ ] Practicing methods (cheese layer, backfire, garbage on timer, etc)
- - [ ] Add stats on the screen
+ - [x] Add stats on the screen
  - [x] Implement a scoring system (combos, quads, etc)
 	- [x] Handle different type of line clears: quads, triples, all clears, etc
 	- [x] Handle B2B's and Combos
