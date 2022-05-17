@@ -37,6 +37,7 @@ namespace Quader.Components.Boards
             Board.LinesCleared += (sender, i) =>
             {
                 LinesCleared += i;
+                _attackString = string.Join(',', Board.IncomingDamage);
             };
 
             Board.AttackReceived += (sender, attack) =>
@@ -88,7 +89,9 @@ namespace Quader.Components.Boards
 
             batcher.DrawString(_boardSkin.MainFont, 
                 $"TP: {TotalPieces}\n" +
-                $"PPS: {Pps:F1}", 
+                $"PPS: {Pps:F1}\n" +
+                $"Combo: {Board.CurrentCombo - 1}\n" +
+                $"B2B: {Board.CurrentB2B}\n", 
                 Entity.Position - new Vector2(180, -200), Color.Red);
         }
     }

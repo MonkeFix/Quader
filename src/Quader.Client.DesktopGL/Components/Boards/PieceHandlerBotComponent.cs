@@ -159,7 +159,8 @@ namespace Quader.Components.Boards
 
         private void DoMove()
         {
-            _coldClear.RequestNextMove(_incomingGarbage);
+            var incomingGarbage = Board.IncomingDamage.LastOrDefault(0);
+            _coldClear.RequestNextMove(incomingGarbage);
 
             var pl = 5;
 
