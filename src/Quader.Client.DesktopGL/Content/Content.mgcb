@@ -22,6 +22,18 @@
 #begin data/default_piece_settings.json
 /copy:data/default_piece_settings.json
 
+#begin fonts/debug_font.fnt
+/copy:fonts/debug_font.fnt
+
+#begin fonts/debug_font_0.png
+/copy:fonts/debug_font_0.png
+
+#begin fonts/main_font.fnt
+/copy:fonts/main_font.fnt
+
+#begin fonts/main_font_0.png
+/copy:fonts/main_font_0.png
+
 #begin nez/effects/Bevels.mgfxo
 /copy:nez/effects/Bevels.mgfxo
 
