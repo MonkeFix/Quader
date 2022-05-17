@@ -14,7 +14,7 @@
     	- [x] Re-render only affected cells
 	- [x] Render Board Grid
 	- [ ] Render Queue
-	- [ ] Render Hold
+	- [x] Render Hold
 	- [ ] Render individual pieces
 	- [ ] Render piece ghosts
 	- [ ] Render damage meter
