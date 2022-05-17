@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.Textures;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 using Quader.Skinning;
+using Quader.Utils;
 
 namespace Quader.Components.Boards
 {
@@ -28,6 +31,8 @@ namespace Quader.Components.Boards
 
         private readonly BoardSkin _boardSkin;
 
+        private readonly RenderTarget2D _renderTarget;
+
         public PieceQueueComponent(Board board, IPieceGenerator pieceGenerator)
         {
             Width = 1000;
@@ -39,6 +44,8 @@ namespace Quader.Components.Boards
             _queue = new Queue<PieceBase>();
 
             Board.PieceHardDropped += BoardOnPieceHardDropped;
+
+            _renderTarget = RenderTarget.Create(188, 489);
 
             Init();
         }
@@ -58,16 +65,22 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            var y = Entity.Position.Y + 92;
+            var offset = new Vector2(
+                -(338) * Entity.Scale.X,
+                -(38) * Entity.Scale.Y
+            );
 
-            //batcher.DrawRect(baseX, baseY, 128, 128 * 5, Color.Black);
-
-            foreach (var piece in _queue)
-            {
-                DrawPiece(batcher, piece, y);
-
-                y += _boardSkin.CellSize * 3;
-            }
+            batcher.Draw(
+                _renderTarget,
+                Entity.Position - offset,
+                null,
+                Color.White,
+                Entity.Rotation,
+                Vector2.Zero, 
+                Entity.Scale,
+                SpriteEffects.None,
+                0f
+            );
         }
 
         private void Init()
@@ -82,12 +95,16 @@ namespace Quader.Components.Boards
 
             var p = Request();
             Board.SetPiece(p);
+
+            _renderTarget.RenderFrom(RenderToTexture);
         }
 
         private void BoardOnPieceHardDropped(object? sender, BoardMove e)
         {
             var p = Request();
             Board.SetPiece(p);
+
+            _renderTarget.RenderFrom(RenderToTexture);
         }
 
         private PieceBase SetPiece()
@@ -99,31 +116,28 @@ namespace Quader.Components.Boards
             return next;
         }
 
-        private void DrawPiece(Batcher batcher, PieceBase piece, float y)
+        private void RenderToTexture(Batcher batcher)
         {
-            var baseX = Entity.Position.X + Board.Width * 32 + 80;
-            if (piece.Type == PieceType.I || piece.Type == PieceType.O)
-                baseX += _boardSkin.CellSize;
-            else
-                baseX += _boardSkin.CellSize / 2;
+            int y = 0;
+            var yIncr = _boardSkin.CellSize * 3;
 
-            if (piece.Type == PieceType.I)
-                y += _boardSkin.CellSize;
-
-            var baseY = y;
-            var size = _boardSkin.CellSize;
-
-            var curPos = piece.CurrentPos;
-
-            // Draw piece itself
-            foreach (var p in curPos)
+            foreach (var piece in _queue)
             {
-                var drawX = baseX + p.X * size;
-                var drawY = baseY + p.Y * size;
+                var pt = _boardSkin.PieceTextures[piece.Type];
 
-                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(piece.Type));
-                //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
+                batcher.Draw(
+                    pt,
+                    new Vector2(_renderTarget.Width / 2f, y + yIncr / 2f),
+                    null,
+                    Color.White,
+                    0f,
+                    new Vector2(pt.Width / 2f, pt.Height / 2f),
+                    Vector2.One,
+                    SpriteEffects.None,
+                    0f
+                );
+
+                y += yIncr;
             }
         }
     }

@@ -19,15 +19,15 @@ namespace Quader.Components.Boards
 
         private PieceQueueComponent _pieceQueue = null!;
 
-        private PieceBase? _heldPiece = null;
+        private PieceBase? _heldPiece;
 
-        private bool _isHoldUsed = false;
+        private bool _isHoldUsed;
 
         public Board Board { get; }
 
         private readonly BoardSkin _boardSkin;
 
-        private RenderTarget2D _renderTarget;
+        private readonly RenderTarget2D _renderTarget;
 
         public HeldPieceComponent(Board board)
         {
@@ -38,7 +38,7 @@ namespace Quader.Components.Boards
             Width = 200;
             Height = 150;
 
-            Board.PieceHardDropped += (sender, piece) => { _isHoldUsed = false; };
+            Board.PieceHardDropped += (_, _) => { _isHoldUsed = false; };
 
             _renderTarget = RenderTarget.Create(180, 102);
         }
@@ -120,31 +120,6 @@ namespace Quader.Components.Boards
                 SpriteEffects.None,
                 0f
             );
-        }
-
-        private void DrawPiece(Batcher batcher)
-        {
-            var piece = _heldPiece!;
-
-            var baseX = Entity.Position.X - 32 * 4;
-            if (piece.Type == PieceType.I || piece.Type == PieceType.O)
-                baseX += 32;
-
-            var baseY = Entity.Position.Y + 92;
-            var size = 32;
-
-            var curPos = piece.CurrentPos;
-
-            // Draw the piece itself
-            foreach (var p in curPos)
-            {
-                var drawX = baseX + (p.X) * size;
-                var drawY = baseY + (p.Y) * size;
-
-                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(piece.Type));
-                //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
-            }
         }
     }
 }

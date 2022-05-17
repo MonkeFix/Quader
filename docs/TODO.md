@@ -13,7 +13,7 @@
     	- [x] Re-render all board
     	- [x] Re-render only affected cells
 	- [x] Render Board Grid
-	- [ ] Render Queue
+	- [x] Render Queue
 	- [x] Render Hold
 	- [ ] Render individual pieces
 	- [ ] Render piece ghosts
