@@ -1,18 +1,27 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.UI;
 using Quader.Engine;
+using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
     public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent, IResetable
     {
-        public override float Width => 500;
-        public override float Height => 500;
+        public override float Width => 1000;
+        public override float Height => 10600;
         public Board Board { get; }
 
         public float Pps { get; private set; }
         public int TotalPieces { get; private set; }
         public int LinesCleared { get; private set; }
+
+        private BoardSkin _boardSkin;
+
+        private string _attackString = "";
 
         public ScoreHandlerComponent(Board board)
         {
@@ -29,6 +38,16 @@ namespace Quader.Components.Boards
             {
                 LinesCleared += i;
             };
+
+            Board.AttackReceived += (sender, attack) =>
+            {
+                _attackString = string.Join(',', Board.IncomingDamage);
+            };
+        }
+
+        public override void OnAddedToEntity()
+        {
+            _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
         }
 
         public void Reset()
@@ -48,15 +67,29 @@ namespace Quader.Components.Boards
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            batcher.DrawString(Graphics.Instance.BitmapFont, 
+            var debugText = $"Pieces on Board: {Board.PiecesOnBoard}\n" +
+                            $"Lines Cleared: {LinesCleared}\n" +
+                            $"Current Gravity: {Board.CurrentGravity:F3}\n" +
+                            $"Current Lock: {Board.CurrentLock:F3}\n" +
+                            $"Incoming Garbage: {_attackString}";
+
+            _boardSkin.DebugFont.DrawInto(
+                batcher,
+                debugText,
+                Entity.Position - new Vector2(180, 90),
+                Color.Yellow,
+                0f,
+                Vector2.Zero,
+                Entity.Scale,
+                SpriteEffects.None,
+                0f
+            );
+
+
+            batcher.DrawString(_boardSkin.MainFont, 
                 $"TP: {TotalPieces}\n" +
-                $"PPS: {Pps:F1}\n" +
-                $"Pieces on the board: {Board.PiecesOnBoard}\n" +
-                $"Lines Cleared: {LinesCleared}\n" +
-                $"Current Gravity: {Board.CurrentGravity:F3}\n" +
-                $"Current Lock: {Board.CurrentLock:F2}\n" +
-                $"Incoming Damage: {string.Join(',', Board.IncomingDamage)}", 
-                Entity.Position, Microsoft.Xna.Framework.Color.Red);
+                $"PPS: {Pps:F1}", 
+                Entity.Position - new Vector2(180, -200), Color.Red);
         }
     }
 }

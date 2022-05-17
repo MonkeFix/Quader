@@ -91,7 +91,9 @@ namespace Quader
             _logger.Info("Loading content files");
             var skinTexture = Content.LoadTexture("Content/skins/default_3.png");
             var boardTexture = Content.LoadTexture("Content/skins/board_default.png");
-            skin.Add("board_skin", new BoardSkin(skinTexture, boardTexture));
+            var mainFont = Content.LoadBitmapFont("Content/fonts/main_font.fnt", true);
+            var debugFont = Content.LoadBitmapFont("Content/fonts/debug_font.fnt", true);
+            skin.Add("board_skin", new BoardSkin(skinTexture, boardTexture, mainFont, debugFont));
             Services.AddService(typeof(Skin), skin);
 
             /*var sound = CoreSystem.LoadStreamedSound("test.mp3");

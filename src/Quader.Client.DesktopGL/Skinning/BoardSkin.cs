@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
+using Nez.BitmapFonts;
 using Nez.Textures;
 using Quader.Engine;
 
@@ -15,12 +16,22 @@ namespace Quader.Skinning
         public Texture2D BoardTexture { get; }
         public Sprite GhostSprite { get; private set; }
 
+        public BitmapFont MainFont { get; }
+        public BitmapFont DebugFont { get; }
+
         public int CellSize { get; }
         public readonly int Count = 12;
 
-        public BoardSkin(Texture2D skinTexture, Texture2D boardTexture)
+        public BoardSkin(
+            Texture2D skinTexture,
+            Texture2D boardTexture, 
+            BitmapFont mainFont,
+            BitmapFont debugFont
+            )
         {
             BoardTexture = boardTexture;
+            MainFont = mainFont;
+            DebugFont = debugFont;
             _pieceSpriteMap = new Dictionary<BoardCellType, Sprite>(Count);
             _spriteList = new List<Sprite>(Count);
 

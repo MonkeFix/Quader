@@ -35,7 +35,7 @@ namespace Quader.Components.Boards
         {
             base.Initialize();
 
-            _renderTarget = RenderTarget.Create();
+            _renderTarget = RenderTarget.Create(30, (int) Height);
         }
 
         private void RenderToTexture(Batcher batcher)
@@ -65,7 +65,7 @@ namespace Quader.Components.Boards
             {
                 var drawPos = new Vector2(
                     Entity.Position.X + 320,
-                    Entity.Position.Y - _renderTarget.Height /2f + 100
+                    Entity.Position.Y - Height /2f + 140
                 );
 
                 batcher.Draw(_renderTarget, drawPos, null, Color.White, 0f, Vector2.Zero, 1,

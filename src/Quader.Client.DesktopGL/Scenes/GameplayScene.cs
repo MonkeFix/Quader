@@ -94,6 +94,7 @@ namespace Quader.Scenes
                 new ScoreHandlerComponent(boardBot),
                 new BoardGravityComponent(boardBot),
                 new PieceHandlerBotComponent(boardBot),
+                new DamageMeterComponent(boardBot)
             };
 
             boardEntityBot.AddComponents(comps);
@@ -114,7 +115,7 @@ namespace Quader.Scenes
             br2.LayerDepth = 1f;
 
             AddEntity(boardEntity.Item1);
-            //AddEntity(boardEntityBot);
+            AddEntity(boardEntityBot);
 
             /*Core.Schedule(.1f, true, boardBot, (timer) =>
             {
