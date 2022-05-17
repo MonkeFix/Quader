@@ -1,17 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.Textures;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 using Quader.Skinning;
+using Quader.Utils;
 
 namespace Quader.Components.Boards
 {
     public class PieceRendererComponent : RenderableComponent, IBoardComponent
     {
-        public override float Width { get; }
-        public override float Height { get; }
+        public sealed override float Width { get; }
+        public sealed override float Height { get; }
 
         public Board Board { get; }
 
@@ -21,6 +23,11 @@ namespace Quader.Components.Boards
         private int _ghostY;
 
         public bool RenderGhost { get; set; }
+
+        [Inspectable]
+        public Vector2 Offset { get; set; }
+
+        private readonly RenderTarget2D _renderTarget;
 
         public PieceRendererComponent(Board board, bool renderGhost = true)
         {
@@ -33,55 +40,90 @@ namespace Quader.Components.Boards
             Width = Board.Width * CellSize;
             Height = Board.TotalHeight * CellSize;
 
+            _renderTarget = RenderTarget.Create((int) Width, (int) Height);
+
             CalculateGhostY();
 
             Board.BoardChanged += (_, _) => CalculateGhostY();
-            Board.PieceMoved += (sender, args) => CalculateGhostY();
-            Board.PiecePushed += (sender, args) => CalculateGhostY();
-            Board.PieceRotated += (sender, args) => CalculateGhostY();
+            Board.PieceMoved += (_, _) => CalculateGhostY();
+            Board.PiecePushed += (_, _) => CalculateGhostY();
+            Board.PieceRotated += (_, _) => CalculateGhostY();
+
+            _renderTarget.RenderFrom(RenderToTexture);
         }
 
         public override void Render(Batcher batcher, Camera camera)
         {
+            var offset = new Vector2(
+                0, Board.ExtraHeight * CellSize * Entity.Scale.Y
+            );
+            
+            batcher.Draw(
+                _renderTarget,
+                Entity.Position - offset + Offset,
+                null,
+                Color.White,
+                Entity.Rotation,
+                Vector2.Zero,
+                Entity.Scale,
+                SpriteEffects.None,
+                0f
+            );
+        }
+
+        private void RenderToTexture(Batcher batcher)
+        {
             var piece = Board.CurrentPiece;
             var size = CellSize;
-            var baseX = Entity.Position.X;
-            var baseY = Entity.Position.Y - Board.ExtraHeight * size;
-
             var curPos = piece.CurrentPos;
+
+            var ghostSprite = _boardSkin.GhostSprite;
+            var pieceSprite = _boardSkin[piece.BoardCellType];
 
             // Draw Piece Ghost
             if (RenderGhost)
             {
-                var dropY = _ghostY; // Board.FindNearestY();
+                var dropY = _ghostY;
 
-                var curX = Board.CurrentPiece.X;
+                var curX = piece.X;
                 var curY = dropY;
-                var points = Board.CurrentPiece.CurrentPos;
 
-                foreach (var p in points)
+                foreach (var p in curPos)
                 {
-                    var drawX = baseX + (p.X + curX) * size;
-                    var drawY = baseY + (p.Y + curY) * size;
-                    /*batcher.DrawRect(baseX + (p.X + curX) * size, baseY + (p.Y + curY) * size, size, size,
-                        PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type) * 0.5f);*/
+                    var drawX = (p.X + curX) * size;
+                    var drawY =  (p.Y + curY) * size;
 
-                    batcher.Draw(_boardSkin.GhostSprite, new Vector2(drawX, drawY),
-                        PieceUtils.GetColorByPieceType(piece.Type) * 0.9f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                    batcher.Draw(
+                        ghostSprite,
+                        new Vector2(drawX, drawY),
+                        ghostSprite.SourceRect,
+                        PieceUtils.GetColorByPieceType(piece.Type) * 0.9f,
+                        0,
+                        Vector2.Zero,
+                        Vector2.One, 
+                        SpriteEffects.None,
+                        0f
+                    );
                 }
             }
 
-            // Draw piece itself
+            // Draw the piece itself
             foreach (var p in curPos)
             {
-                var drawX = baseX + (p.X + piece.X) * size;
-                var drawY = baseY + (p.Y + piece.Y) * size;
+                var drawX = (p.X + piece.X) * size;
+                var drawY = (p.Y + piece.Y) * size;
 
-                batcher.Draw(_boardSkin[piece.BoardCellType], new Vector2(drawX, drawY), Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-                //batcher.DrawRect(drawX, drawY, size, size, PieceUtils.GetColorByPieceType(Board.CurrentPiece.Type));
-                //batcher.DrawString(Graphics.Instance.BitmapFont, $"({p.X},{p.Y})", new Vector2(drawX, drawY), Color.White);
+                batcher.Draw(
+                    pieceSprite,
+                    new Vector2(drawX, drawY),
+                    Color.White,
+                    0f,
+                    Vector2.Zero,
+                    Vector2.One,
+                    SpriteEffects.None,
+                    0f
+                );
             }
-
         }
 
         public override void DebugRender(Batcher batcher)
@@ -111,13 +153,15 @@ namespace Quader.Components.Boards
             {
                 var b = piece.Bounds;
                 batcher.DrawHollowRect(baseX + b.X * size, baseY + b.Y * size, b.Width * size, b.Height * size,
-                    Microsoft.Xna.Framework.Color.White, 2f);
+                    Color.White, 2f);
             }
         }
 
         private void CalculateGhostY()
         {
             _ghostY = Board.FindNearestY();
+
+            _renderTarget.RenderFrom(RenderToTexture);
         }
     }
 }

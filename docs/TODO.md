@@ -15,8 +15,8 @@
 	- [x] Render Board Grid
 	- [x] Render Queue
 	- [x] Render Hold
-	- [ ] Render individual pieces
-	- [ ] Render piece ghosts
+	- [x] Render individual pieces
+	- [x] Render piece ghosts
 	- [ ] Render damage meter
 	- [ ] Render stats
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
