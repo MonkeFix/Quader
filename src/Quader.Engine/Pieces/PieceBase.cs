@@ -84,9 +84,6 @@ namespace Quader.Engine.Pieces
                 _bounds = GetBounds();
             }
         }
-        
-        public float AbsoluteX { get; set; }
-        public float AbsoluteY { get; set; }
 
         public PieceStartPosition CurrentRotation { get; set; } = PieceStartPosition.Initial;
 
@@ -94,8 +91,8 @@ namespace Quader.Engine.Pieces
 
         public class WallKickCheckParams
         {
-            public Point[] Tests { get; set; }
-            public Point[] ExpectedPos { get; set; }
+            public Point[] Tests { get; set; } = null!;
+            public Point[] ExpectedPos { get; set; } = null!;
         }
         
         public class WallKickCheckResult

@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quader.Engine", "Quader.Eng
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColdClearNet", "ColdClearNet\ColdClearNet.csproj", "{D40BE6CD-891A-469E-B9C2-79913884F07D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quader.Engine.Tests", "Quader.Engine.Tests\Quader.Engine.Tests.csproj", "{185C23F1-5E6D-406D-B899-66380555CAC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185C23F1-5E6D-406D-B899-66380555CAC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185C23F1-5E6D-406D-B899-66380555CAC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185C23F1-5E6D-406D-B899-66380555CAC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185C23F1-5E6D-406D-B899-66380555CAC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
