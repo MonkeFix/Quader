@@ -93,6 +93,37 @@ namespace Quader.Engine
             return res.ToArray();
         }
 
+        /// <summary>
+        /// Checks lines that are full and returns Y positions for those lines
+        /// </summary>
+        /// <param name="bounds">Piece bounds</param>
+        /// <returns></returns>
+        public int[] CheckLineClears(Rectangle bounds)
+        {
+            List<int> linesCleared = new List<int>();
+
+            var b = bounds;
+
+            for (int y = Math.Max(b.Top, 0); y < Height; y++)
+            {
+                var isFull = IsLineFull(y);
+                if (isFull)
+                {
+                    linesCleared.Add(y);
+                }
+            }
+
+            return linesCleared.ToArray();
+        }
+
+        public void ClearLines(int[] ys)
+        {
+            foreach (var y in ys)
+            {
+                MoveDown(y);
+            }
+        }
+
         public bool Intersects(Point[] points)
         {
             foreach (var point in points)

@@ -9,24 +9,23 @@ using Quader.Engine.Pieces.Impl;
 using Quader.Engine.Replays;
 using Quader.Engine.Serialization;
 using Quader.Engine.Settings;
-using Debug = Nez.Debug;
 using Random = System.Random;
 
 namespace Quader.Engine
 {
     public enum LastMoveType
     {
-        None = 0,
-        Movement,
-        Rotation
+        None,
+        Rotation,
+        Movement
     }
 
-    public class Board
+    public partial class Board
     {
         /// <summary>
         /// Extra height of the board. Used for cases when player receives garbage with ability to spawn a new piece.
         /// </summary>
-        public static readonly int ExtraHeight = 20;
+        public readonly int ExtraHeight;
         
         public int Width { get; }
         public int Height { get; }
@@ -42,7 +41,7 @@ namespace Quader.Engine
         public event EventHandler? BoardChanged;
         public event EventHandler<int>? GarbageReceived;
         public event EventHandler<int>? AttackReceived;
-        public event EventHandler? Reseted; 
+        public event EventHandler? Reseted;
 
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
@@ -56,15 +55,14 @@ namespace Quader.Engine
 
         public PieceBase CurrentPiece { get; private set; }
 
-        public int CurrentCombo { get; private set; }
+        public int CurrentCombo { get; private set; } = 1;
         public int CurrentB2B { get; private set; }
 
         public float CurrentGravity { get; private set; }
         public float CurrentLock { get; private set; }
 
         public LastMoveType LastMoveType { get; private set; } = LastMoveType.None;
-
-        public BoardPieceHolder PieceHolder { get; }
+        
 
         // Used for smooth gravity handling
         private float _intermediateY;
@@ -73,19 +71,7 @@ namespace Quader.Engine
 
         public GravitySettings GravitySettings { get; }
         public AttackSettings AttackSettings { get; }
-
-        /*public Board(int width = 10, int height = 20)
-        {
-            Width = width;
-            Height = height;
-            TotalHeight = Height + ExtraHeight;
-
-            _cellContainer = new BoardCellContainer(Width, TotalHeight);
-            PieceHolder = new BoardPieceHolder();
-            CurrentPiece = new PiecePixel();
-            ResetPiece(CurrentPiece);
-        }*/
-
+        
         public Board(GameSettings settings)
         {
             if (settings == null)
@@ -97,13 +83,13 @@ namespace Quader.Engine
 
             Width = settings.Board.BoardWidth;
             Height = settings.Board.BoardHeight;
+            ExtraHeight = settings.Board.BoardHeight;
             TotalHeight = settings.Board.BoardHeight * 2;
 
             _cellContainer = new BoardCellContainer(Width, TotalHeight);
-            PieceHolder = new BoardPieceHolder();
             CurrentPiece = new PiecePixel();
             ResetPiece(CurrentPiece);
-
+            
             CurrentGravity = settings.Gravity.BaseGravity;
         }
 
@@ -127,188 +113,6 @@ namespace Quader.Engine
             PiecePushed?.Invoke(this, CurrentPiece);
         }
 
-        /// <summary>
-        /// Moves the current piece left by specified delta
-        /// </summary>
-        /// <param name="delta">Move left delta offset. Must be positive</param>
-        public void PieceMoveLeft(int delta = 1)
-        {
-            delta = Math.Min(delta, Width);
-
-            for (int i = 0; i < delta; i++)
-            {
-                if (TestMovement(-1, 0))
-                {
-                    CurrentPiece.X -= 1;
-                    LastMoveType = LastMoveType.Movement;
-
-                    PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Moves the current piece right by specified delta
-        /// </summary>
-        /// <param name="delta">Move right delta offset. Must be positive</param>
-        public void PieceMoveRight(int delta = 1)
-        {
-            delta = Math.Min(delta, Width);
-
-            for (int i = 0; i < delta; i++)
-            {
-                if (TestMovement(1, 0))
-                {
-                    CurrentPiece.X += 1;
-                    LastMoveType = LastMoveType.Movement;
-
-                    PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
-                }
-            }
-        }
-
-        public void ResetPiece(PieceBase piece)
-        {
-            _intermediateY = 0;
-            piece.CurrentRotation = PieceStartPosition.Initial;
-
-            if (piece.OffsetType == OffsetType.BetweenCells)
-                piece.X = Width / 2;
-            else
-                piece.X = (int) Math.Round((Width - 1) / 2.0);
-
-            if (piece.Type == PieceType.I)
-                piece.Y = Height - 1; 
-            else piece.Y = Height - 2;
-
-            LastMoveType = LastMoveType.None;
-
-            _intermediateY = 0;
-            CurrentLock = GravitySettings.LockDelay;
-        }
-
-        public bool SoftDrop(int delta = 1)
-        {
-            var res = true;
-
-            delta = Math.Min(delta, _yToCheck);
-
-            var t = Debug.TimeAction(() =>
-            {
-                for (int i = 0; i < delta; i++)
-                {
-                    if (TestMovement(0, 1))
-                        CurrentPiece.Y += 1;
-                    else
-                        res = false;
-                }
-            });
-            GlobalTimeManager.AddData("SoftDrop", t);
-
-            PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
-
-            _yNeedsUpdate = true;
-
-            return res;
-        }
-
-        public BoardMove HardDrop()
-        {
-            int nearestY = 0;
-
-            var t0 = Debug.TimeAction(() => nearestY = FindNearestY());
-
-            if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
-            {
-                PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
-                return new BoardMove();
-            }
-
-            var linesCleared = CheckLineClears();
-
-            if (nearestY <= Height && LastMove.LinesCleared == 0 && linesCleared.Length == 0)
-            {
-                PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
-                return new BoardMove();
-            }
-
-            var moveType = BoardMoveModificators.None;
-
-            TSpinType tSpinType = TSpinType.None;
-
-            // Handle T-Spins - the last move must be a rotation.
-            // If there's an overhang - it's a regular T-Spin, if not, it's a T-Spin Mini
-            if (CurrentPiece.Type == PieceType.T && LastMoveType == LastMoveType.Rotation)
-            {
-                tSpinType = CheckTOverhang();
-
-                if (tSpinType == TSpinType.Full)
-                    moveType |= BoardMoveModificators.TSpin;
-                else if (tSpinType == TSpinType.Mini)
-                    moveType |= BoardMoveModificators.TSpinMini;
-            }
-
-            ClearLines(linesCleared);
-
-            GlobalTimeManager.AddData("FindNearestY", t0);
-
-            CreateBoardMoveType(ref moveType, linesCleared.Length, tSpinType);
-
-            LastMoveType = LastMoveType.None;
-
-            var bm = new BoardMove
-            {
-                LinesCleared = linesCleared.Length,
-                Modificators = moveType,
-                Timestamp = DateTime.UtcNow,
-                BackToBack = CurrentB2B,
-                Combo = CurrentCombo++,
-                Success = true,
-                Attack = 0
-            };
-
-            if (_attackQueue.Count > 0) 
-            {
-                if (bm.LinesCleared > 0)
-                {
-                    var damageCancel = CalculateAttack(bm);
-                    var res = false;
-
-                    while (_attackQueue.Count > 0)
-                    {
-                        var attack = _attackQueue.RemoveFront();
-                        damageCancel -= attack;
-
-                        if (damageCancel <= 0)
-                        {
-                            if (damageCancel != 0)
-                                _attackQueue.AddFront(-damageCancel);
-                            res = true;
-                            break;
-                        }
-                    }
-
-                    if (!res)
-                        bm.Attack = Math.Max(0, damageCancel);
-                }
-                else
-                {
-                    PushGarbage(_attackQueue.RemoveFront());
-                }
-            }
-            else
-            {
-                bm.Attack = CalculateAttack(bm);
-            }
-
-            LastMove = bm;
-
-            PieceHardDropped?.Invoke(this, bm);
-            ResetPiece(CurrentPiece);
-
-            return bm;
-        }
-
         private bool _yNeedsUpdate = true;
         private int _yToCheck;
 
@@ -319,125 +123,35 @@ namespace Quader.Engine
         /// <param name="dt">Delta time, time difference between current and previous frames</param>
         public void UpdateGravity(float dt)
         {
-            var r = Debug.TimeAction(() =>
+            _intermediateY += CurrentGravity * dt;
+
+            if (_yNeedsUpdate)
             {
-                _intermediateY += CurrentGravity * dt;
-
-                if (_yNeedsUpdate)
-                {
-                    _yToCheck = FindNearestY();
-                    _yNeedsUpdate = false;
-                }
-
-                if (_intermediateY > 1.0f)
-                {
-                    var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
-                    for (int i = 0; i < diff; i++)
-                    {
-                        SoftDrop();
-                        _yNeedsUpdate = true;
-                    }
-
-                    _intermediateY = 0;
-                }
-
-                if (_yToCheck == CurrentPiece.Y)
-                {
-                    CurrentLock -= 1 * dt; 
-                }
-
-                if (CurrentLock <= 0)
-                    HardDrop();
-
-                CurrentGravity += GravitySettings.GravityIncrease * dt;
-            });
-
-            GlobalTimeManager.AddData("UpdateGravity", r);
-        }
-
-        private void CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
-        {
-            // All Clear - No pieces on the board after a move
-            if (_piecesOnBoard == 0)
-                moveType |= BoardMoveModificators.AllClear;
-
-            // Basic clears - 4 lines is the max
-            if (linesCleared == 1)
-                moveType |= BoardMoveModificators.Single;
-            else if (linesCleared == 2)
-                moveType |= BoardMoveModificators.Double;
-            else if (linesCleared == 3)
-                moveType |= BoardMoveModificators.Triple;
-            else if (linesCleared == 4)
-            {
-                moveType |= BoardMoveModificators.Quad;
-                CurrentB2B++;
+                _yToCheck = FindNearestY();
+                _yNeedsUpdate = false;
             }
 
-            // Combo handling - the higher the combo - the bigger the spike
-            if (CurrentCombo > 1)
-                moveType |= BoardMoveModificators.Combo1;
-            if (CurrentCombo >= 6)
-                moveType |= BoardMoveModificators.Combo2;
-            if (CurrentCombo >= 10)
-                moveType |= BoardMoveModificators.Combo3;
-            if (CurrentCombo >= 15)
-                moveType |= BoardMoveModificators.Combo4;
-            if (CurrentCombo >= 18)
-                moveType |= BoardMoveModificators.Combo5;
-
-            // If move does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
-            if (
-                linesCleared > 0 &&
-                !moveType.HasFlag(BoardMoveModificators.Quad) &&
-                !moveType.HasFlag(BoardMoveModificators.TSpin) &&
-                !moveType.HasFlag(BoardMoveModificators.TSpinMini)
-            )
+            if (_intermediateY > 1.0f)
             {
-                CurrentB2B = 0;
+                var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
+                for (int i = 0; i < diff; i++)
+                {
+                    SoftDrop();
+                    _yNeedsUpdate = true;
+                }
+
+                _intermediateY = 0;
             }
 
-            // Multiple successive T-Spins (including minis) or Quads
-            if (CurrentB2B > 0)
-                moveType |= BoardMoveModificators.BackToBack1;
-            if (CurrentB2B >= 5)
-                moveType |= BoardMoveModificators.BackToBack2;
-            if (CurrentB2B >= 10)
-                moveType |= BoardMoveModificators.BackToBack3;
-            if (CurrentB2B >= 30)
-                moveType |= BoardMoveModificators.BackToBack4;
-            if (CurrentB2B >= 60)
-                moveType |= BoardMoveModificators.BackToBack5;
-
-            if (tSpinType != TSpinType.None)
-                CurrentB2B++;
-
-            // Break the combo if cleared 0 lines
-            if (linesCleared == 0)
-                CurrentCombo = 0;
-        }
-
-        public void Rotate(Rotation rotation)
-        {
-            var t = Debug.TimeAction(() =>
+            if (_yToCheck == CurrentPiece.Y)
             {
-                CurrentPiece.Rotate(rotation, kickParams =>
-                {
-                    var success = TestRotation(kickParams, out Point? test);
+                CurrentLock -= 1 * dt; 
+            }
 
-                    if (success)
-                        LastMoveType = LastMoveType.Rotation;
+            if (CurrentLock <= 0)
+                HardDrop();
 
-                    return new PieceBase.WallKickCheckResult
-                    {
-                        Success = success,
-                        WallKickPosition = test
-                    };
-                });
-            });
-            GlobalTimeManager.AddData("Rotate", t);
-
-            PieceRotated?.Invoke(this, CurrentPiece);
+            CurrentGravity += GravitySettings.GravityIncrease * dt;
         }
 
         public int FindNearestY()
@@ -455,68 +169,7 @@ namespace Quader.Engine
             return y;
         }
 
-        public int CalculateAttack(BoardMove move)
-        {
-            int attack = AttackSettings.Lines0;
-
-            if (move.LinesCleared == 0)
-                return attack;
-
-            var mods = move.Modificators;
-
-            if (mods.HasFlag(BoardMoveModificators.Combo1))
-                attack += AttackSettings.Combos[0];
-            if (mods.HasFlag(BoardMoveModificators.Combo2))
-                attack += AttackSettings.Combos[1];
-            if (mods.HasFlag(BoardMoveModificators.Combo3))
-                attack += AttackSettings.Combos[2];
-            if (mods.HasFlag(BoardMoveModificators.Combo4))
-                attack += AttackSettings.Combos[3];
-            if (mods.HasFlag(BoardMoveModificators.Combo5))
-                attack += AttackSettings.Combos[4];
-
-            if (mods.HasFlag(BoardMoveModificators.AllClear))
-                attack += AttackSettings.AllClear;
-
-            if (mods.HasFlag(BoardMoveModificators.BackToBack1))
-                attack += AttackSettings.BackToBacks[0];
-            if (mods.HasFlag(BoardMoveModificators.BackToBack2))
-                attack += AttackSettings.BackToBacks[1];
-            if (mods.HasFlag(BoardMoveModificators.BackToBack3))
-                attack += AttackSettings.BackToBacks[2];
-            if (mods.HasFlag(BoardMoveModificators.BackToBack4))
-                attack += AttackSettings.BackToBacks[3];
-            if (mods.HasFlag(BoardMoveModificators.BackToBack5))
-                attack += AttackSettings.BackToBacks[4];
-
-            if (mods.HasFlag(BoardMoveModificators.TSpin))
-            {
-                if (mods.HasFlag(BoardMoveModificators.Single))
-                    attack += AttackSettings.TSpinSingle;
-                if (mods.HasFlag(BoardMoveModificators.Double))
-                    attack += AttackSettings.TSpinDouble;
-                if (mods.HasFlag(BoardMoveModificators.Triple))
-                    attack += AttackSettings.TSpinDouble;
-            }
-            else if (mods.HasFlag(BoardMoveModificators.TSpinMini))
-            {
-                if (mods.HasFlag(BoardMoveModificators.Single))
-                    attack += AttackSettings.TSpinSingleMini;
-            }
-            else
-            {
-                if (mods.HasFlag(BoardMoveModificators.Single))
-                    attack += AttackSettings.Lines1;
-                if (mods.HasFlag(BoardMoveModificators.Double))
-                    attack += AttackSettings.Lines2;
-                if (mods.HasFlag(BoardMoveModificators.Triple))
-                    attack += AttackSettings.Lines3;
-                if (mods.HasFlag(BoardMoveModificators.Quad))
-                    attack += AttackSettings.Lines4;
-            }
-
-            return attack;
-        }
+        
 
         public void Attack(BoardMove move)
         {
@@ -573,72 +226,11 @@ namespace Quader.Engine
             return row;
         }
 
-        // ReSharper disable once InconsistentNaming
-        enum TSpinType
-        {
-            None, Full, Mini
-        }
-
-        public Point[] PointsChecked = new Point[4];
-
-
-        private TSpinType CheckTOverhang()
-        {
-            // Safety check
-            if (CurrentPiece.Type != PieceType.T)
-                return TSpinType.None;
-
-            // A block must be in any of the blocks in this graph:
-            // #T#
-            // TTT
-            // #T#
-            // T - T Piece
-            // # - Block
-
-            var pieceX = CurrentPiece.X;
-            var pieceY = CurrentPiece.Y;
-
-            var topLeft = new Point(pieceX - 1, pieceY - 1);
-            var topRight = new Point(pieceX + 1, pieceY - 1);
-            var bottomLeft = new Point(pieceX - 1, pieceY + 1);
-            var bottomRight = new Point(pieceX + 1, pieceY + 1);
-
-            var pArr = new[] { topLeft, topRight, bottomLeft, bottomRight };
-
-            PointsChecked = pArr;
-                
-            var oobOverhangs = 0; // out of bounds
-            var nonOobOverhangs = 0;
-
-            foreach (var p in pArr)
-            {
-                if (IsOutOfBounds(p))
-                    oobOverhangs++;
-                else
-                {
-                    var cell = GetCellAt(p.X, p.Y);
-                    if (cell != BoardCellType.None)
-                        nonOobOverhangs++;
-                }
-            }
-
-            // We cannot have more than 4 blocks checked in any case!
-            Insist.IsFalse(oobOverhangs + nonOobOverhangs > 4);
-
-            if (oobOverhangs > 0 && nonOobOverhangs > 0)
-                return TSpinType.Mini;
-
-            if (oobOverhangs == 0 && nonOobOverhangs >= 3)
-                return TSpinType.Full;
-
-            return TSpinType.None;
-        }
-
         public void Reset()
         {
             LastMoveType = LastMoveType.None;
             CurrentB2B = 0;
-            CurrentCombo = 0;
+            CurrentCombo = 1;
             _piecesOnBoard = 0;
             _intermediateY = 0;
             _lastGarbageLineX = -1;
@@ -667,141 +259,9 @@ namespace Quader.Engine
                 BoardChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void SetCellAtRange(KeyValuePair<Point, BoardCellType>[] cells)
-        {
-            foreach (var kv in cells)
-            {
-                _cellContainer.SetCellAt(kv.Key.X, kv.Key.Y, kv.Value);
-            }
-
-            BoardChanged?.Invoke(this, EventArgs.Empty);
-        }
-
         public bool IsOutOfBounds(Point p) => _cellContainer.IsOutOfBounds(p);
 
-        public BoardEncoding Encode()
-        {
-            return this.Serialize();
-        }
-
-        public void Decode(BoardEncoding encoding)
-        {
-            this.Deserialize(encoding, out _piecesOnBoard);
-
-            BoardChanged?.Invoke(this, EventArgs.Empty);
-        }
-        
-        private bool TestMovement(int xOffset, int yOffset)
-        {
-            // Checking piece bounds first as it is much faster
-            var b = CurrentPiece.Bounds;
-            if (b.X + xOffset < 0 || b.X + b.Width + xOffset > Width)
-                return false;
-            if (b.Y + b.Height + yOffset > TotalHeight)
-                return false;
-
-            var adjusted = BoardUtils.AdjustPositions(CurrentPiece.CurrentPos,
-                new Point(CurrentPiece.X + xOffset, CurrentPiece.Y + yOffset));
-
-            return !_cellContainer.Intersects(adjusted);
-        }
-        
-        private int[] CheckLineClears()
-        {
-            List<int> linesCleared = new List<int>();
-
-            var b = CurrentPiece.Bounds;
-
-            for (int y = Math.Max(b.Top, 0); y < TotalHeight; y++)
-            {
-                var isFull = _cellContainer.IsLineFull(y);
-                if (isFull)
-                {
-                    linesCleared.Add(y);
-                }
-            }
-            
-            return linesCleared.ToArray();
-        }
-
-        private void ClearLines(int[] ys)
-        {
-            foreach (var y in ys)
-            {
-                _piecesOnBoard -= Width;
-                MoveDown(y);
-            }
-
-            if (ys.Length > 0)
-            {
-                LinesCleared?.Invoke(this, ys.Length);
-                BoardChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private bool TestRotation(PieceBase.WallKickCheckParams kickParams, out Point? firstSuccessfulTest)
-        {
-            var tests = kickParams.Tests;
-            var expectedPos = kickParams.ExpectedPos;
-
-            TestQueue.Clear();
-            
-            firstSuccessfulTest = null;
-
-            foreach (var t in tests)
-            {
-                // We need to revert the Y axis in order to perform correct checks
-                var test = new Point(t.X, -t.Y);
-
-                var adjusted = BoardUtils.AdjustPositions(
-                    expectedPos,
-                    new Point(CurrentPiece.X, CurrentPiece.Y) + test
-                );
-                
-                TestQueue.Enqueue(adjusted);
-
-                var intersects = _cellContainer.Intersects(adjusted);
-
-                if (!intersects)
-                {
-                    firstSuccessfulTest = test;
-
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-
-        private bool TryApplyPiece(Point[] points, int x, int y)
-        {
-            var adjusted = TimeAction(() => BoardUtils.AdjustPositions(points, new Point(x, y)), out var elapsed);
-            GlobalTimeManager.AddData("TryApplyPiece.AdjustPositions", elapsed);
-
-            bool res = true;
-
-            var a = Debug.TimeAction(() =>
-            {
-                foreach (var point in adjusted)
-                {
-                    var piece = GetCellAt(point.X, point.Y);
-
-                    if (piece != BoardCellType.None)
-                        res = false;
-                    SetCellAt(point.X, point.Y, CurrentPiece.BoardCellType);
-                    _piecesOnBoard++;
-                }
-            });
-
-            GlobalTimeManager.AddData("TryApplyPiece.GetSetCell", a);
-
-            var bc = Debug.TimeAction(() => BoardChanged?.Invoke(this, EventArgs.Empty));
-            GlobalTimeManager.AddData("TryApplyPiece.BoardChanged.Invoke", bc);
-
-            return res;
-        }
-
-        private T TimeAction<T>(Func<T> func, out TimeSpan elapsed)
+        public static T TimeAction<T>(Func<T> func, out TimeSpan elapsed)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();

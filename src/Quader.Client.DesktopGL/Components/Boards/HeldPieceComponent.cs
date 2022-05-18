@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
 using Nez.UI;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 using Quader.Skinning;
@@ -29,6 +30,8 @@ namespace Quader.Components.Boards
 
         private readonly RenderTarget2D _renderTarget;
 
+        private readonly ILogger _logger = LoggerFactory.GetLogger<HeldPieceComponent>();
+
         public HeldPieceComponent(Board board)
         {
             Board = board;
@@ -53,6 +56,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
+
             _isHoldUsed = false;
             _heldPiece = null;
         }

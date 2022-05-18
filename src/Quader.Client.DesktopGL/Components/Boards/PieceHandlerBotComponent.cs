@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.UI;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
@@ -44,6 +45,8 @@ namespace Quader.Components.Boards
 
         private int _incomingGarbage = 0;
 
+        private readonly ILogger _logger = LoggerFactory.GetLogger<PieceHandlerBotComponent>();
+
         public PieceHandlerBotComponent(Board board)
         {
             Board = board;
@@ -64,6 +67,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
+
             _elapsed = 0;
             _holdUsed = false;
             _coldClear.Reset(new bool[400], 0, false);

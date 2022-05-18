@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.UI;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Skinning;
 
@@ -22,6 +23,8 @@ namespace Quader.Components.Boards
         private BoardSkin _boardSkin;
 
         private string _attackString = "";
+
+        private readonly ILogger _logger = LoggerFactory.GetLogger<ScoreHandlerComponent>();
 
         public ScoreHandlerComponent(Board board)
         {
@@ -53,6 +56,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
+
             Pps = 0;
             TotalPieces = 0;
             LinesCleared = 0;

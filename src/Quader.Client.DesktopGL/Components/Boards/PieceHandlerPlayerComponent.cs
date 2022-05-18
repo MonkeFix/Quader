@@ -1,6 +1,7 @@
 ﻿using System;
 using Nez;
 using Quader.Config;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
@@ -31,6 +32,8 @@ namespace Quader.Components.Boards
         private bool _isRightDown;
 
         private readonly Action _restartAction;
+
+        private readonly ILogger _logger = LoggerFactory.GetLogger<PieceHandlerPlayerComponent>();
 
         public PieceHandlerPlayerComponent(Board board, Action restartAction)
         {
@@ -63,6 +66,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
+
             _elapsed = 0;
             _isLeftDown = false;
             _isRightDown = false;

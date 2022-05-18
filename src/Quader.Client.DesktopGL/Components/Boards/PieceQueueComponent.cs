@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
 using Nez.UI;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
@@ -33,6 +34,8 @@ namespace Quader.Components.Boards
 
         private readonly RenderTarget2D _renderTarget;
 
+        private readonly ILogger _logger = LoggerFactory.GetLogger<PieceQueueComponent>();
+
         public PieceQueueComponent(Board board, IPieceGenerator pieceGenerator)
         {
             Width = 1000;
@@ -52,6 +55,8 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
+
             _queue.Clear();
             _queue = new Queue<PieceBase>();
 

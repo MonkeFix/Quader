@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Utils;
 
@@ -16,6 +17,8 @@ namespace Quader.Components.Boards
         public Board Board { get; }
 
         private RenderTarget2D _renderTarget;
+
+        private readonly ILogger _logger = LoggerFactory.GetLogger<DamageMeterComponent>();
 
         public DamageMeterComponent(Board board)
         {
@@ -81,6 +84,7 @@ namespace Quader.Components.Boards
 
         public void Reset()
         {
+            _logger.Debug("Resetting");
             _renderTarget?.RenderFrom(RenderToTexture);
         }
     }
