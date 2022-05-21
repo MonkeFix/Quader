@@ -49,7 +49,7 @@ namespace Quader.Components.Boards
         public override void OnAddedToEntity()
         {
             _pieceQueue = Entity.GetComponent<PieceQueueComponent>();
-
+            
             if (_pieceQueue == null)
                 throw new Exception("Piece Queue is null");
         }

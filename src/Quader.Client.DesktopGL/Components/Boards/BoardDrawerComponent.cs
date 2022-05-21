@@ -60,8 +60,9 @@ namespace Quader.Components.Boards
             var mp = Input.MousePosition;
 
             var scaledMp = new Point(
-                (int)(mp.X - Entity.Position.X) / _boardSkin.CellSize,
-                (int)(mp.Y - Entity.Position.Y + Board.ExtraHeight * _boardSkin.CellSize) / _boardSkin.CellSize
+                (int)((mp.X - Entity.Position.X * Entity.Scale.X) / _boardSkin.CellSize),
+                (int)(((mp.Y - Entity.Position.Y + Board.ExtraHeight * _boardSkin.CellSize) * Entity.Scale.Y) /
+                      _boardSkin.CellSize)
             );
 
             if (Input.LeftMouseButtonDown && !Board.IsOutOfBounds(scaledMp))

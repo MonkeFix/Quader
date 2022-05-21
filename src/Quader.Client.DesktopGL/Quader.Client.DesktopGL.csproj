@@ -51,6 +51,7 @@
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
+    <PackageReference Include="Nopipeline.Task" Version="2.1.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.ImGui\Nez.MG38.ImGui.csproj" />
@@ -64,6 +65,10 @@
     <Folder Include="Serialization\" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="ContentPathGenerator - Copy.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ContentPathGenerator - Copy.cs</LastGenOutput>
+    </None>
     <None Update="ContentPathGenerator.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ContentPathGenerator.cs</LastGenOutput>
@@ -77,6 +82,11 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="ContentPathGenerator - Copy.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ContentPathGenerator - Copy.tt</DependentUpon>
+    </Compile>
     <Compile Update="ContentPathGenerator.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

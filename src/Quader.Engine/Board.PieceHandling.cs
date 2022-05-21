@@ -146,6 +146,7 @@ public partial class Board
         if (linesCleared.Length > 0)
         {
             LinesCleared?.Invoke(this, linesCleared.Length);
+            CurrentCombo++;
         }
 
         CreateBoardMoveType(ref moveType, linesCleared.Length, tSpinType);
@@ -158,7 +159,7 @@ public partial class Board
             Modificators = moveType,
             Timestamp = DateTime.UtcNow,
             BackToBack = CurrentB2B,
-            Combo = CurrentCombo++,
+            Combo = CurrentCombo,
             Success = true,
             Attack = 0
         };
