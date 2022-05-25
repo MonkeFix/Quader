@@ -1,6 +1,5 @@
 module Auth where
 
-import Universum
 import System.Timeout
 
 import Network.WebSockets qualified as WS

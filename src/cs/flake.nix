@@ -19,6 +19,7 @@
               shell.tools = {
                 cabal = {};
                 hlint = {};
+                hpack = {};
                 haskell-language-server = {};
               };
               # Non-Haskell shell tools go here

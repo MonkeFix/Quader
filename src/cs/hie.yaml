@@ -1,14 +1,13 @@
 cradle:
-<<<<<<< HEAD
   cabal:
     - path: "src"
       component: "lib:cs"
 
-    #- path: "client/Main.hs"
-    #  component: "cs:exe:client"
+    - path: "client/Main.hs"
+      component: "cs:exe:client"
 
-    #- path: "client/Paths_cs.hs"
-    #  component: "cs:exe:client"
+    - path: "client/Paths_cs.hs"
+      component: "cs:exe:client"
 
     - path: "server/Main.hs"
       component: "cs:exe:server"
@@ -16,21 +15,5 @@ cradle:
     - path: "server/Paths_cs.hs"
       component: "cs:exe:server"
 
-    #- path: "test"
-    #  component: "cs:test:cs-test"
-=======
-  stack: 
-    stackYaml: "stack.yaml"
-    components:
-      - path: "src"
-        component: "lib:cs"
-
-      - path: "server/Main.hs"
-        component: "cs:exe:server"
-
-      - path: "server/Paths_cs.hs"
-        component: "cs:exe:server"
-
-      - path: "test"
-        component: "cs:test:cs-test"
->>>>>>> 01329aa ([Server] Init server executable)
+    - path: "test"
+      component: "cs:test:cs-test"

@@ -25,10 +25,12 @@ dependencies:
 - text
 - vector
 - containers
+- polysemy
 - async
 - servant
 - servant-client
 - stm-containers
+- row-types
 - text-show
 - network
 - bytestring

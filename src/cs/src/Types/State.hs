@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Types.State where
 
-import Universum
 import Data.Aeson
 import Control.Lens.TH
 
@@ -10,10 +9,6 @@ import StmContainers.Map      qualified as STM
 import Control.Concurrent.STM qualified as STM
 
 import Types.Auth
-
-data Action = Introduction | Move | Invite
-  deriving stock (Eq, Show, Generic)
-  deriving anyclass (FromJSON, ToJSON)
 
 data Privacy = Public | Private
   deriving stock (Eq, Show, Generic)
@@ -27,16 +22,17 @@ data LobbyState = LobbyState
   }
 makeFields ''LobbyState
 
-data Online = Yes | No
+data Status = Online | Offline
 
 data ClientState = ClientState
   { clientStateConnection :: WS.Connection
-  , clientStateTitle      :: Online
+  , clientStateStatus     :: Status
   }
 makeFields ''ClientState
 
 data Environment = Environment
   { environmentIncLobbyID     :: TVar (ID Lobby)
+  , environmentIncMsgID       :: TVar (ID Msg)
   , environmentClientStateMap :: STM.Map (ID User) ClientState
   , environmentLobbyStateMap  :: STM.Map (ID Lobby) LobbyState
   }

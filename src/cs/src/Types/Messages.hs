@@ -1,6 +1,5 @@
 module Types.Messages where
 
-import Universum
 import Data.Aeson
 
 import Types.Auth
@@ -10,8 +9,36 @@ data TypeOfMessage = Request | Response
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromJSON, ToJSON)
 
+data Command = GetRoomList
+             | CreateRoom
+             | JoinRoom
+             | LeaveRoom
+  deriving stock (Eq, Show, Generic)
+  deriving anyclass (FromJSON, ToJSON)
+
+data CreateRoomData = CreateRoomData
+  { createRoomDataName :: Textual Title
+  , createRoomDataType :: Privacy
+  } deriving stock (Eq, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
+
+newtype CreateRoomPayload = CreateRoomPayload
+  { createRoomPayloadId :: ID Room
+  } deriving stock (Eq, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
+
+data RoomPayload = RoomPayload
+  { roomPayloadId        :: ID Room
+  , roomPayloadName      :: Textual Title
+  , roomPayloadCreatedBy :: ID User
+  , roomPayloadCreatedAt :: Date Creation
+  , roomType             :: Privacy
+  } deriving stock (Eq, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
+
 data Message a = Message
-  { messageAction  :: Action
+  { messageId      :: ID Msg
+  , messageAction  :: Command
   , messageType    :: TypeOfMessage
   , messagePayload :: a
   } deriving stock (Eq, Show, Generic)

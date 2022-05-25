@@ -1,6 +1,6 @@
 cabal-version: 2.0
 
--- This file has been generated from package.yaml by hpack version 0.34.7.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -20,6 +20,12 @@ source-repository head
   location: https://github.com/lunacys/Quader
 
 library
+  exposed-modules:
+      App
+      Auth
+      Types.Auth
+      Types.Messages
+      Types.State
   other-modules:
       Paths_cs
   autogen-modules:
@@ -83,16 +89,8 @@ library
     , async
     , base
     , bytestring
-<<<<<<< HEAD
     , co-log
-<<<<<<< HEAD
-    , cryptonite
-    , data-has
-=======
-=======
->>>>>>> aa32e7f (Tech commit)
     , containers
->>>>>>> 01329aa ([Server] Init server executable)
     , deriving-aeson
     , exceptions
     , fmt
@@ -103,116 +101,13 @@ library
     , network
     , optparse-applicative
     , path-pieces
+    , polysemy
     , raw-strings-qq
-    , servant
-    , servant-client
-    , stm
-<<<<<<< HEAD
-=======
-    , stm-containers
-<<<<<<< HEAD
-    , tagged
-    , template-haskell
-    , text
-    , text-show
-    , time
-    , universum
-    , uuid
-    , validation
-    , vector
-    , wai
-    , websockets
-    , word8
-    , yaml
-  default-language: Haskell2010
-
-executable client
-  main-is: Main.hs
-  other-modules:
-      Paths_cs
-  hs-source-dirs:
-      client
-  default-extensions:
-      NoImplicitPrelude
-      OverloadedStrings
-      AllowAmbiguousTypes
-      ApplicativeDo
-      BangPatterns
-      FunctionalDependencies
-      BlockArguments
-      ConstraintKinds
-      ImportQualifiedPost
-      DataKinds
-      DefaultSignatures
-      DeriveAnyClass
-      DeriveDataTypeable
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveTraversable
-      DerivingStrategies
-      DerivingVia
-      EmptyCase
-      FlexibleContexts
-      FlexibleInstances
-      GADTs
-      GeneralizedNewtypeDeriving
-      ImportQualifiedPost
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      NegativeLiterals
-      NumDecimals
-      NumericUnderscores
-      OverloadedLabels
-      PatternSynonyms
-      PolyKinds
-      QuantifiedConstraints
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      RecursiveDo
-      ScopedTypeVariables
-      StandaloneDeriving
-      StandaloneKindSignatures
-      StrictData
-      TemplateHaskell
-      TupleSections
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      UndecidableInstances
-      UndecidableSuperClasses
-      ViewPatterns
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , async
-    , base
-    , bytestring
-    , co-log
-    , containers
-    , cs
-    , deriving-aeson
-    , exceptions
-    , fmt
-    , http-api-data
-    , http-types
-    , lens
-    , mtl
-    , network
-    , optparse-applicative
-    , path-pieces
-    , raw-strings-qq
+    , row-types
     , servant
     , servant-client
     , stm
     , stm-containers
->>>>>>> b08dfdf (fixup! Project init)
-=======
->>>>>>> aa32e7f (Tech commit)
->>>>>>> 01329aa ([Server] Init server executable)
     , tagged
     , template-haskell
     , text
@@ -298,21 +193,8 @@ executable client
     , async
     , base
     , bytestring
-<<<<<<< HEAD
-    , co-log
-    , cryptonite
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-    , cryptonite
-=======
     , co-log
     , containers
->>>>>>> b08dfdf (fixup! Project init)
-=======
-    , containers
->>>>>>> aa32e7f (Tech commit)
->>>>>>> 01329aa ([Server] Init server executable)
     , cs
     , deriving-aeson
     , exceptions
@@ -324,7 +206,9 @@ executable client
     , network
     , optparse-applicative
     , path-pieces
+    , polysemy
     , raw-strings-qq
+    , row-types
     , servant
     , servant-client
     , stm
@@ -342,16 +226,21 @@ executable client
     , websockets
     , word8
     , yaml
+  mixins:
+      base hiding (Prelude)
+    , universum (Universum as Prelude)
+    , universum hiding ()
   default-language: Haskell2010
 
 executable server
   main-is: Main.hs
   other-modules:
       Paths_cs
+  autogen-modules:
+      Paths_cs
   hs-source-dirs:
       server
   default-extensions:
-      NoImplicitPrelude
       OverloadedStrings
       AllowAmbiguousTypes
       ApplicativeDo
@@ -409,6 +298,7 @@ executable server
     , async
     , base
     , bytestring
+    , co-log
     , containers
     , cs
     , deriving-aeson
@@ -421,7 +311,9 @@ executable server
     , network
     , optparse-applicative
     , path-pieces
+    , polysemy
     , raw-strings-qq
+    , row-types
     , servant
     , servant-client
     , stm
@@ -512,15 +404,8 @@ test-suite cs-test
     , async
     , base
     , bytestring
-<<<<<<< HEAD
     , co-log
-<<<<<<< HEAD
-    , cryptonite
-=======
-=======
->>>>>>> aa32e7f (Tech commit)
     , containers
->>>>>>> 01329aa ([Server] Init server executable)
     , cs
     , deriving-aeson
     , exceptions
@@ -532,7 +417,9 @@ test-suite cs-test
     , network
     , optparse-applicative
     , path-pieces
+    , polysemy
     , raw-strings-qq
+    , row-types
     , servant
     , servant-client
     , stm
