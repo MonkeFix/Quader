@@ -23,6 +23,8 @@ library
   exposed-modules:
       App
       Auth
+      Prelude
+      Types.Aeson
       Types.Auth
       Types.Messages
       Types.State
@@ -48,6 +50,7 @@ library
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      PartialTypeSignatures
       DeriveTraversable
       DerivingStrategies
       DerivingVia
@@ -94,6 +97,7 @@ library
     , deriving-aeson
     , exceptions
     , fmt
+    , generic-lens
     , http-api-data
     , http-types
     , lens
@@ -123,8 +127,6 @@ library
     , yaml
   mixins:
       base hiding (Prelude)
-    , universum (Universum as Prelude)
-    , universum hiding ()
   default-language: Haskell2010
 
 executable client
@@ -151,6 +153,7 @@ executable client
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      PartialTypeSignatures
       DeriveTraversable
       DerivingStrategies
       DerivingVia
@@ -199,6 +202,7 @@ executable client
     , deriving-aeson
     , exceptions
     , fmt
+    , generic-lens
     , http-api-data
     , http-types
     , lens
@@ -228,8 +232,6 @@ executable client
     , yaml
   mixins:
       base hiding (Prelude)
-    , universum (Universum as Prelude)
-    , universum hiding ()
   default-language: Haskell2010
 
 executable server
@@ -256,6 +258,7 @@ executable server
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      PartialTypeSignatures
       DeriveTraversable
       DerivingStrategies
       DerivingVia
@@ -292,7 +295,7 @@ executable server
       UndecidableInstances
       UndecidableSuperClasses
       ViewPatterns
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -fplugin=Polysemy.Plugin
   build-depends:
       aeson
     , async
@@ -304,6 +307,7 @@ executable server
     , deriving-aeson
     , exceptions
     , fmt
+    , generic-lens
     , http-api-data
     , http-types
     , lens
@@ -333,8 +337,6 @@ executable server
     , yaml
   mixins:
       base hiding (Prelude)
-    , universum (Universum as Prelude)
-    , universum hiding ()
   default-language: Haskell2010
 
 test-suite cs-test
@@ -362,6 +364,7 @@ test-suite cs-test
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      PartialTypeSignatures
       DeriveTraversable
       DerivingStrategies
       DerivingVia
@@ -410,6 +413,7 @@ test-suite cs-test
     , deriving-aeson
     , exceptions
     , fmt
+    , generic-lens
     , http-api-data
     , http-types
     , lens
@@ -442,6 +446,4 @@ test-suite cs-test
     , yaml
   mixins:
       base hiding (Prelude)
-    , universum (Universum as Prelude)
-    , universum hiding ()
   default-language: Haskell2010

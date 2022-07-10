@@ -12,7 +12,7 @@ import Types.State
 import App
 
 initEnv :: IO Environment
-initEnv = Environment <$> newTVarIO 0 <*> STM.newIO <*> STM.newIO
+initEnv = Environment <$> newTVarIO 0 <*> newTVarIO 0 <*> STM.newIO
 
 main :: IO ()
 main = initEnv >>= WS.runServer "0.0.0.0" 7892 . app

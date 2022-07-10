@@ -9,10 +9,20 @@ import StmContainers.Map      qualified as STM
 import Control.Concurrent.STM qualified as STM
 
 import Types.Auth
+import Deriving.Aeson
+import Data.Char
+
+data ToLower
+
+instance StringModifier ToLower where
+  getStringModifier (x:xs) = toLower x : xs
+  getStringModifier "" = ""
+
+type SumCamel = CustomJSON '[SumUntaggedValue, ConstructorTagModifier ToLower]
 
 data Privacy = Public | Private
   deriving stock (Eq, Show, Generic)
-  deriving anyclass (FromJSON, ToJSON)
+  deriving (FromJSON, ToJSON) via SumCamel Privacy
 
 data LobbyState = LobbyState
   { lobbyStateID      :: ID Lobby
@@ -22,18 +32,9 @@ data LobbyState = LobbyState
   }
 makeFields ''LobbyState
 
-data Status = Online | Offline
-
-data ClientState = ClientState
-  { clientStateConnection :: WS.Connection
-  , clientStateStatus     :: Status
-  }
-makeFields ''ClientState
-
 data Environment = Environment
   { environmentIncLobbyID     :: TVar (ID Lobby)
   , environmentIncMsgID       :: TVar (ID Msg)
-  , environmentClientStateMap :: STM.Map (ID User) ClientState
   , environmentLobbyStateMap  :: STM.Map (ID Lobby) LobbyState
   }
 makeFields ''Environment

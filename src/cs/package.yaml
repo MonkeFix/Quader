@@ -15,10 +15,7 @@ dependencies:
 - name: base
   mixin:
     - hiding (Prelude)
-- name: universum
-  mixin:
-    - (Universum as Prelude)
-    - hiding ()
+- universum
 - websockets
 - exceptions
 - mtl
@@ -26,6 +23,8 @@ dependencies:
 - vector
 - containers
 - polysemy
+#- polysemy-plugin
+- generic-lens
 - async
 - servant
 - servant-client
@@ -70,6 +69,7 @@ default-extensions:
 - DeriveFoldable
 - DeriveFunctor
 - DeriveGeneric
+- PartialTypeSignatures
 - DeriveTraversable
 - DerivingStrategies
 - DerivingVia
@@ -118,6 +118,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -fplugin=Polysemy.Plugin
     dependencies:
     - cs
   client:

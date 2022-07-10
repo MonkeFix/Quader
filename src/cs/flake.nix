@@ -4,40 +4,31 @@
   inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   outputs = { self, nixpkgs, flake-utils, haskellNix }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
+    flake-utils.lib.eachSystem [ "x86_64-darwin" ] (system:
     let
       overlays = [ haskellNix.overlay
         (final: prev: {
-          # This overlay adds our project to pkgs
           cs =
-            final.haskell-nix.project' {
+            final.haskell-nix.cabalProject' {
               src = ./.;
-              compiler-nix-name = "ghc8107";
-              index-state = "2022-05-21T00:00:00Z";
-              # This is used by `nix develop .` to open a shell for use with
-              # `cabal`, `hlint` and `haskell-language-server`
+              compiler-nix-name = "ghc902";
               shell.tools = {
                 cabal = {};
-                hlint = {};
                 hpack = {};
                 haskell-language-server = {};
               };
-              # Non-Haskell shell tools go here
               shell.buildInputs = with pkgs; [
                 nixpkgs-fmt
               ];
-              # This adds `js-unknown-ghcjs-cabal` to the shell.
-              # shell.crossPlatforms = p: [p.ghcjs];
             };
         })
       ];
+
       pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-      flake = pkgs.cs.flake {
-        # This adds support for `nix build .#js-unknown-ghcjs-cabal:hello:exe:hello`
-        # crossPlatforms = p: [p.ghcjs];
-      };
+
+      flake = pkgs.cs.flake {};
+
     in flake // {
-      # Built by `nix build .`
       defaultPackage = flake.packages."cs:exe:server";
     });
 }

@@ -16,20 +16,18 @@ data Title
 data Email
 newtype Textual (a :: Type) = Textual Text
   deriving stock Generic
-  deriving newtype (Eq, Ord, Show, Semigroup, Monoid, IsString)
-  deriving anyclass (FromJSON, ToJSON)
+  deriving newtype (Eq, Ord, Show, Semigroup, Monoid, IsString, FromJSON, ToJSON)
 
 data Registration
 data Creation
 newtype Date (a :: Type) = Date UTCTime
   deriving stock Generic
-  deriving newtype (Eq, Ord, Show)
-  deriving anyclass (FromJSON, ToJSON)
+  deriving newtype (Eq, Ord, Show, FromJSON, ToJSON)
 
 data Role = Role
   { roleID   :: ID Role
   , roleName :: Textual Role
-  } deriving stock Generic
+  } deriving stock (Eq, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)
 
 data UserData = UserData

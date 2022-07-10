@@ -3,60 +3,42 @@ module Types.Messages where
 import Data.Aeson
 
 import Types.Auth
+import Data.Row
 import Types.State
+import Deriving.Aeson
 
 data TypeOfMessage = Request | Response
   deriving stock (Eq, Show, Generic)
-  deriving anyclass (FromJSON, ToJSON)
+  deriving (FromJSON, ToJSON) via SumCamel TypeOfMessage
 
 data Command = GetRoomList
              | CreateRoom
              | JoinRoom
              | LeaveRoom
   deriving stock (Eq, Show, Generic)
-  deriving anyclass (FromJSON, ToJSON)
+  deriving (FromJSON, ToJSON) via SumCamel Command
 
-data CreateRoomData = CreateRoomData
-  { createRoomDataName :: Textual Title
-  , createRoomDataType :: Privacy
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type family RequestData (cmd :: Command) where
+  RequestData GetRoomList = Empty
+  RequestData CreateRoom = "name" .== Textual Title
+                        .+ "type" .== Privacy
 
-newtype CreateRoomPayload = CreateRoomPayload
-  { createRoomPayloadId :: ID Room
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
 
-data RoomPayload = RoomPayload
-  { roomPayloadId        :: ID Room
-  , roomPayloadName      :: Textual Title
-  , roomPayloadCreatedBy :: ID User
-  , roomPayloadCreatedAt :: Date Creation
-  , roomType             :: Privacy
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type family Payload (cmd :: Command) where
+  Payload CreateRoom = "id" .== ID Room
+  Payload GetRoomList = "id"        .== ID Room
+                     .+ "name"      .== Textual Title
+                     .+ "createdBy" .== ID User
+                     .+ "createdAt" .== Date Creation
+                     .+ "type"      .== Privacy
 
-data Message a = Message
-  { messageId      :: ID Msg
-  , messageAction  :: Command
-  , messageType    :: TypeOfMessage
-  , messagePayload :: a
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type MetaData = "id"     .== Text
+             .+ "action" .== Command
+             .+ "type"   .== TypeOfMessage
 
-newtype Authorize = Authorize
-  { authorizeToken :: Textual Token
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type Data = "getRoomList" .== Rec (RequestData 'GetRoomList)
+         .+ "createRoom"  .== Rec (RequestData 'CreateRoom)
 
-newtype CreateLobby = CreateLobby
-  { createLobbyInvite :: [ID User]
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type Message = MetaData .+ "payload" .== Var Data
 
-data InviteLobby = InviteLobby
-  { inviteLobbyLobbyId :: ID Lobby
-  , inviteLobbyPlayers :: [ID User]
-  , inviteLobbyTitle   :: Textual Title
-  } deriving stock (Eq, Show, Generic)
-    deriving anyclass (FromJSON, ToJSON)
+type Authorize = "token" .== Textual Token
