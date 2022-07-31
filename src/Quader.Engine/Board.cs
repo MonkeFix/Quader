@@ -211,6 +211,17 @@ namespace Quader.Engine
             GarbageReceived?.Invoke(this, garbageLines);
         }
 
+        public void PushSolidLine(int lines)
+        {
+            for (int i = 0; i < lines; i++)
+            {
+                MoveUp();
+                _cellContainer.SetLine(TotalHeight - 1, CreateGarbageRow(-1));
+            }
+
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         private BoardCellType[] CreateGarbageRow(int holeX)
         {
             BoardCellType[] row = new BoardCellType[Width];

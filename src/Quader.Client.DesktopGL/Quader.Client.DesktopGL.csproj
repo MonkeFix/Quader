@@ -61,6 +61,7 @@
     <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Components\Boards\Renderers\" />
     <Folder Include="Config\" />
     <Folder Include="Serialization\" />
   </ItemGroup>

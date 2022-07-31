@@ -7,7 +7,7 @@ using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards
 {
-    public class PieceHandlerPlayerComponent : Component, IUpdatable, IBoardComponent, IResetable
+    public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IResetable
     {
         public Board Board { get; }
 

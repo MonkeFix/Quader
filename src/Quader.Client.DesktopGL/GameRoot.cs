@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
+using Nez.Persistence.Binary;
 using Nez.Systems;
 using Nez.UI;
 using Quader.Audio;
@@ -26,6 +27,8 @@ namespace Quader
         public static JsonSettings DefaultJsonSettings { get; private set; } = null!;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameRoot>();
+
+        private FileDataStore _dataStore;
 
         public GameRoot()
             : base(windowTitle: "Quader")
@@ -80,6 +83,12 @@ namespace Quader
             _logger.Info("Initializing");
 
             base.Initialize();
+
+            _logger.Info("Creating File Data Store");
+
+            _dataStore = new FileDataStore("Saves", FileDataStore.FileFormat.Binary);
+            Services.AddService(_dataStore);
+            //KeyValueDataStore.Default.Load(_dataStore);
 
             _logger.Info("Creating global ImGUI Manager");
             var imGuiManager = new ImGuiManager();
@@ -138,6 +147,8 @@ namespace Quader
 
             var gc = Services.GetService<GameConfig>();
             GameConfig.SaveToFile(gc, _configFilePath);
+
+            //KeyValueDataStore.Default.Flush(_dataStore);
 
             FMODManager.Unload();
         }
