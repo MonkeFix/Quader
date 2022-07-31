@@ -8,7 +8,7 @@ using Quader.Engine;
 using Quader.Engine.Serialization;
 using Quader.Skinning;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class BoardDrawerComponent : Component, IUpdatable, IBoardComponent
     {

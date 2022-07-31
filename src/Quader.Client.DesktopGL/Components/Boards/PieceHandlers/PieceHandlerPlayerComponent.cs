@@ -1,11 +1,12 @@
 ﻿using System;
 using Nez;
+using Quader.Components.Boards.Renderers;
 using Quader.Config;
 using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.PieceHandlers
 {
     public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IResetable
     {
@@ -119,7 +120,7 @@ namespace Quader.Components.Boards
                 {
                     if (_isLeftDown)
                     {
-                        Board.PieceMoveLeft();        
+                        Board.PieceMoveLeft();
                     }
 
                     if (_isRightDown) // else if?
@@ -179,7 +180,7 @@ namespace Quader.Components.Boards
             var ms = sec * 1000; // ~16.7
 
             var dtDiff = dt - sec;
-            
+
             // Test: 0, 1, 2, 3, 4, etc.
 
 

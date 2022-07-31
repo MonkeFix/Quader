@@ -16,6 +16,12 @@ namespace Quader
         [STAThread]
         static void Main()
         {
+            Directory.SetCurrentDirectory(WorkingDirectory);
+
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
             LoggerFactory.DefaultLoggers = new List<ILoggerFrontend>
             {
                 new ConsoleLogger(),
@@ -44,12 +50,6 @@ namespace Quader
                 logger.Critical(ex?.ToString() ?? "UNKNOWN EXCEPTION");
             };
 
-            Directory.SetCurrentDirectory(WorkingDirectory);
-
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-            
             using var game = new GameRoot();
             game.Run();
 

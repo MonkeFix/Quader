@@ -8,7 +8,6 @@ using Nez.Sprites;
 using Nez.Timers;
 using Nez.UI;
 using Quader.Components;
-using Quader.Components.Boards;
 using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;

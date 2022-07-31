@@ -10,7 +10,7 @@ using Quader.Engine.Pieces;
 using Quader.Skinning;
 using Quader.Utils;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class HeldPieceComponent : RenderableComponent, IBoardComponent, IResetable
     {

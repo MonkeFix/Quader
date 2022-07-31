@@ -8,7 +8,7 @@ using Quader.Engine;
 using Quader.Skinning;
 using Quader.Utils;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class BoardRendererComponent : RenderableComponent, IBoardComponent
     {
@@ -79,7 +79,7 @@ namespace Quader.Components.Boards
                     var drawY = baseY + y * size;
 
                     //if (y >= Board.Height)
-                        //spriteBatch.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f);
+                    //spriteBatch.DrawHollowRect(drawX, drawY, size, size, Color.White * 0.1f);
 
                     if (p == BoardCellType.None)
                     {
@@ -93,7 +93,7 @@ namespace Quader.Components.Boards
                             Vector2.One, SpriteEffects.None, 0);
                     }
 
-                    
+
                 }
             }
         }

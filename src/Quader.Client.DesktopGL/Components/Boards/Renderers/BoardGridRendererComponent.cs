@@ -6,7 +6,7 @@ using Quader.Engine;
 using Quader.Skinning;
 using Quader.Utils;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class BoardGridRendererComponent : RenderableComponent, IBoardComponent
     {
@@ -31,7 +31,7 @@ namespace Quader.Components.Boards
         public override void Initialize()
         {
             base.Initialize();
-            
+
             _renderTarget = new RenderTarget2D(Core.GraphicsDevice, (int)Width, (int)Height);
             _renderTarget.RenderFrom(RenderCells);
         }

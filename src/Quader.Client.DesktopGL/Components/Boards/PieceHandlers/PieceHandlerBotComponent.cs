@@ -10,13 +10,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.UI;
+using Quader.Components.Boards.Renderers;
 using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 using Quader.Skinning;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.PieceHandlers
 {
     public class PieceHandlerBotComponent : RenderableComponent, IPieceHandler, IDisposable, IBoardComponent, IResetable
     {
@@ -113,7 +114,7 @@ namespace Quader.Components.Boards
             {
                 DoMove();
             }
-            else if (_elapsed >= 1f/TargetPps)
+            else if (_elapsed >= 1f / TargetPps)
             {
                 DoMove();
 
@@ -138,8 +139,8 @@ namespace Quader.Components.Boards
                         var rawY = plan.ExpectedY[j];
                         var p = PieceToPieceType(plan.Piece);
 
-                        var drawX = Entity.Position.X + (rawX * 32);
-                        var drawY = Entity.Position.Y + ((19 - rawY) * 32);
+                        var drawX = Entity.Position.X + rawX * 32;
+                        var drawY = Entity.Position.Y + (19 - rawY) * 32;
 
                         batcher.Draw(
                             _boardSkin.GhostSprite,
@@ -153,7 +154,7 @@ namespace Quader.Components.Boards
                         );
                     }
                 }
-                
+
             }
         }
 
@@ -173,7 +174,7 @@ namespace Quader.Components.Boards
             var move = _coldClear.BlockNextMove(pl);
 
             _plan = move.PlanPlacement.ToArray();
-            _planSize = (uint) pl;
+            _planSize = (uint)pl;
 
 
             if (move.PollStatus == BotPollStatus.MoveProvided)

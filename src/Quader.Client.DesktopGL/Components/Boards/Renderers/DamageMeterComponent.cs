@@ -7,7 +7,7 @@ using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Utils;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class DamageMeterComponent : RenderableComponent, IBoardComponent, IResetable
     {
@@ -44,7 +44,7 @@ namespace Quader.Components.Boards
         {
             base.Initialize();
 
-            _renderTarget = RenderTarget.Create(30, (int) Height);
+            _renderTarget = RenderTarget.Create(30, (int)Height);
         }
 
         private void RenderToTexture(Batcher batcher)
@@ -73,7 +73,7 @@ namespace Quader.Components.Boards
             if (_renderTarget != null)
             {
                 var drawPos = new Vector2(
-                    Entity.Position.X + ((338 - _renderTarget.Width / 2) * Entity.Scale.X),
+                    Entity.Position.X + (338 - _renderTarget.Width / 2) * Entity.Scale.X,
                     Entity.Position.Y - Board.ExtraHeight * 32 * Entity.Scale.Y
                 );
 

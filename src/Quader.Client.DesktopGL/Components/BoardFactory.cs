@@ -3,12 +3,14 @@ using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
 using Nez.UI;
+using Quader.Components.Boards;
+using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Settings;
 using Quader.Skinning;
 
-namespace Quader.Components.Boards
+namespace Quader.Components
 {
     public enum PieceHandlerType
     {

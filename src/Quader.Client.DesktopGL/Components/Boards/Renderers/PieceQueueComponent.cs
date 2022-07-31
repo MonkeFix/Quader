@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
@@ -14,7 +13,7 @@ using Quader.Engine.Replays;
 using Quader.Skinning;
 using Quader.Utils;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards.Renderers
 {
     public class PieceQueueComponent : RenderableComponent, IBoardComponent, IResetable
     {

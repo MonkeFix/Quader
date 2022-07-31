@@ -2,6 +2,7 @@
 using ImGuiNET;
 using Nez;
 using Nez.ImGuiTools;
+using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.Pieces;
 
