@@ -5,6 +5,9 @@
     <TieredCompilation>false</TieredCompilation>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <LangVersion>9</LangVersion>
+
+	  <Timestamp>$([System.DateTime]::Now.ToString("yyyy-MM-dd\THHmmss"))</Timestamp>
+	  <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -22,6 +25,10 @@
     <Company>loonacuse</Company>
     <Copyright>loonacuse</Copyright>
     <PackageIcon>Icon.png</PackageIcon>
+
+	  <AssemblyVersion>0.0.*</AssemblyVersion>
+	  <FileVersion>0.0.1.0</FileVersion>
+	  <Version>0.0.1-prealpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
