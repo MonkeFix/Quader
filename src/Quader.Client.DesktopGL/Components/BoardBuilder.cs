@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
 using Nez.UI;
 using Quader.Components.Boards;
+using Quader.Components.Boards.PieceHandlers;
 using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Settings;
+using Quader.Scenes;
 using Quader.Skinning;
 
 namespace Quader.Components
@@ -18,7 +21,7 @@ namespace Quader.Components
         Bot
     }
 
-    public class BoardFactory
+    public class BoardBuilder
     {
         private static int _boardIndex = 0;
         private Entity _entity;
@@ -28,107 +31,124 @@ namespace Quader.Components
         private PieceHandlerType? _type;
         private Board? _otherBoard;
 
-        public BoardFactory()
+        public BoardBuilder(string? boardName = null)
         {
-            _entity = new Entity("board_" + _boardIndex);
+            if (!string.IsNullOrEmpty(boardName))
+                _entity = new Entity(boardName);
+            else 
+                _entity = new Entity("board_" + _boardIndex);
+
+            _entity.Tag = GameplayScene.BoardTag;
             _boardIndex++;
         }
 
-        public BoardFactory AddGameSettings(GameSettings gameSettings)
+        public BoardBuilder AddGameSettings(GameSettings gameSettings)
         {
             _gameSettings = gameSettings;
 
             return this;
         }
 
-        public BoardFactory AddPieceGenerator(IPieceGenerator pieceGenerator)
+        public BoardBuilder AddPieceGenerator(IPieceGenerator pieceGenerator)
         {
             _pieceGenerator = pieceGenerator;
 
             return this;
         }
 
-        public BoardFactory AddPieceHandler(PieceHandlerType type)
+        public BoardBuilder AddPieceHandler(PieceHandlerType type)
         {
             _type = type;
 
             return this;
         }
 
-        public BoardFactory AddPvpController(Board other)
+        public BoardBuilder AddPvpController(Board other)
         {
             _otherBoard = other;
 
             return this;
         }
 
-        public BoardFactory SetPosition(Vector2 position)
+        public BoardBuilder SetPosition(Vector2 position)
         {
             _entity.Position = position;
 
             return this;
         }
 
-        public Entity Build(out Board board)
+        public BoardHolder Build()
         {
             if (_gameSettings == null)
                 _gameSettings = GameSettings.Default;
             if (_pieceGenerator == null)
                 _pieceGenerator = new PieceGeneratorBag7(5);
 
-            board = new Board(_gameSettings);
+            var board = new Board(_gameSettings);
             var boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
 
             var boardRenderer = _entity.AddComponent(new SpriteRenderer(boardSkin.BoardTexture));
             boardRenderer.Origin = new Vector2(188, 0);
             boardRenderer.LayerDepth = 1f;
 
-            Component[] components =
+            var components = new List<Component>()
             {
                 new BoardGridRendererComponent(board),
                 new BoardRendererComponent(board),
                 new PieceRendererComponent(board),
 #if DEBUG
-                new BoardImGuiComponent(board),
+                new BoardStateRenderer(board),
 #endif
                 new PieceQueueComponent(board, _pieceGenerator),
                 new HeldPieceComponent(board),
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
-                new DamageMeterComponent(board)
+                new DamageMeterComponent(board),
+                new LoseHandlerComponent(board, null),
             };
-
-            _entity.AddComponents(components);
-
-            void RestartAction()
-            {
-                foreach (var component in components)
-                {
-                    if (component is IResetable resetable) resetable.Reset();
-                }
-            }
 
             switch (_type)
             {
                 case PieceHandlerType.Player:
-                    _entity.AddComponent(new PieceHandlerPlayerComponent(board, RestartAction));
+                    var ph1 = new PieceHandlerPlayerComponent(board);
+                    _pieceHandler = ph1;
+                    components.Add(ph1);
+
+#if DEBUG
+                    components.Add(new BoardImGuiComponent(board));
+#endif
+
                     break;
                 case PieceHandlerType.Bot:
-                    _entity.AddComponent(new PieceHandlerBotComponent(board));
+                    var ph2 = new PieceHandlerBotComponent(board);
+                    _pieceHandler = ph2;
+                    components.Add(ph2);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            _entity.AddComponent(new LoseHandlerComponent(board, RestartAction));
 
             if (_otherBoard != null)
-                _entity.AddComponent(new PvpControllerComponent(board, _otherBoard));
+                components.Add(new PvpControllerComponent(board, _otherBoard));
 
-            /*if (_pieceHandler == null)
-                _pieceHandler = new PieceHandlerPlayerComponent(board, () => { });*/
+            _entity.AddComponents(components);
 
-            return _entity;
+            /*void RestartAction()
+            {
+                foreach (var component in components)
+                {
+                    if (component is IResetable resetable) resetable.Reset();
+                }
+            }*/
+
+            foreach (var component in components)
+            {
+                if (component is IBoardToggleable)
+                    component.Enabled = false;
+            }
+            
+            return new BoardHolder(board, _entity, components, _pieceHandler);
         }
     }
 }

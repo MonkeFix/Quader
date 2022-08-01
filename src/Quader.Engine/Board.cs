@@ -42,6 +42,7 @@ namespace Quader.Engine
         public event EventHandler<int>? GarbageReceived;
         public event EventHandler<int>? AttackReceived;
         public event EventHandler? Reseted;
+        public event EventHandler<GameState>? StateChanged; 
 
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
@@ -67,11 +68,13 @@ namespace Quader.Engine
         // Used for smooth gravity handling
         private float _intermediateY;
 
+        public float IntermediateY => _intermediateY;
+
         public BoardMove LastMove { get; private set; }
 
         public GravitySettings GravitySettings { get; }
         public AttackSettings AttackSettings { get; }
-        
+
         public Board(GameSettings settings)
         {
             if (settings == null)
@@ -250,7 +253,7 @@ namespace Quader.Engine
 
             _cellContainer.Reset();
             _attackQueue.Clear();
-            
+
             Reseted?.Invoke(this, EventArgs.Empty);
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }

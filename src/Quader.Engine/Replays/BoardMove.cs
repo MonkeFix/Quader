@@ -54,7 +54,7 @@ public struct BoardMove
     /// <summary>
     /// Gets timestamp of the move in UTC
     /// </summary>
-    public DateTime Timestamp { get; set; }
+    public float Timestamp { get; set; }
     /// <summary>
     /// Gets total lines cleared by the move
     /// </summary>
@@ -79,4 +79,9 @@ public struct BoardMove
     /// Gets outgoing attack
     /// </summary>
     public int Attack { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Timestamp}: LC: {LinesCleared}, Mods: {Modificators}, B2B: {BackToBack}, Combo: {Combo}, Success: {Success}, Attack: {Attack}";
+    }
 }

@@ -68,6 +68,13 @@ namespace Quader.Components.Boards
             ImGui.Separator();
 
             ImGui.Text($"Board Size: {Board.Width}x{Board.Height}");
+            ImGui.Text($"Board Data:\n" +
+                       $"Total Height: {Board.TotalHeight}\n" +
+                       $"Extra Height: {Board.ExtraHeight}\n" +
+                       $"Last Move: {Board.LastMove}, Type: {Board.LastMoveType}" +
+                       $"");
+
+
             if (ImGui.Button("RESET BOARD"))
                 Board.Reset();
 

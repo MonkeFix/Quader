@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
@@ -12,6 +13,7 @@ using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
+using Quader.Engine.Replays;
 using Quader.Engine.Settings;
 using Quader.Serialization;
 using Quader.Skinning;
@@ -21,11 +23,14 @@ namespace Quader.Scenes
     public class GameplayScene : Scene
     {
         public const int ScreenSpaceRenderLayer = 999;
+        public const int BoardTag = 1000;
 
         public readonly int Width = 1600;
         public readonly int Height = 980;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
+
+        private BoardManagerComponent _boardManager;
 
         public GameplayScene()
         {
@@ -59,45 +64,77 @@ namespace Quader.Scenes
 
             _logger.Debug("Creating Board Entity...");
 
-            var gameSettings = GameSettings.Default;
-            
-
             var queueSize = 5;
             var pieceGenerator = new PieceGeneratorBag7(queueSize);
 
             var boardSkin = skin.Get<BoardSkin>();
-            var gameStateMachine = CreateEntity("game_state_machine").AddComponent(new GameStateMachineComponent());
 
-            var boardPlayerEntity =
-                new BoardFactory()
-                    .AddGameSettings(gameSettings)
-                    .AddPieceHandler(PieceHandlerType.Player)
-                    .SetPosition(new Vector2(200, 128))
-                    .Build(out var boardPlayer);
+            var boards = BuildBoards();
 
-            var boardBotEntity =
-                new BoardFactory()
-                    .AddGameSettings(gameSettings)
-                    .AddPieceHandler(PieceHandlerType.Bot)
-                    .SetPosition(new Vector2(256 + 512 + 128 + 64, 128))
-                    .AddPvpController(boardPlayer)
-                    .Build(out var boardBot);
+            _boardManager = CreateEntity("game_state_machine")
+                .AddComponent(new BoardManagerComponent(boards));
 
-            AddEntity(boardPlayerEntity);
-            AddEntity(boardBotEntity);
-            
-            
-            Core.Schedule(2f, true, boardBot, (timer) =>
+            /*Core.Schedule(2f, true, boardBot, (timer) =>
             {
                 timer.GetContext<Board>().PushGarbage(1);
             });
 
-            _logger.Debug("Done initializing");
+            _logger.Debug("Done initializing");*/
         }
-        
+
         public override void Update()
         {
+            if (Input.IsKeyPressed(Keys.R))
+            {
+                if (_boardManager.State == GameState.PreGame)
+                    _boardManager.StartGame();
+                else if (_boardManager.State == GameState.GameOngoing)
+                    _boardManager.Reset();
+                else if (_boardManager.State == GameState.PostGame)
+                    _boardManager.StartGame();
+            }
+
             base.Update();
+        }
+
+        private BoardHolder[] BuildBoards()
+        {
+            //DestroyBoards();
+
+            var gameSettings = GameSettings.Default;
+
+            var boardPlayer =
+                new BoardBuilder()
+                    .AddGameSettings(gameSettings)
+                    .AddPieceHandler(PieceHandlerType.Player)
+                    .SetPosition(new Vector2(200, 128))
+                    .Build();
+
+            var boardBot =
+                new BoardBuilder()
+                    .AddGameSettings(gameSettings)
+                    .AddPieceHandler(PieceHandlerType.Bot)
+                    .SetPosition(new Vector2(256 + 512 + 128 + 64, 128))
+                    .AddPvpController(boardPlayer.Board)
+                    .Build();
+
+            AddEntity(boardPlayer.BoardEntity);
+            AddEntity(boardBot.BoardEntity);
+
+            return new[]
+            {
+                boardPlayer,
+                boardBot
+            };
+        }
+
+        private void DestroyBoards()
+        {
+            var entities = FindEntitiesWithTag(BoardTag);
+            foreach (var entity in entities)
+            {
+                entity.Destroy();
+            }
         }
     }
 }

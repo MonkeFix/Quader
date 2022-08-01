@@ -77,7 +77,8 @@ namespace Quader.Components.Boards
                             $"Lines Cleared: {LinesCleared}\n" +
                             $"Current Gravity: {Board.CurrentGravity:F3}\n" +
                             $"Current Lock: {Board.CurrentLock:F3}\n" +
-                            $"Incoming Garbage: {_attackString}";
+                            $"Incoming Garbage: {_attackString}\n" +
+                            $"Intermediate Y: {Board.IntermediateY}";
 
             _boardSkin.DebugFont.DrawInto(
                 batcher,

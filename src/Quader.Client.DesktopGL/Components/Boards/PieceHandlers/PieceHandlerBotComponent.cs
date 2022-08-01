@@ -26,7 +26,7 @@ namespace Quader.Components.Boards.PieceHandlers
 
         public Board Board { get; }
 
-        private ColdClear _coldClear = null!;
+        private ColdClear? _coldClear;
 
         [Inspectable]
         public float TargetPps { get; set; } = 1;//0.1f;
@@ -66,28 +66,34 @@ namespace Quader.Components.Boards.PieceHandlers
             };
         }
 
+        public void Start()
+        {
+            _queue = Entity.GetComponent<PieceQueueComponent>();
+            _hold = Entity.GetComponent<HeldPieceComponent>();
+
+            _elapsed = 0;
+            _holdUsed = false;
+
+            InitColdClear();
+        }
+
         public void Reset()
         {
             _logger.Debug("Resetting");
 
             _elapsed = 0;
             _holdUsed = false;
-            _coldClear.Reset(new bool[400], 0, false);
-            InitColdClear();
-        }
-
-        public override void OnAddedToEntity()
-        {
-            _queue = Entity.GetComponent<PieceQueueComponent>();
-            _hold = Entity.GetComponent<HeldPieceComponent>();
-
+            _coldClear?.Reset(new bool[400], 0, false);
             InitColdClear();
         }
 
         private void InitColdClear()
         {
             if (_coldClear != null)
+            {
                 _coldClear.Dispose();
+                _coldClear = null;
+            }
 
             var q = _queue.Queue.Select(p => PieceTypeToPiece(p.Type)).ToList();
             q.Add(PieceTypeToPiece(_queue.NextPiece.Type));
@@ -107,6 +113,9 @@ namespace Quader.Components.Boards.PieceHandlers
 
         public void Update()
         {
+            if (_coldClear == null)
+                return;
+
             var dt = Time.DeltaTime;
             _elapsed += dt;
 

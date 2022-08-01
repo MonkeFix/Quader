@@ -32,14 +32,11 @@ namespace Quader.Components.Boards.PieceHandlers
         private bool _isLeftDown;
         private bool _isRightDown;
 
-        private readonly Action _restartAction;
-
         private readonly ILogger _logger = LoggerFactory.GetLogger<PieceHandlerPlayerComponent>();
 
-        public PieceHandlerPlayerComponent(Board board, Action restartAction)
+        public PieceHandlerPlayerComponent(Board board)
         {
             Board = board;
-            _restartAction = restartAction;
 
             _gameConfig = Core.Services.GetService<GameConfig>();
             _arr = _gameConfig.Handling.AutomaticRepeatRate;
@@ -63,6 +60,11 @@ namespace Quader.Components.Boards.PieceHandlers
         public override void OnAddedToEntity()
         {
             _heldPiece = Entity.GetComponent<HeldPieceComponent>();
+        }
+
+        public void Start()
+        {
+
         }
 
         public void Reset()
@@ -163,11 +165,11 @@ namespace Quader.Components.Boards.PieceHandlers
                 _heldPiece?.HoldPiece();
             }
 
-            if (Input.IsKeyPressed(_controls.Restart))
+            /*if (Input.IsKeyPressed(_controls.Restart))
             {
                 Board.Reset(); // TODO: Restart correctly
                 _restartAction.Invoke();
-            }
+            }*/
         }
 
         private int GetMovesPerFrame(float dt)

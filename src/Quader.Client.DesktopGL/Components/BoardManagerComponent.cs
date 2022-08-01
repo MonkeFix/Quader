@@ -1,19 +1,31 @@
-﻿using Nez;
+﻿using System;
+using System.Collections.Generic;
+using Nez;
 using Nez.AI.FSM;
 using Quader.Components.Boards;
+using Quader.Components.Boards.PieceHandlers;
 using Quader.Debugging.Logging;
+using Quader.Engine;
 using Quader.Engine.Replays;
 
 namespace Quader.Components
 {
-    public class GameStateMachineComponent : SimpleStateMachine<GameState>, IResetable
+    public class BoardManagerComponent : SimpleStateMachine<GameState>, IResetable
     {
-        private readonly ILogger _logger = LoggerFactory.GetLogger<GameStateMachineComponent>();
+        private readonly ILogger _logger = LoggerFactory.GetLogger<BoardManagerComponent>();
 
-        public GameStateMachineComponent()
+        private IEnumerable<BoardHolder> _boards;
+        private IEnumerable<IPieceHandler> _pieceHandlers;
+
+        public GameState State => CurrentState;
+
+        public BoardManagerComponent(IEnumerable<BoardHolder> boards)
         {
-            
+            _boards = boards;
         }
+        
+        public BoardManagerComponent(BoardHolder board) : this(new[] { board })
+        { }
 
         public void StartGame()
         {
@@ -33,7 +45,7 @@ namespace Quader.Components
         public override void OnAddedToEntity()
         {
             InitialState = GameState.PreGame;
-            CurrentState = GameState.PreGame;
+            //CurrentState = GameState.PreGame;
         }
 
         protected void PreGame_Enter()

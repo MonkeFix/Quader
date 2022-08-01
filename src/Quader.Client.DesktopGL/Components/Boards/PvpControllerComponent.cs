@@ -3,7 +3,7 @@ using Quader.Engine;
 
 namespace Quader.Components.Boards
 {
-    public class PvpControllerComponent : Component, IBoardComponent, IUpdatable
+    public class PvpControllerComponent : Component, IBoardComponent, IUpdatable, IBoardToggleable
     {
         public Board Board { get; }
         public Board BoardOpponent { get; }
@@ -15,13 +15,13 @@ namespace Quader.Components.Boards
 
             Board.PieceHardDropped += (sender, move) =>
             {
-                if (move.LinesCleared > 0)
+                if (Enabled && move.LinesCleared > 0)
                     BoardOpponent.Attack(move);
             };
 
             BoardOpponent.PieceHardDropped += (sender, move) =>
             {
-                if (move.LinesCleared > 0)
+                if (Enabled && move.LinesCleared > 0)
                     Board.Attack(move);
             };
         }
@@ -30,6 +30,11 @@ namespace Quader.Components.Boards
         public void Update()
         {
             
+        }
+
+        public void Toggle()
+        {
+            Enabled = !Enabled;
         }
     }
 }

@@ -8,9 +8,9 @@ namespace Quader.Components.Boards
     {
         public Board Board { get; }
 
-        private readonly Action _restartAction;
+        private readonly Action? _restartAction;
 
-        public LoseHandlerComponent(Board board, Action restartAction)
+        public LoseHandlerComponent(Board board, Action? restartAction)
         {
             Board = board;
             _restartAction = restartAction;
@@ -22,7 +22,7 @@ namespace Quader.Components.Boards
         {
             Console.WriteLine("CANNOT SPAWN A NEW PIECE!");
             Board.Reset();
-            _restartAction.Invoke();
+            _restartAction?.Invoke();
         }
     }
 }

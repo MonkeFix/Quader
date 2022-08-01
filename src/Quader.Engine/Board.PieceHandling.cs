@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Nez;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 
@@ -91,6 +92,12 @@ public partial class Board
     {
         var res = true;
 
+        if (_yNeedsUpdate)
+        {
+            _yToCheck = FindNearestY();
+            _yNeedsUpdate = false;
+        }
+
         delta = Math.Min(delta, _yToCheck);
 
         for (int i = 0; i < delta; i++)
@@ -157,7 +164,7 @@ public partial class Board
         {
             LinesCleared = linesCleared.Length,
             Modificators = moveType,
-            Timestamp = DateTime.UtcNow,
+            Timestamp = Time.TimeSinceSceneLoad,
             BackToBack = CurrentB2B,
             Combo = CurrentCombo,
             Success = true,
