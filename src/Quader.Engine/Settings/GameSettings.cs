@@ -39,7 +39,8 @@ public class GameSettings
                         TSpinSingleMini = 1,
                         AllClear = 10,
                         BackToBacks = new List<int> {1,2,3,4,5},
-                        Combos = new List<int> {1,2,3,4,5}
+                        Combos = new List<int> {1,2,3,4,5},
+                        GarbageDelayMs = 500
                     }
                 };
 

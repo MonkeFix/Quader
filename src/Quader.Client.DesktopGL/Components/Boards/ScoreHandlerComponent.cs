@@ -78,7 +78,8 @@ namespace Quader.Components.Boards
                             $"Current Gravity: {Board.CurrentGravity:F3}\n" +
                             $"Current Lock: {Board.CurrentLock:F3}\n" +
                             $"Incoming Garbage: {_attackString}\n" +
-                            $"Intermediate Y: {Board.IntermediateY}";
+                            $"Intermediate Y: {Board.IntermediateY}\n" +
+                            $"Garbage Delay Cooldown: {Board.GarbageDelayCooldown} ({Board.GarbageDelayMs})";
 
             _boardSkin.DebugFont.DrawInto(
                 batcher,

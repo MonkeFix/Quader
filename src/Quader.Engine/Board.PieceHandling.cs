@@ -153,6 +153,7 @@ public partial class Board
         if (linesCleared.Length > 0)
         {
             LinesCleared?.Invoke(this, linesCleared.Length);
+            _piecesOnBoard -= linesCleared.Length * Width;
             CurrentCombo++;
         }
 
@@ -195,9 +196,10 @@ public partial class Board
                 if (!res)
                     bm.Attack = Math.Max(0, damageCancel);
             }
-            else
+            else if (GarbageDelayCooldown <= 0f)
             {
                 PushGarbage(_attackQueue.RemoveFront());
+                GarbageDelayCooldown = AttackSettings.GarbageDelayMs;
             }
         }
         else

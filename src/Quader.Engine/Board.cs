@@ -62,6 +62,9 @@ namespace Quader.Engine
         public float CurrentGravity { get; private set; }
         public float CurrentLock { get; private set; }
 
+        public float GarbageDelayMs => AttackSettings.GarbageDelayMs;
+        public float GarbageDelayCooldown { get; private set; }
+
         public LastMoveType LastMoveType { get; private set; } = LastMoveType.None;
         
 
@@ -92,6 +95,8 @@ namespace Quader.Engine
             _cellContainer = new BoardCellContainer(Width, TotalHeight);
             CurrentPiece = new PiecePixel();
             ResetPiece(CurrentPiece);
+
+            GarbageDelayCooldown = AttackSettings.GarbageDelayMs;
             
             CurrentGravity = settings.Gravity.BaseGravity;
         }
@@ -155,6 +160,20 @@ namespace Quader.Engine
                 HardDrop();
 
             CurrentGravity += GravitySettings.GravityIncrease * dt;
+
+            if (IncomingDamage.Any())
+            {
+                GarbageDelayCooldown -= dt * 1000;
+            }
+            else
+            {
+                GarbageDelayCooldown = GarbageDelayMs;
+            }
+
+            if (GarbageDelayCooldown <= 0)
+            {
+                GarbageDelayCooldown = 0;
+            }
         }
 
         public int FindNearestY()

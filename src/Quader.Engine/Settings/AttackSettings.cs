@@ -17,4 +17,5 @@ public class AttackSettings
     [JsonInclude] public int AllClear { get; set; }
     [JsonInclude] public List<int> BackToBacks { get; set; }
     [JsonInclude] public List<int> Combos { get; set; }
+    [JsonInclude] public int GarbageDelayMs { get; set; }
 }

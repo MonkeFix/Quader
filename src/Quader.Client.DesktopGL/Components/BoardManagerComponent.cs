@@ -64,6 +64,10 @@ namespace Quader.Components
         protected void GameOngoing_Enter()
         {
             _logger.Debug("GameOngoing_Enter");
+            foreach (var board in _boards)
+            {
+                board.PieceHandler.Start();
+            }
         }
         protected void GameOngoing_Tick()
         {
