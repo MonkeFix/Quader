@@ -1,4 +1,5 @@
 ﻿using System;
+using Nez.Persistence;
 
 namespace Quader.Engine.Replays;
 
@@ -54,31 +55,33 @@ public struct BoardMove
     /// <summary>
     /// Gets timestamp of the move in UTC
     /// </summary>
+    [JsonInclude]
     public float Timestamp { get; set; }
     /// <summary>
     /// Gets total lines cleared by the move
     /// </summary>
+    [JsonInclude]
     public int LinesCleared { get; set; }
     /// <summary>
     /// Gets flagged board move type. Use <b>BoardMoveType.HasFlag()</b> or bitwise OR operator to check the types applied
     /// </summary>
-    public BoardMoveModificators Modificators { get; set; }
+    [JsonInclude] public BoardMoveModificators Modificators { get; set; }
     /// <summary>
     /// Gets current back-to-back status. Back-to-back increments only if the last move was any T-Spin or Quad, in every other case it resets back to zero
     /// </summary>
-    public int BackToBack { get; set; }
+    [JsonInclude] public int BackToBack { get; set; }
     /// <summary>
     /// Gets current combo. Note, that combo starts counting with every line clear
     /// </summary>
-    public int Combo { get; set; }
+    [JsonInclude] public int Combo { get; set; }
     /// <summary>
     /// Gets whether or not was the move successful. If not, it usually means that the player just lost
     /// </summary>
-    public bool Success { get; set; }
+    [JsonInclude] public bool Success { get; set; }
     /// <summary>
     /// Gets outgoing attack
     /// </summary>
-    public int Attack { get; set; }
+    [JsonInclude] public int Attack { get; set; }
 
     public override string ToString()
     {

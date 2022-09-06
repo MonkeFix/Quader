@@ -26,6 +26,8 @@ public partial class Board
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
             }
         }
+
+        Replay?.AddMove(null, CurrentTick, ReplayMoveType.MoveLeft, new ReplayMoveInfo { MoveLeftFactor = delta });
     }
 
     /// <summary>
@@ -46,6 +48,8 @@ public partial class Board
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
             }
         }
+
+        Replay?.AddMove(null, CurrentTick, ReplayMoveType.MoveRight, new ReplayMoveInfo { MoveRightFactor = delta });
     }
 
     public void Rotate(Rotation rotation)
@@ -55,7 +59,13 @@ public partial class Board
             var success = TestRotation(kickParams, out Point? test);
 
             if (success)
+            {
                 LastMoveType = LastMoveType.Rotation;
+
+                var rotationType = rotation == Rotation.Clockwise ? ReplayMoveType.RotateCW : ReplayMoveType.RotateCCW;
+
+                Replay?.AddMove(null, CurrentTick, rotationType);
+            }
 
             return new PieceBase.WallKickCheckResult
             {
@@ -111,6 +121,8 @@ public partial class Board
         PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(0, delta), new Point(CurrentPiece.X, CurrentPiece.Y)));
 
         _yNeedsUpdate = true;
+
+        Replay?.AddMove(null, CurrentTick, ReplayMoveType.SoftDrop, new ReplayMoveInfo {SoftDropFactor = delta});
 
         return res;
     }
@@ -212,6 +224,8 @@ public partial class Board
         PieceHardDropped?.Invoke(this, bm);
         BoardChanged?.Invoke(this, EventArgs.Empty);
         ResetPiece(CurrentPiece);
+
+        Replay?.AddMove(bm, CurrentTick, ReplayMoveType.HardDrop);
 
         return bm;
     }

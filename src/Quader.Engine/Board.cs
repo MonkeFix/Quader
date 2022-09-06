@@ -44,6 +44,8 @@ namespace Quader.Engine
         public event EventHandler? Reseted;
         public event EventHandler<GameState>? StateChanged; 
 
+        public Replay? Replay { get; private set; }
+
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
         /// </summary>
@@ -78,6 +80,8 @@ namespace Quader.Engine
         public GravitySettings GravitySettings { get; }
         public AttackSettings AttackSettings { get; }
 
+        public long CurrentTick { get; private set; }
+
         public Board(GameSettings settings)
         {
             if (settings == null)
@@ -99,6 +103,19 @@ namespace Quader.Engine
             GarbageDelayCooldown = AttackSettings.GarbageDelayMs;
             
             CurrentGravity = settings.Gravity.BaseGravity;
+        }
+
+        public void StartReplay(long startTick)
+        {
+            Replay = new Replay(this, startTick);
+        }
+
+        public Replay StopReplay()
+        {
+            if (Replay == null)
+                throw new Exception("Replay hasn't been started");
+
+            return Replay;
         }
 
         public void SetPiece(PieceType type)
@@ -129,8 +146,10 @@ namespace Quader.Engine
         /// Meant to be called every update cycle tick (once in 1/FPS seconds)
         /// </summary>
         /// <param name="dt">Delta time, time difference between current and previous frames</param>
-        public void UpdateGravity(float dt)
+        public void UpdateGravity(float dt, long currTick)
         {
+            CurrentTick = currTick;
+
             _intermediateY += CurrentGravity * dt;
 
             if (_yNeedsUpdate)
@@ -174,6 +193,8 @@ namespace Quader.Engine
             {
                 GarbageDelayCooldown = 0;
             }
+
+            Replay?.AddMove(null, CurrentTick, ReplayMoveType.Idle);
         }
 
         public int FindNearestY()
@@ -227,7 +248,7 @@ namespace Quader.Engine
                 _cellContainer.SetLine(TotalHeight - 1, CreateGarbageRow(garbageHoleX));
             }
 
-            _piecesOnBoard += Width - 1;
+            _piecesOnBoard += (Width - 1) * garbageLines;
 
             BoardChanged?.Invoke(this, EventArgs.Empty);
             GarbageReceived?.Invoke(this, garbageLines);
@@ -240,6 +261,8 @@ namespace Quader.Engine
                 MoveUp();
                 _cellContainer.SetLine(TotalHeight - 1, CreateGarbageRow(-1));
             }
+
+            _piecesOnBoard += Width * lines;
 
             BoardChanged?.Invoke(this, EventArgs.Empty);
         }

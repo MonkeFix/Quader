@@ -1,18 +1,35 @@
 ﻿using System.Collections.Generic;
+using Nez.Persistence;
 
 namespace Quader.Engine.Replays;
 
 public class Replay
 {
-    public List<BoardMove> Moves { get; }
+    [JsonExclude]
+    public Board Board { get; }
+    [JsonInclude]
+    public List<ReplayMove> Moves { get; }
+    [JsonInclude]
+    public long StartTick { get; }
 
-    public Replay()
+    public Replay(Board board, long startTick)
     {
-        Moves = new List<BoardMove>();
+        Board = board;
+        Moves = new List<ReplayMove>(1_000_000);
+        StartTick = startTick;
     }
 
-    public void AddMove(BoardMove move)
+    public void AddMove(BoardMove? move, long tick, ReplayMoveType type, ReplayMoveInfo info = default)
     {
-        Moves.Add(move);
+        if (type == ReplayMoveType.Idle)
+            return;
+
+        Moves.Add(new ReplayMove
+        {
+            Tick = tick,
+            BoardMove = move,
+            Type = type,
+            Info = info
+        });
     }
 }
