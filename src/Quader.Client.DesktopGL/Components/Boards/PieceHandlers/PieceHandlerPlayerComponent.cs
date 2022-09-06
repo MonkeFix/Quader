@@ -8,7 +8,7 @@ using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards.PieceHandlers
 {
-    public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IResetable, IBoardToggleable
+    public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IBoardToggleable
     {
         public Board Board { get; }
 
@@ -65,15 +65,6 @@ namespace Quader.Components.Boards.PieceHandlers
         public void Start()
         {
 
-        }
-
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-
-            _elapsed = 0;
-            _isLeftDown = false;
-            _isRightDown = false;
         }
 
         public void Update()
@@ -175,7 +166,7 @@ namespace Quader.Components.Boards.PieceHandlers
         private int GetMovesPerFrame(float dt)
         {
             if (_arr == 0)
-                return 10;
+                return Board.Width;
 
             var fps = 60f;
             var sec = 1f / fps; // ~0.0167
@@ -197,11 +188,6 @@ namespace Quader.Components.Boards.PieceHandlers
         public void Disable()
         {
             Enabled = false;
-        }
-
-        public void Toggle()
-        {
-            Enabled = !Enabled;
         }
     }
 }

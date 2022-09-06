@@ -19,7 +19,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards.PieceHandlers
 {
-    public class PieceHandlerBotComponent : RenderableComponent, IPieceHandler, IDisposable, IBoardComponent, IResetable
+    public class PieceHandlerBotComponent : RenderableComponent, IPieceHandler, IDisposable, IBoardComponent, IBoardToggleable
     {
         public override float Width => 1000;
         public override float Height => 1000;
@@ -74,16 +74,6 @@ namespace Quader.Components.Boards.PieceHandlers
             _elapsed = 0;
             _holdUsed = false;
 
-            InitColdClear();
-        }
-
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-
-            _elapsed = 0;
-            _holdUsed = false;
-            _coldClear?.Reset(new bool[400], 0, false);
             InitColdClear();
         }
 
@@ -170,10 +160,14 @@ namespace Quader.Components.Boards.PieceHandlers
         public void Dispose()
         {
             _coldClear?.Dispose();
+            _coldClear = null;
         }
 
         private void DoMove()
         {
+            if (_coldClear == null)
+                return;
+
             var incomingGarbage = Board.IncomingDamage.LastOrDefault(0);
             _coldClear.RequestNextMove(incomingGarbage);
 
@@ -216,8 +210,11 @@ namespace Quader.Components.Boards.PieceHandlers
                 Console.WriteLine("Bot is dead");
             }
 
-            var np = _queue.NextPiece;
-            _coldClear.AddNextPieceAsync(PieceTypeToPiece(np.Type));
+            if (_queue != null && _coldClear != null)
+            {
+                var np = _queue.NextPiece;
+                _coldClear.AddNextPieceAsync(PieceTypeToPiece(np.Type));
+            }
         }
 
         private void DoMove(Movement m)
@@ -272,6 +269,17 @@ namespace Quader.Components.Boards.PieceHandlers
                 Piece.Z => PieceType.Z,
                 _ => throw new ArgumentOutOfRangeException(nameof(p), p, null)
             };
+        }
+
+        public void Enable()
+        {
+            Enabled = true;
+        }
+
+        public void Disable()
+        {
+            Enabled = false;
+            Dispose();
         }
     }
 }

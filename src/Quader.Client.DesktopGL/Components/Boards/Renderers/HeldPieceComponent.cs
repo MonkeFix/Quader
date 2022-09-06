@@ -12,7 +12,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class HeldPieceComponent : RenderableComponent, IBoardComponent, IResetable
+    public class HeldPieceComponent : RenderableComponent, IBoardComponent
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -52,14 +52,6 @@ namespace Quader.Components.Boards.Renderers
             
             if (_pieceQueue == null)
                 throw new Exception("Piece Queue is null");
-        }
-
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-
-            _isHoldUsed = false;
-            _heldPiece = null;
         }
 
         public void HoldPiece()

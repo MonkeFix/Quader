@@ -105,7 +105,7 @@ namespace Quader.Components
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
                 new DamageMeterComponent(board),
-                new LoseHandlerComponent(board, null),
+                // new LoseHandlerComponent(board, () => _boardManager.EndGame()),
             };
 
             switch (_type)
@@ -147,12 +147,12 @@ namespace Quader.Components
 
             board.StartReplay(Time.FrameCount);
 
-            foreach (var component in components)
+            /*foreach (var component in components)
             {
                 if (component is IBoardToggleable)
                     component.Enabled = false;
-            }
-            
+            }*/
+
             return new BoardHolder(board, _entity, components, _pieceHandler);
         }
     }

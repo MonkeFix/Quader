@@ -4,6 +4,4 @@ public interface IBoardToggleable
 {
     void Enable();
     void Disable();
-
-    void Toggle();
 }

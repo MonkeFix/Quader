@@ -9,7 +9,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class DamageMeterComponent : RenderableComponent, IBoardComponent, IResetable
+    public class DamageMeterComponent : RenderableComponent, IBoardComponent
     {
         public override float Width => 16;
         public override float Height { get; }
@@ -80,12 +80,6 @@ namespace Quader.Components.Boards.Renderers
                 batcher.Draw(_renderTarget, drawPos, null, Color.White, 0f, Vector2.Zero, Entity.Scale,
                     SpriteEffects.FlipVertically, 0f);
             }
-        }
-
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-            _renderTarget?.RenderFrom(RenderToTexture);
         }
     }
 }

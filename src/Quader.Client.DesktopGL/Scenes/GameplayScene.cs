@@ -9,6 +9,7 @@ using Nez.Sprites;
 using Nez.Timers;
 using Nez.UI;
 using Quader.Components;
+using Quader.Components.UI;
 using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
@@ -50,8 +51,6 @@ namespace Quader.Scenes
             SetDesignResolution(Width, Height, SceneResolutionPolicy.BestFit);
             Screen.SetSize(1920, 1080);
 
-            var skin = Core.Services.GetService<Skin>();
-
             /*var ui = new Entity("ui");
             var canvas = ui.AddComponent(new UICanvas());
 
@@ -62,17 +61,12 @@ namespace Quader.Scenes
 
             AddEntity(ui);*/
 
+            CreateEntity("shared-ui").AddComponent(new SharedUiComponent());
+
             _logger.Debug("Creating Board Entity...");
 
-            var queueSize = 5;
-            var pieceGenerator = new PieceGeneratorBag7(queueSize);
-
-            var boardSkin = skin.Get<BoardSkin>();
-
-            var boards = BuildBoards();
-
-            _boardManager = CreateEntity("game_state_machine")
-                .AddComponent(new BoardManagerComponent(boards));
+            _boardManager = CreateEntity("board-manager")
+                .AddComponent(new BoardManagerComponent());
 
             /*Core.Schedule(2f, true, boardBot, (timer) =>
             {
@@ -87,7 +81,7 @@ namespace Quader.Scenes
             base.Update();
         }
 
-        private BoardHolder[] BuildBoards()
+        /*private BoardHolder[] BuildBoards()
         {
             //DestroyBoards();
 
@@ -108,12 +102,12 @@ namespace Quader.Scenes
                     .AddPvpController(boardPlayer.Board)
                     .Build();
 
-            Core.Schedule(2f, true, boardBot, (context) =>
+            /*Core.Schedule(2f, true, boardBot, (context) =>
             {
                 var board = context.GetContext<BoardHolder>();
                 if (board.IsEnabled)
                     board.Board.PushGarbage(1);
-            });
+            });#1#
 
             AddEntity(boardPlayer.BoardEntity);
             AddEntity(boardBot.BoardEntity);
@@ -132,6 +126,6 @@ namespace Quader.Scenes
             {
                 entity.Destroy();
             }
-        }
+        }*/
     }
 }

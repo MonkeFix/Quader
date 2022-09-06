@@ -10,7 +10,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class PieceRendererComponent : RenderableComponent, IBoardComponent
+    public class PieceRendererComponent : RenderableComponent, IBoardComponent, IBoardToggleable
     {
         public sealed override float Width { get; }
         public sealed override float Height { get; }
@@ -125,6 +125,9 @@ namespace Quader.Components.Boards.Renderers
                 );
             }
         }
+
+        public void Enable() => Enabled = true;
+        public void Disable() => Enabled = false;
 
         public override void DebugRender(Batcher batcher)
         {

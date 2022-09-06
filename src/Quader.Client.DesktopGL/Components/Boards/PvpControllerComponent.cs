@@ -3,7 +3,7 @@ using Quader.Engine;
 
 namespace Quader.Components.Boards
 {
-    public class PvpControllerComponent : Component, IBoardComponent, IUpdatable, IBoardToggleable
+    public class PvpControllerComponent : Component, IBoardComponent, IBoardToggleable
     {
         public Board Board { get; }
         public Board BoardOpponent { get; }
@@ -26,12 +26,6 @@ namespace Quader.Components.Boards
             };
         }
 
-
-        public void Update()
-        {
-            
-        }
-
         public void Enable()
         {
             Enabled = true;
@@ -40,11 +34,6 @@ namespace Quader.Components.Boards
         public void Disable()
         {
             Enabled = false;
-        }
-
-        public void Toggle()
-        {
-            Enabled = !Enabled;
         }
     }
 }

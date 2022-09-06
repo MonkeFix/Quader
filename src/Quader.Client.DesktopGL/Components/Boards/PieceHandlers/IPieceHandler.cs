@@ -2,7 +2,7 @@
 
 namespace Quader.Components.Boards.PieceHandlers;
 
-public interface IPieceHandler : IUpdatable, IResetable
+public interface IPieceHandler : IUpdatable
 {
     void Start();
 }

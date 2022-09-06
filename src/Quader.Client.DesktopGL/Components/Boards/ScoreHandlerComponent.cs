@@ -10,7 +10,7 @@ using Quader.Skinning;
 
 namespace Quader.Components.Boards
 {
-    public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent, IResetable
+    public class ScoreHandlerComponent : RenderableComponent, IUpdatable, IBoardComponent, IBoardToggleable
     {
         public override float Width => 1000;
         public override float Height => 10600;
@@ -25,6 +25,8 @@ namespace Quader.Components.Boards
         private string _attackString = "";
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<ScoreHandlerComponent>();
+
+        private bool _isEnabled = true;
 
         public ScoreHandlerComponent(Board board)
         {
@@ -54,21 +56,22 @@ namespace Quader.Components.Boards
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
         }
 
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-
-            Pps = 0;
-            TotalPieces = 0;
-            LinesCleared = 0;
-        }
-
         public void Update()
         {
-            if (TotalPieces != 0)
+            if (_isEnabled && TotalPieces != 0)
             {
                 Pps = TotalPieces / Time.TimeSinceSceneLoad;
             }
+        }
+
+        public void Enable()
+        {
+            _isEnabled = true;
+        }
+
+        public void Disable()
+        {
+            _isEnabled = false;
         }
 
         public override void Render(Batcher batcher, Camera camera)

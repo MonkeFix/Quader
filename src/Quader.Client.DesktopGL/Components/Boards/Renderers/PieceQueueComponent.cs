@@ -15,7 +15,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class PieceQueueComponent : RenderableComponent, IBoardComponent, IResetable
+    public class PieceQueueComponent : RenderableComponent, IBoardComponent
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -48,16 +48,6 @@ namespace Quader.Components.Boards.Renderers
             Board.PieceHardDropped += BoardOnPieceHardDropped;
 
             _renderTarget = RenderTarget.Create(188, 489);
-
-            Init();
-        }
-
-        public void Reset()
-        {
-            _logger.Debug("Resetting");
-
-            _queue.Clear();
-            _queue = new Queue<PieceBase>();
 
             Init();
         }
@@ -117,6 +107,9 @@ namespace Quader.Components.Boards.Renderers
             var next = _queue.Dequeue();
 
             _queue.Enqueue(NextPiece);
+
+            _renderTarget.RenderFrom(RenderToTexture);
+
             return next;
         }
 
