@@ -8,7 +8,7 @@ using Quader.Engine.Pieces;
 
 namespace Quader.Components.Boards.PieceHandlers
 {
-    public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IResetable
+    public class PieceHandlerPlayerComponent : Component, IPieceHandler, IBoardComponent, IResetable, IBoardToggleable
     {
         public Board Board { get; }
 
@@ -187,6 +187,21 @@ namespace Quader.Components.Boards.PieceHandlers
 
 
             return 1;
+        }
+
+        public void Enable()
+        {
+            Enabled = true;
+        }
+
+        public void Disable()
+        {
+            Enabled = false;
+        }
+
+        public void Toggle()
+        {
+            Enabled = !Enabled;
         }
     }
 }

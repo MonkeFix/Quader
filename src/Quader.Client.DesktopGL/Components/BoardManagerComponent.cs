@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.AI.FSM;
 using Quader.Components.Boards;
@@ -10,7 +11,7 @@ using Quader.Engine.Replays;
 
 namespace Quader.Components
 {
-    public class BoardManagerComponent : SimpleStateMachine<GameState>, IResetable
+    public class BoardManagerComponent : SimpleStateMachine<GameState>, IResetable, IUpdatable
     {
         private readonly ILogger _logger = LoggerFactory.GetLogger<BoardManagerComponent>();
 
@@ -26,6 +27,21 @@ namespace Quader.Components
         
         public BoardManagerComponent(BoardHolder board) : this(new[] { board })
         { }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (Input.IsKeyPressed(Keys.R))
+            {
+                if (State == GameState.PreGame)
+                    StartGame();
+                else if (State == GameState.GameOngoing)
+                    Reset();
+                else if (State == GameState.PostGame)
+                    StartGame();
+            }
+        }
 
         public void StartGame()
         {
@@ -66,7 +82,8 @@ namespace Quader.Components
             _logger.Debug("GameOngoing_Enter");
             foreach (var board in _boards)
             {
-                board.PieceHandler.Start();
+                board.Start();
+                board.Enable();
             }
         }
         protected void GameOngoing_Tick()

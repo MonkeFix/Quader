@@ -12,6 +12,16 @@ namespace Quader.Components.Boards
             Board = board;
         }
 
+        public void Enable()
+        {
+            Enabled = true;
+        }
+
+        public void Disable()
+        {
+            Enabled = false;
+        }
+
         public void Toggle()
         {
             Enabled = !Enabled;

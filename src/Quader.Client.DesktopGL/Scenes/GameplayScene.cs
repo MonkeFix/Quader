@@ -84,16 +84,6 @@ namespace Quader.Scenes
 
         public override void Update()
         {
-            if (Input.IsKeyPressed(Keys.R))
-            {
-                if (_boardManager.State == GameState.PreGame)
-                    _boardManager.StartGame();
-                else if (_boardManager.State == GameState.GameOngoing)
-                    _boardManager.Reset();
-                else if (_boardManager.State == GameState.PostGame)
-                    _boardManager.StartGame();
-            }
-
             base.Update();
         }
 

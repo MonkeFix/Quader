@@ -44,6 +44,22 @@ namespace Quader.Components
             }
         }
 
+        public void Enable()
+        {
+            foreach (var c in _boardToggleableComponents)
+            {
+                c.Enable();
+            }
+        }
+
+        public void Disable()
+        {
+            foreach (var c in _boardToggleableComponents)
+            {
+                c.Disable();
+            }
+        }
+
         public void Toggle()
         {
             foreach (var c in _boardToggleableComponents)
