@@ -29,7 +29,7 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
-            Board.UpdateGravity(Time.DeltaTime);
+            Board.UpdateGravity(Time.DeltaTime, Time.FrameCount);
         }
     }
 }

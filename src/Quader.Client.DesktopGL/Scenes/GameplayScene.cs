@@ -108,6 +108,13 @@ namespace Quader.Scenes
                     .AddPvpController(boardPlayer.Board)
                     .Build();
 
+            Core.Schedule(2f, true, boardBot, (context) =>
+            {
+                var board = context.GetContext<BoardHolder>();
+                if (board.IsEnabled)
+                    board.Board.PushGarbage(1);
+            });
+
             AddEntity(boardPlayer.BoardEntity);
             AddEntity(boardBot.BoardEntity);
 

@@ -2,113 +2,112 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Quader.InputMgr
+namespace Quader.InputMgr;
+
+public class InputCommandMapper<T> : IEnumerable<KeyValuePair<InputEntry<T>, IInputCommand>> where T : Enum
 {
-    public class InputCommandMapper<T> : IEnumerable<KeyValuePair<InputEntry<T>, IInputCommand>> where T : Enum
+    private readonly Dictionary<InputEntry<T>, IInputCommand> _commandMap;
+
+    public IInputCommand this[InputEntry<T> entry]
     {
-        private readonly Dictionary<InputEntry<T>, IInputCommand> _commandMap;
-
-        public IInputCommand this[InputEntry<T> entry]
-        {
-            get => Get(entry);
-            set => Map(entry, value);
-        }
-
-        public InputCommandMapper()
-        {
-            _commandMap = new Dictionary<InputEntry<T>, IInputCommand>();
-        }
-
-        public void Map(T key, Func<T, bool> handler, IInputCommand command)
-        {
-            Map(new InputEntry<T>(key, handler), command);
-        }
-
-        public void Map(InputEntry<T> entry, IInputCommand command)
-        {
-            if (_commandMap.ContainsKey(entry))
-                return;
-            
-            _commandMap[entry] = command;
-        }
-
-        public IInputCommand GetForKeyAndHandler(T key, Func<T, bool> handler)
-        {
-            return Get(new InputEntry<T>(key, handler));
-        }
-
-        public IInputCommand Get(InputEntry<T> entry)
-        {
-            return _commandMap[entry];
-        }
-
-        public void Remove(InputEntry<T> entry)
-        {
-            _commandMap.Remove(entry);
-        }
-
-        public IEnumerator<KeyValuePair<InputEntry<T>, IInputCommand>> GetEnumerator()
-        {
-            return _commandMap.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        get => Get(entry);
+        set => Map(entry, value);
     }
 
-    public class InputCommandMapper<T, TK> : IEnumerable<KeyValuePair<InputEntry<T>, IInputCommand<TK>>> where T : Enum where TK : IInputHandleable
+    public InputCommandMapper()
     {
-        private readonly Dictionary<InputEntry<T>, IInputCommand<TK>> _commandMap;
+        _commandMap = new Dictionary<InputEntry<T>, IInputCommand>();
+    }
 
-        public IInputCommand<TK> this[InputEntry<T> entry]
-        {
-            get => Get(entry);
-            set => Map(entry, value);
-        }
+    public void Map(T key, Func<T, bool> handler, IInputCommand command)
+    {
+        Map(new InputEntry<T>(key, handler), command);
+    }
 
-        public InputCommandMapper()
-        {
-            _commandMap = new Dictionary<InputEntry<T>, IInputCommand<TK>>();
-        }
+    public void Map(InputEntry<T> entry, IInputCommand command)
+    {
+        if (_commandMap.ContainsKey(entry))
+            return;
+            
+        _commandMap[entry] = command;
+    }
 
-        public void Map(T key, Func<T, bool> handler, IInputCommand<TK> command)
-        {
-            Map(new InputEntry<T>(key, handler), command);
-        }
+    public IInputCommand GetForKeyAndHandler(T key, Func<T, bool> handler)
+    {
+        return Get(new InputEntry<T>(key, handler));
+    }
 
-        public void Map(InputEntry<T> entry, IInputCommand<TK> command)
-        {
-            if (_commandMap.ContainsKey(entry))
-                return;
+    public IInputCommand Get(InputEntry<T> entry)
+    {
+        return _commandMap[entry];
+    }
 
-            _commandMap[entry] = command;
-        }
+    public void Remove(InputEntry<T> entry)
+    {
+        _commandMap.Remove(entry);
+    }
 
-        public IInputCommand<TK> GetForKeyAndHandler(T key, Func<T, bool> handler)
-        {
-            return Get(new InputEntry<T>(key, handler));
-        }
+    public IEnumerator<KeyValuePair<InputEntry<T>, IInputCommand>> GetEnumerator()
+    {
+        return _commandMap.GetEnumerator();
+    }
 
-        public IInputCommand<TK> Get(InputEntry<T> entry)
-        {
-            return _commandMap[entry];
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
 
-        public void Remove(InputEntry<T> entry)
-        {
-            _commandMap.Remove(entry);
-        }
+public class InputCommandMapper<T, TK> : IEnumerable<KeyValuePair<InputEntry<T>, IInputCommand<TK>>> where T : Enum where TK : IInputHandleable
+{
+    private readonly Dictionary<InputEntry<T>, IInputCommand<TK>> _commandMap;
 
-        public IEnumerator<KeyValuePair<InputEntry<T>, IInputCommand<TK>>> GetEnumerator()
-        {
-            return _commandMap.GetEnumerator();
-        }
+    public IInputCommand<TK> this[InputEntry<T> entry]
+    {
+        get => Get(entry);
+        set => Map(entry, value);
+    }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    public InputCommandMapper()
+    {
+        _commandMap = new Dictionary<InputEntry<T>, IInputCommand<TK>>();
+    }
+
+    public void Map(T key, Func<T, bool> handler, IInputCommand<TK> command)
+    {
+        Map(new InputEntry<T>(key, handler), command);
+    }
+
+    public void Map(InputEntry<T> entry, IInputCommand<TK> command)
+    {
+        if (_commandMap.ContainsKey(entry))
+            return;
+
+        _commandMap[entry] = command;
+    }
+
+    public IInputCommand<TK> GetForKeyAndHandler(T key, Func<T, bool> handler)
+    {
+        return Get(new InputEntry<T>(key, handler));
+    }
+
+    public IInputCommand<TK> Get(InputEntry<T> entry)
+    {
+        return _commandMap[entry];
+    }
+
+    public void Remove(InputEntry<T> entry)
+    {
+        _commandMap.Remove(entry);
+    }
+
+    public IEnumerator<KeyValuePair<InputEntry<T>, IInputCommand<TK>>> GetEnumerator()
+    {
+        return _commandMap.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Quader.Config
+﻿namespace Quader.Config;
+
+public interface IGameConfigEntry<out T>
 {
-    public interface IGameConfigEntry<out T>
-    {
-        T Defaults();
-    }
+    T Defaults();
 }

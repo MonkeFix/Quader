@@ -1,7 +1,6 @@
-﻿namespace Quader.Components.Boards
+﻿namespace Quader.Components.Boards;
+
+public interface IResetable
 {
-    public interface IResetable
-    {
-        void Reset();
-    }
+    void Reset();
 }

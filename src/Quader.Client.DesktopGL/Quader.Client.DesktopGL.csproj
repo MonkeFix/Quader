@@ -4,7 +4,7 @@
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <LangVersion>9</LangVersion>
+    <LangVersion>latest</LangVersion>
 
 	  <Timestamp>$([System.DateTime]::Now.ToString("yyyy-MM-dd\THHmmss"))</Timestamp>
 	  <Deterministic>false</Deterministic>
@@ -68,6 +68,7 @@
     <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Components\UI\" />
     <Folder Include="Config\" />
     <Folder Include="Serialization\" />
   </ItemGroup>

@@ -1,32 +1,31 @@
 ﻿using System;
 using System.IO;
 
-namespace Quader.Debugging.Logging.Loggers
+namespace Quader.Debugging.Logging.Loggers;
+
+public class FileLogger : ILoggerFrontend
 {
-    public class FileLogger : ILoggerFrontend
+    public string FileDir => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+
+    public string FilePath { get; }
+
+    public FileLogger(string? filePath = null)
     {
-        public string FileDir => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+        if (filePath == null)
+            FilePath = Path.Combine(FileDir,
+                $"log-{DateTime.Now:yyyy-MM-dd}.log");
+        else
+            FilePath = filePath;
 
-        public string FilePath { get; }
+        if (!Directory.Exists(FileDir))
+            Directory.CreateDirectory(FileDir);
+    }
 
-        public FileLogger(string? filePath = null)
+    public void Log(string message, LogLevel level)
+    {
+        using (var sw = new StreamWriter(FilePath, true))
         {
-            if (filePath == null)
-                FilePath = Path.Combine(FileDir,
-                    $"log-{DateTime.Now:yyyy-MM-dd}.log");
-            else
-                FilePath = filePath;
-
-            if (!Directory.Exists(FileDir))
-                Directory.CreateDirectory(FileDir);
-        }
-
-        public void Log(string message, LogLevel level)
-        {
-            using (var sw = new StreamWriter(FilePath, true))
-            {
-                sw.WriteLine(message);
-            }
+            sw.WriteLine(message);
         }
     }
 }

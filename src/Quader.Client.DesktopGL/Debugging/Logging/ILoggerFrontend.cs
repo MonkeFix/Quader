@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Quader.Debugging.Logging
+namespace Quader.Debugging.Logging;
+
+public interface ILoggerFrontend
 {
-    public interface ILoggerFrontend
-    {
-        void Log(string message, LogLevel level);
-    }
+    void Log(string message, LogLevel level);
 }

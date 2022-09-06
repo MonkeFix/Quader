@@ -1,22 +1,21 @@
-﻿namespace Quader.InputMgr
+﻿namespace Quader.InputMgr;
+
+public interface IInputCommand
 {
-    public interface IInputCommand
-    {
-        void Execute();
-    }
+    void Execute();
+}
 
-    public interface IInputCommand<in T> where T : IInputHandleable
-    {
-        void Execute(T entity);
-    }
+public interface IInputCommand<in T> where T : IInputHandleable
+{
+    void Execute(T entity);
+}
 
-    public class NullCommand : IInputCommand
-    {
-        public void Execute() { }
-    }
+public class NullCommand : IInputCommand
+{
+    public void Execute() { }
+}
 
-    public class NullCommand<T> : IInputCommand<T> where T : IInputHandleable
-    {
-        public void Execute(T entity) { }
-    }
+public class NullCommand<T> : IInputCommand<T> where T : IInputHandleable
+{
+    public void Execute(T entity) { }
 }

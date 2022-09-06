@@ -1,9 +1,8 @@
 ﻿using Quader.Engine;
 
-namespace Quader.Components.Boards
+namespace Quader.Components.Boards;
+
+public interface IBoardComponent
 {
-    public interface IBoardComponent
-    {
-        Board Board { get; }
-    }
+    Board Board { get; }
 }

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.AI.FSM;
+using Nez.Persistence;
 using Quader.Components.Boards;
 using Quader.Components.Boards.PieceHandlers;
 using Quader.Debugging.Logging;
@@ -40,6 +43,19 @@ namespace Quader.Components
                     Reset();
                 else if (State == GameState.PostGame)
                     StartGame();
+            }
+
+            if (Input.IsKeyPressed(Keys.P))
+            {
+                var boardsArr = _boards.ToArray();
+
+                for (int i = 0; i < boardsArr.Length; i++)
+                {
+                    var b = boardsArr[i];
+
+                    var json = Json.ToJson(b.Board.StopReplay(), true);
+                    File.WriteAllText($"REPLAY_{i}.json", json);
+                }
             }
         }
 

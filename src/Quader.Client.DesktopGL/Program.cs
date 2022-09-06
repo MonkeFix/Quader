@@ -7,53 +7,52 @@ using Quader.Debugging.Logging;
 using Quader.Debugging.Logging.Loggers;
 using Thread = System.Threading.Thread;
 
-namespace Quader
+namespace Quader;
+
+public static class Program
 {
-    public static class Program
+    public static string WorkingDirectory => AppDomain.CurrentDomain.BaseDirectory;
+
+    [STAThread]
+    static void Main()
     {
-        public static string WorkingDirectory => AppDomain.CurrentDomain.BaseDirectory;
+        Directory.SetCurrentDirectory(WorkingDirectory);
 
-        [STAThread]
-        static void Main()
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+        LoggerFactory.DefaultLoggers = new List<ILoggerFrontend>
         {
-            Directory.SetCurrentDirectory(WorkingDirectory);
+            new ConsoleLogger(),
+            new DiagnosticsLogger(),
+            new FileLogger()
+        };
 
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+        var logger = LoggerFactory.GetLogger("Kernel");
 
-            LoggerFactory.DefaultLoggers = new List<ILoggerFrontend>
-            {
-                new ConsoleLogger(),
-                new DiagnosticsLogger(),
-                new FileLogger()
-            };
+        var asm = Assembly.GetEntryAssembly();
+        var version = asm?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "UNKNOWN";
+        var asmVer = asm?.GetName()?.Version?.ToString() ?? "UNKNOWN";
 
-            var logger = LoggerFactory.GetLogger("Kernel");
+        logger.Info($"\n\n" +
+                    $" =======================================================\n" +
+                    $" = Starting up Quader\n" +
+                    $" = Startup Time: {DateTimeOffset.Now}\n" +
+                    $" = Working Directory: {WorkingDirectory}\n" +
+                    $" = Assembly Version: {asmVer}\n" +
+                    $" = Game Version: {version}\n" +
+                    $" =======================================================\n");
 
-            var asm = Assembly.GetEntryAssembly();
-            var version = asm?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "UNKNOWN";
-            var asmVer = asm?.GetName()?.Version?.ToString() ?? "UNKNOWN";
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            logger.Critical(ex?.ToString() ?? "UNKNOWN EXCEPTION");
+        };
 
-            logger.Info($"\n\n" +
-                        $" =======================================================\n" +
-                        $" = Starting up Quader\n" +
-                        $" = Startup Time: {DateTimeOffset.Now}\n" +
-                        $" = Working Directory: {WorkingDirectory}\n" +
-                        $" = Assembly Version: {asmVer}\n" +
-                        $" = Game Version: {version}\n" +
-                        $" =======================================================\n");
+        using var game = new GameRoot();
+        game.Run();
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-            {
-                var ex = args.ExceptionObject as Exception;
-                logger.Critical(ex?.ToString() ?? "UNKNOWN EXCEPTION");
-            };
-
-            using var game = new GameRoot();
-            game.Run();
-
-            logger.Info("Game Closed");
-        }
+        logger.Info("Game Closed");
     }
 }

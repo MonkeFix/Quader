@@ -19,6 +19,20 @@ namespace Quader.Components
         private List<IBoardToggleable> _boardToggleableComponents;
         private List<IBoardComponent> _boardComponents;
 
+        private bool _isEnabled;
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (value)
+                    Enable();
+                else 
+                    Disable();
+            }
+        }
+
         public BoardHolder(Board board, Entity boardEntity, IEnumerable<Component> components, IPieceHandler pieceHandler)
         {
             Board = board;
@@ -50,6 +64,8 @@ namespace Quader.Components
             {
                 c.Enable();
             }
+
+            _isEnabled = true;
         }
 
         public void Disable()
@@ -58,16 +74,8 @@ namespace Quader.Components
             {
                 c.Disable();
             }
+
+            _isEnabled = false;
         }
-
-        public void Toggle()
-        {
-            foreach (var c in _boardToggleableComponents)
-            {
-                c.Toggle();
-            }
-        }
-
-
     }
 }

@@ -1,9 +1,8 @@
 ﻿using Nez;
 
-namespace Quader.Components.Boards.PieceHandlers
+namespace Quader.Components.Boards.PieceHandlers;
+
+public interface IPieceHandler : IUpdatable, IResetable
 {
-    public interface IPieceHandler : IUpdatable, IResetable
-    {
-        void Start();
-    }
+    void Start();
 }

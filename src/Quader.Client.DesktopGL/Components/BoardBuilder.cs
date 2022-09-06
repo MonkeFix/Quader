@@ -18,7 +18,8 @@ namespace Quader.Components
     public enum PieceHandlerType
     {
         Player,
-        Bot
+        Bot,
+        Remote
     }
 
     public class BoardBuilder
@@ -124,6 +125,8 @@ namespace Quader.Components
                     _pieceHandler = ph2;
                     components.Add(ph2);
                     break;
+                case PieceHandlerType.Remote:
+                    throw new NotImplementedException();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -141,6 +144,8 @@ namespace Quader.Components
                     if (component is IResetable resetable) resetable.Reset();
                 }
             }*/
+
+            board.StartReplay(Time.FrameCount);
 
             foreach (var component in components)
             {
