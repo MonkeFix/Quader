@@ -4,25 +4,21 @@ using Quader.Engine;
 
 namespace Quader.Components.Boards
 {
-    public class LoseHandlerComponent : Component, IBoardComponent
+    public class LoseWinHandlerComponent : Component, IBoardComponent
     {
         public Board Board { get; }
 
-        private readonly Action? _restartAction;
-
-        public LoseHandlerComponent(Board board, Action? restartAction)
+        public LoseWinHandlerComponent(Board board)
         {
             Board = board;
-            _restartAction = restartAction;
 
             Board.PieceCannotBeSpawned += BoardOnPieceCannotBeSpawned;
         }
 
         private void BoardOnPieceCannotBeSpawned(object? sender, EventArgs e)
         {
-            Console.WriteLine("CANNOT SPAWN A NEW PIECE!");
+            //Console.WriteLine("CANNOT SPAWN A NEW PIECE!");
             //Board.Reset();
-            _restartAction?.Invoke();
         }
     }
 }

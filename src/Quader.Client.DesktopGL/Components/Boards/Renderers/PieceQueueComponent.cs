@@ -27,7 +27,7 @@ namespace Quader.Components.Boards.Renderers
 
         public PieceBase NextPiece { get; private set; } = null!;
 
-        public IEnumerable<PieceBase> Queue { get; private set; }
+        public IEnumerable<PieceBase> Queue { get; private set; } = null!;
 
         private readonly BoardSkin _boardSkin;
 

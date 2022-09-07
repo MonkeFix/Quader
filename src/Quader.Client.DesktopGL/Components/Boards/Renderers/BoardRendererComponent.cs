@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
@@ -35,7 +34,7 @@ namespace Quader.Components.Boards.Renderers
             Height = board.TotalHeight * CellSize;
 
             LocalOffset = new Vector2(0, Board.ExtraHeight * CellSize);
-            Board.BoardChanged += (sender, args) => _renderTarget?.RenderFrom(RenderCells);
+            Board.BoardChanged += (_, _) => _renderTarget?.RenderFrom(RenderCells);
         }
 
         public override void Initialize()

@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Nez;
+﻿using Nez;
 using Nez.UI;
 using Quader.Engine;
 using Quader.Skinning;
@@ -13,7 +11,7 @@ namespace Quader.Components.Boards.Renderers
         public override float Height => 1000;
         public Board Board { get; }
 
-        private BoardSkin _boardSkin;
+        private BoardSkin _boardSkin = null!;
 
         public BoardStateRenderer(Board board)
         {

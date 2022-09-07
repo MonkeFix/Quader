@@ -16,7 +16,7 @@ namespace Quader.Components.Boards.Renderers
 
         public Board Board { get; }
 
-        private RenderTarget2D _renderTarget;
+        private RenderTarget2D? _renderTarget;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<DamageMeterComponent>();
 
@@ -26,15 +26,15 @@ namespace Quader.Components.Boards.Renderers
 
             Height = Board.TotalHeight * 32;
 
-            Board.AttackReceived += (sender, attack) =>
+            Board.AttackReceived += (_, _) =>
             {
                 _renderTarget?.RenderFrom(RenderToTexture);
             };
-            Board.PieceHardDropped += (sender, move) =>
+            Board.PieceHardDropped += (_, _) =>
             {
                 _renderTarget?.RenderFrom(RenderToTexture);
             };
-            Board.Reseted += (sender, args) =>
+            Board.Reseted += (_, _) =>
             {
                 _renderTarget?.RenderFrom(RenderToTexture);
             };

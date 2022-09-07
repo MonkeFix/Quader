@@ -1,5 +1,4 @@
-﻿using System;
-using Nez;
+﻿using Nez;
 using Quader.Components.Boards.Renderers;
 using Quader.Config;
 using Quader.Debugging.Logging;

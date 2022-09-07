@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading;
-using System.Threading.Tasks;
 using ColdClearNet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -40,11 +35,11 @@ namespace Quader.Components.Boards.PieceHandlers
         private BoardSkin _boardSkin;
         private BoardMove _lastMove;
 
-        private bool _holdUsed = false;
-        private PlanPlacement[] _plan;
+        private bool _holdUsed;
+        private PlanPlacement[]? _plan;
         private uint _planSize;
 
-        private int _incomingGarbage = 0;
+        private int _incomingGarbage;
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<PieceHandlerBotComponent>();
 
@@ -54,12 +49,12 @@ namespace Quader.Components.Boards.PieceHandlers
 
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
 
-            Board.GarbageReceived += (sender, lines) =>
+            Board.GarbageReceived += (_, _) =>
             {
                 _coldClear?.Reset(Board.ToBoolArray(), _lastMove.Combo, _lastMove.BackToBack > 0);
             };
 
-            Board.AttackReceived += (sender, attack) =>
+            Board.AttackReceived += (_, attack) =>
             {
                 _incomingGarbage = attack;
                 //_coldClear?.RequestNextMove(attack);
@@ -126,7 +121,7 @@ namespace Quader.Components.Boards.PieceHandlers
             batcher.DrawString(Graphics.Instance.BitmapFont, $"Incoming Garbage: {_incomingGarbage}", new Vector2(0, 0),
                 Color.White);
 
-            if (DrawPlan)
+            if (DrawPlan && _plan != null)
             {
                 for (int i = 0; i < _planSize; i++)
                 {

@@ -105,7 +105,7 @@ namespace Quader.Components
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
                 new DamageMeterComponent(board),
-                // new LoseHandlerComponent(board, () => _boardManager.EndGame()),
+                new LoseWinHandlerComponent(board),
             };
 
             switch (_type)
