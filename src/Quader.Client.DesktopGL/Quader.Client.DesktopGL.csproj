@@ -68,7 +68,6 @@
     <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Components\UI\" />
     <Folder Include="Config\" />
     <Folder Include="Serialization\" />
   </ItemGroup>

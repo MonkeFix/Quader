@@ -9,10 +9,11 @@ namespace Quader.Components.UI;
 public class SharedUiComponent : Component
 {
     private Skin _skin = null!;
+    private SharedActions _sharedActions;
 
-    public SharedUiComponent()
+    public SharedUiComponent(SharedActions sharedActions)
     {
-        
+        _sharedActions = sharedActions;
     }
 
     public override void OnAddedToEntity()
@@ -29,8 +30,8 @@ public class SharedUiComponent : Component
 
         var topMenuTable = new Table();
 
-        topMenuTable.DebugAll();
-        topMenuTable.SetDebug(true);
+        //topMenuTable.DebugAll();
+        //topMenuTable.SetDebug(true);
 
         topMenuTable.Left().Top();
         topMenuTable.SetFillParent(false);//.SetHeight(64);
@@ -40,25 +41,25 @@ public class SharedUiComponent : Component
         topMenuTable.Add(new TextButton("New Game", _skin)).SetFillX()
             .GetElement<Button>().OnClicked += b =>
         {
-            Console.WriteLine("TEST BUTTON CLICK");
+            _sharedActions?.NewGameAction();
         };
 
         topMenuTable.Add(new TextButton("Settings", _skin)).SetFillX()
             .GetElement<Button>().OnClicked += b =>
         {
-            Console.WriteLine("TEST BUTTON 2 CLICK");
+
         };
 
         topMenuTable.Add(new TextButton("Restart", _skin)).SetFillX()
             .GetElement<Button>().OnClicked += b =>
         {
-            Console.WriteLine("TEST BUTTON 3 CLICK");
+            _sharedActions?.RestartAction();
         };
 
         topMenuTable.Add(new TextButton("Quit", _skin)).SetFillX()
             .GetElement<Button>().OnClicked += b =>
         {
-            Console.WriteLine("TEST BUTTON 4 CLICK");
+            _sharedActions?.QuitAction();
         };
 
         uiCanvas.Stage.AddElement(topMenuTable);

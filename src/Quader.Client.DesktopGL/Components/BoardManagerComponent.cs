@@ -9,6 +9,7 @@ using Nez.AI.FSM;
 using Nez.Persistence;
 using Quader.Components.Boards;
 using Quader.Components.Boards.PieceHandlers;
+using Quader.Components.UI;
 using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Replays;
@@ -22,9 +23,19 @@ namespace Quader.Components
         private readonly ILogger _logger = LoggerFactory.GetLogger<BoardManagerComponent>();
 
         private IEnumerable<BoardHolder>? _boards;
-        private IEnumerable<IPieceHandler> _pieceHandlers;
 
         public GameState State => CurrentState;
+
+        private SharedActions _sharedActions;
+
+        public BoardManagerComponent(SharedActions sharedActions)
+        {
+            _sharedActions = sharedActions;
+
+            sharedActions.NewGameAction = () => CurrentState = GameState.PreGame;
+            sharedActions.RestartAction = () => Restart();
+            sharedActions.QuitAction = () => Core.Exit();
+        }
 
         public override void Update()
         {
@@ -32,15 +43,10 @@ namespace Quader.Components
 
             if (Input.IsKeyPressed(Keys.R))
             {
-                if (State == GameState.PreGame)
-                    CurrentState = GameState.GameOngoing;
-                else if (State == GameState.GameOngoing)
-                    CurrentState = GameState.PreGame;
-                else if (State == GameState.PostGame)
-                    CurrentState = GameState.PreGame;
+                Restart();
             }
 
-            if (Input.IsKeyPressed(Keys.P))
+            if (Input.IsKeyPressed(Keys.P) && _boards != null)
             {
                 var boardsArr = _boards.ToArray();
 
@@ -65,6 +71,16 @@ namespace Quader.Components
             base.DebugRender(batcher);
 
             batcher.DrawString(Graphics.Instance.BitmapFont, $"Current State: {State}", new Vector2(256, 64), Color.White);
+        }
+
+        private void Restart()
+        {
+            if (State == GameState.PreGame)
+                CurrentState = GameState.GameOngoing;
+            else if (State == GameState.GameOngoing)
+                CurrentState = GameState.PreGame;
+            else if (State == GameState.PostGame)
+                CurrentState = GameState.PreGame;
         }
 
         protected void PreGame_Enter()

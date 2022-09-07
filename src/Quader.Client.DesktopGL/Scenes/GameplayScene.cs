@@ -61,12 +61,14 @@ namespace Quader.Scenes
 
             AddEntity(ui);*/
 
-            CreateEntity("shared-ui").AddComponent(new SharedUiComponent());
+            var sharedActions = new SharedActions();
+
+            CreateEntity("shared-ui").AddComponent(new SharedUiComponent(sharedActions));
 
             _logger.Debug("Creating Board Entity...");
 
             _boardManager = CreateEntity("board-manager")
-                .AddComponent(new BoardManagerComponent());
+                .AddComponent(new BoardManagerComponent(sharedActions));
 
             /*Core.Schedule(2f, true, boardBot, (timer) =>
             {
