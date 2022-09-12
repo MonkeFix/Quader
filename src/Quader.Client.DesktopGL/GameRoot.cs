@@ -28,6 +28,8 @@ namespace Quader
 
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameRoot>();
 
+        public static readonly int TargetFps = 240;
+
         private FileDataStore _dataStore;
 
         public GameRoot()
@@ -38,7 +40,7 @@ namespace Quader
             Window.AllowUserResizing = false;
 
             IsFixedTimeStep = false;
-            TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 240.0);
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0 / TargetFps);
 
             _logger.Info("Initializing FMOD");
             
@@ -120,7 +122,7 @@ namespace Quader
             }
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("Config file was not found, taking the defaults");
+                _logger.Info("Config file was not found, taking the defaults");
                 gc = new GameConfig();
             }
             catch (Exception e)

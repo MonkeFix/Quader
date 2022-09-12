@@ -18,8 +18,7 @@ namespace Quader.Skinning
 
         public Sprite this[BoardCellType type] => _pieceSpriteMap[type];
 
-        public static readonly PieceType[] AvailablePieces = new PieceType[]
-        {
+        public static readonly PieceType[] AvailablePieces = {
             PieceType.I,
             PieceType.J,
             PieceType.L,
@@ -30,12 +29,14 @@ namespace Quader.Skinning
         };
 
         public Texture2D BoardTexture { get; }
-        public Sprite GhostSprite { get; private set; }
+        public Sprite GhostSprite { get; private set; } = null!;
 
         public BitmapFont MainFont { get; }
         public BitmapFont DebugFont { get; }
 
         public Dictionary<PieceType, RenderTarget2D> PieceTextures { get; }
+
+        public BoardSkinTable Table { get; }
 
         public int CellSize { get; }
         public readonly int Count = 12;
@@ -57,6 +58,8 @@ namespace Quader.Skinning
 
             var size = skinTexture.Height;
             CellSize = size;
+
+            Table = BoardSkinTable.Default;
 
             _spriteList = Sprite.SpritesFromAtlas(skinTexture, CellSize, CellSize, 0, Count);
 

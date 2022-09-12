@@ -17,7 +17,6 @@ namespace Quader.Components.Boards.Renderers
         public override float Width { get; }
         public override float Height { get; }
 
-
         private PieceQueueComponent _pieceQueue = null!;
 
         private PieceBase? _heldPiece;
@@ -38,8 +37,8 @@ namespace Quader.Components.Boards.Renderers
 
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
 
-            Width = 200;
-            Height = 150;
+            Width = _boardSkin.Table.HeldPieceRect.Width;
+            Height = _boardSkin.Table.HeldPieceRect.Height;
 
             Board.PieceHardDropped += (_, _) => { _isHoldUsed = false; };
 

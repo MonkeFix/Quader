@@ -9,7 +9,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class BoardRendererComponent : RenderableComponent, IBoardComponent
+    public class BoardRendererComponent : RenderableComponent, IBoardComponent, IBoardToggleable
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -21,6 +21,8 @@ namespace Quader.Components.Boards.Renderers
         private readonly BoardSkin _boardSkin;
 
         private RenderTarget2D _renderTarget = null!;
+
+        private bool _isEnabled = true;
 
         public BoardRendererComponent(Board board)
         {
@@ -35,6 +37,18 @@ namespace Quader.Components.Boards.Renderers
 
             LocalOffset = new Vector2(0, Board.ExtraHeight * CellSize);
             Board.BoardChanged += (_, _) => _renderTarget?.RenderFrom(RenderCells);
+        }
+
+        public void Enable()
+        {
+            _isEnabled = true;
+            _renderTarget?.RenderFrom(RenderCells);
+        }
+
+        public void Disable()
+        {
+            _isEnabled = false;
+            _renderTarget?.RenderFrom(RenderCells);
         }
 
         public override void Initialize()
@@ -85,13 +99,18 @@ namespace Quader.Components.Boards.Renderers
                         //if (y >= Board.Height)
                         //    spriteBatch.DrawRect(drawX, drawY, size, size, Color.Black);
                     }
-                    else
+                    else if (_isEnabled)
                     {
                         var sprite = _boardSkin[p];
                         spriteBatch.Draw(sprite.Texture2D, new Vector2(drawX, drawY), sprite.SourceRect, Color.White, 0, Vector2.Zero,
                             Vector2.One, SpriteEffects.None, 0);
                     }
-
+                    else
+                    {
+                        var sprite = _boardSkin[BoardCellType.Garbage];
+                        spriteBatch.Draw(sprite.Texture2D, new Vector2(drawX, drawY), sprite.SourceRect, Color.White, 0, Vector2.Zero,
+                            Vector2.One, SpriteEffects.None, 0);
+                    }
 
                 }
             }

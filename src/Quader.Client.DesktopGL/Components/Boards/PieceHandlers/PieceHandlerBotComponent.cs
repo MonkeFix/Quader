@@ -61,6 +61,11 @@ namespace Quader.Components.Boards.PieceHandlers
             };
         }
 
+        ~PieceHandlerBotComponent()
+        {
+            Dispose();
+        }
+
         public void Start()
         {
             _queue = Entity.GetComponent<PieceQueueComponent>();
@@ -70,6 +75,11 @@ namespace Quader.Components.Boards.PieceHandlers
             _holdUsed = false;
 
             InitColdClear();
+        }
+
+        public override void OnRemovedFromEntity()
+        {
+            Dispose();
         }
 
         private void InitColdClear()
@@ -156,6 +166,8 @@ namespace Quader.Components.Boards.PieceHandlers
         {
             _coldClear?.Dispose();
             _coldClear = null;
+
+            GC.Collect();
         }
 
         private void DoMove()
@@ -198,11 +210,12 @@ namespace Quader.Components.Boards.PieceHandlers
             }
             else if (move.PollStatus == BotPollStatus.Waiting)
             {
-                Console.WriteLine("Bot is waiting");
+                //Console.WriteLine("Bot is waiting");
+                _logger.Info("Bot Is Waiting");
             }
             else
             {
-                Console.WriteLine("Bot is dead");
+                _logger.Info("Bot Is Dead");
             }
 
             if (_queue != null && _coldClear != null)

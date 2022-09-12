@@ -15,7 +15,7 @@ using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
 {
-    public class PieceQueueComponent : RenderableComponent, IBoardComponent
+    public class PieceQueueComponent : RenderableComponent, IBoardComponent, IBoardToggleable
     {
         public override float Width { get; }
         public override float Height { get; }
@@ -37,8 +37,10 @@ namespace Quader.Components.Boards.Renderers
 
         public PieceQueueComponent(Board board, IPieceGenerator pieceGenerator)
         {
-            Width = 1000;
-            Height = 1000;
+            var skin = Core.Services.GetService<Skin>().Get<BoardSkin>();
+
+            Width = skin.Table.QueueRect.Width;
+            Height = skin.Table.QueueRect.Height;
 
             Board = board;
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
@@ -87,9 +89,6 @@ namespace Quader.Components.Boards.Renderers
 
             Queue = _queue.ToList();
 
-            var p = Request();
-            Board.SetPiece(p);
-
             _renderTarget.RenderFrom(RenderToTexture);
         }
 
@@ -136,6 +135,19 @@ namespace Quader.Components.Boards.Renderers
 
                 y += yIncr;
             }
+        }
+
+        public void Enable()
+        {
+            Enabled = true;
+
+            var p = Request();
+            Board.SetPiece(p);
+        }
+
+        public void Disable()
+        {
+            // Enabled = false;
         }
     }
 }

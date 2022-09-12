@@ -31,13 +31,16 @@ namespace Quader.Components
         private IPieceHandler? _pieceHandler;
         private PieceHandlerType? _type;
         private Board? _otherBoard;
+        private BoardManagerComponent _boardManager;
 
-        public BoardBuilder(string? boardName = null)
+        public BoardBuilder(BoardManagerComponent boardManager, string? boardName = null)
         {
             if (!string.IsNullOrEmpty(boardName))
                 _entity = new Entity(boardName);
             else 
                 _entity = new Entity("board_" + _boardIndex);
+
+            _boardManager = boardManager;
 
             _entity.Tag = GameplayScene.BoardTag;
             _boardIndex++;
@@ -78,7 +81,7 @@ namespace Quader.Components
             return this;
         }
 
-        public BoardHolder Build()
+        public BoardHolder Build(bool startDisabled = true)
         {
             if (_gameSettings == null)
                 _gameSettings = GameSettings.Default;
@@ -94,6 +97,8 @@ namespace Quader.Components
 
             var components = new List<Component>()
             {
+                new HeldPieceComponent(board),
+                new LoseWinHandlerComponent(board, _boardManager),
                 new BoardGridRendererComponent(board),
                 new BoardRendererComponent(board),
                 new PieceRendererComponent(board),
@@ -101,11 +106,11 @@ namespace Quader.Components
                 new BoardStateRenderer(board),
 #endif
                 new PieceQueueComponent(board, _pieceGenerator),
-                new HeldPieceComponent(board),
+                
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
                 new DamageMeterComponent(board),
-                new LoseWinHandlerComponent(board),
+
             };
 
             switch (_type)
@@ -126,7 +131,10 @@ namespace Quader.Components
                     components.Add(ph2);
                     break;
                 case PieceHandlerType.Remote:
-                    throw new NotImplementedException();
+                    var ph3 = new PieceHandlerRemoteComponent(board);
+                    _pieceHandler = ph3;
+                    components.Add(ph3);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -147,11 +155,14 @@ namespace Quader.Components
 
             board.StartReplay(Time.FrameCount);
 
-            /*foreach (var component in components)
+            if (startDisabled)
             {
-                if (component is IBoardToggleable)
-                    component.Enabled = false;
-            }*/
+                foreach (var component in components)
+                {
+                    if (component is IBoardToggleable bt)
+                        bt.Disable();
+                }
+            }
 
             return new BoardHolder(board, _entity, components, _pieceHandler);
         }

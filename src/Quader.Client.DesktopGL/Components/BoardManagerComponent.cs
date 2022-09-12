@@ -23,10 +23,13 @@ namespace Quader.Components
         private readonly ILogger _logger = LoggerFactory.GetLogger<BoardManagerComponent>();
 
         private IEnumerable<BoardHolder>? _boards;
-
+ 
         public GameState State => CurrentState;
 
         private SharedActions _sharedActions;
+
+        public float PrepareTimer { get; set; } = 3; // in seconds
+        public float CurrentTimerValue { get; private set; }
 
         public BoardManagerComponent(SharedActions sharedActions)
         {
@@ -70,17 +73,27 @@ namespace Quader.Components
         {
             base.DebugRender(batcher);
 
-            batcher.DrawString(Graphics.Instance.BitmapFont, $"Current State: {State}", new Vector2(256, 64), Color.White);
+            batcher.DrawString(
+                Graphics.Instance.BitmapFont,
+                $"Current State: {State}\n" +
+                $"Timer: {CurrentTimerValue}",
+                new Vector2(256, 64),
+                Color.White
+            );
         }
 
         private void Restart()
         {
-            if (State == GameState.PreGame)
-                CurrentState = GameState.GameOngoing;
+            CurrentState = GameState.GameTimer;
+
+            /*if (State == GameState.PreGame)
+                CurrentState = GameState.GameTimer;
             else if (State == GameState.GameOngoing)
-                CurrentState = GameState.PreGame;
+                CurrentState = GameState.GameTimer;
             else if (State == GameState.PostGame)
-                CurrentState = GameState.PreGame;
+                CurrentState = GameState.GameTimer;
+            else if (State == GameState.GameTimer)
+                CurrentState = GameState.GameTimer;*/
         }
 
         protected void PreGame_Enter()
@@ -109,17 +122,52 @@ namespace Quader.Components
         protected void PreGame_Exit()
         {
             _logger.Debug("PreGame_Exit");
+
+        }
+
+        protected void GameTimer_Enter()
+        {
+            CurrentTimerValue = PrepareTimer;
+
+            if (_boards != null)
+            {
+                foreach (var board in _boards)
+                {
+                    board.BoardEntity.Destroy();
+                }
+
+                var allBoards = Entity.Scene.FindEntitiesWithTag(GameplayScene.BoardTag);
+                foreach (var b in allBoards)
+                {
+                    b.Destroy();
+                }
+
+                _boards = null;
+            }
+
+            _boards = BuildBoards(2);
+        }
+
+        protected void GameTimer_Tick()
+        {
+            CurrentTimerValue -= Time.DeltaTime;
+            if (CurrentTimerValue <= 0)
+                CurrentState = GameState.GameOngoing;
+        }
+
+        protected void GameTimer_Exit()
+        {
+            CurrentTimerValue = PrepareTimer;
         }
 
         protected void GameOngoing_Enter()
         {
             _logger.Debug("GameOngoing_Enter");
 
-            _boards = BuildBoards(2);
             foreach (var board in _boards)
             {
-                board.Start();
                 board.Enable();
+                board.Start();
             }
         }
         protected void GameOngoing_Tick()
@@ -159,7 +207,7 @@ namespace Quader.Components
             Board? pvpBoard = null
             )
         {
-            var bb = new BoardBuilder()
+            var bb = new BoardBuilder(this)
                 .AddGameSettings(gameSettings)
                 .AddPieceHandler(pieceHandlerType)
                 .SetPosition(position);
@@ -182,7 +230,7 @@ namespace Quader.Components
 
                 if (i == 0)
                 {
-                    board = new BoardBuilder()
+                    board = new BoardBuilder(this)
                         .AddGameSettings(gameSettings)
                         .AddPieceHandler(PieceHandlerType.Player)
                         .SetPosition(new Vector2(200, 128))
@@ -191,7 +239,7 @@ namespace Quader.Components
                 else
                 {
                     board =
-                        new BoardBuilder()
+                        new BoardBuilder(this)
                             .AddGameSettings(gameSettings)
                             .AddPieceHandler(PieceHandlerType.Bot)
                             .SetPosition(new Vector2(256 + 512 + 128 + 64, 128))

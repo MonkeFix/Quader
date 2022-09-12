@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
+using Nez.UI;
 using Quader.Debugging.Logging;
 using Quader.Engine;
+using Quader.Skinning;
 using Quader.Utils;
 
 namespace Quader.Components.Boards.Renderers
@@ -24,7 +26,10 @@ namespace Quader.Components.Boards.Renderers
         {
             Board = board;
 
-            Height = Board.TotalHeight * 32;
+            var skin = Core.Services.GetService<Skin>().Get<BoardSkin>();
+            var cellSize = skin.CellSize;
+
+            Height = Board.TotalHeight * cellSize;
 
             Board.AttackReceived += (_, _) =>
             {

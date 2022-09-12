@@ -7,8 +7,8 @@ namespace Quader.Components.Boards.Renderers
 {
     public class BoardStateRenderer : RenderableComponent, IBoardComponent
     {
-        public override float Width => 1000;
-        public override float Height => 1000;
+        public override float Width => 1;
+        public override float Height => 1;
         public Board Board { get; }
 
         private BoardSkin _boardSkin = null!;
