@@ -153,7 +153,7 @@ namespace Quader.Components
                 }
             }*/
 
-            board.StartReplay(Time.FrameCount);
+            // board.StartReplay(Time.FrameCount);
 
             if (startDisabled)
             {

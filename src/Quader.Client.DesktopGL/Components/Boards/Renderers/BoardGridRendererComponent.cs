@@ -28,6 +28,11 @@ public class BoardGridRendererComponent : RenderableComponent, IBoardComponent
         Height = board.Height * _boardSkin.CellSize;
     }
 
+    public override void OnRemovedFromEntity()
+    {
+        _renderTarget?.Dispose();
+    }
+
     public override void Initialize()
     {
         base.Initialize();

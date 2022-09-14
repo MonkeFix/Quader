@@ -20,7 +20,7 @@ namespace Quader.Engine
         Movement
     }
 
-    public partial class Board
+    public partial class Board : IDisposable
     {
         /// <summary>
         /// Extra height of the board. Used for cases when player receives garbage with ability to spawn a new piece.
@@ -31,7 +31,7 @@ namespace Quader.Engine
         public int Height { get; }
         public int TotalHeight { get; }
         
-        public Queue<Point[]> TestQueue { get; } = new ();
+        public Queue<Point[]> TestQueue { get; private set; } = new ();
 
         public event EventHandler<BoardMove>? PieceHardDropped;
         public event EventHandler<PieceBase>? PiecePushed;
@@ -51,7 +51,7 @@ namespace Quader.Engine
         /// </summary>
         public event EventHandler? PieceCannotBeSpawned; 
 
-        private readonly BoardCellContainer _cellContainer;
+        private BoardCellContainer _cellContainer;
 
         private int _piecesOnBoard;
         public int PiecesOnBoard => _piecesOnBoard;
@@ -77,17 +77,19 @@ namespace Quader.Engine
 
         public BoardMove LastMove { get; private set; }
 
-        public GravitySettings GravitySettings { get; }
-        public AttackSettings AttackSettings { get; }
+        public GravitySettings GravitySettings { get; private set; }
+        public AttackSettings AttackSettings { get; private set; }
 
         public long CurrentTick { get; private set; }
+
+        private bool _isDisposed;
 
         public Board(GameSettings settings)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings),
                     "Settings cannot be null. Use GameSettings.Default");
-
+            
             GravitySettings = settings.Gravity;
             AttackSettings = settings.Attack;
 
@@ -148,6 +150,9 @@ namespace Quader.Engine
         /// <param name="dt">Delta time, time difference between current and previous frames</param>
         public void UpdateGravity(float dt, long currTick)
         {
+            if (_isDisposed)
+                return;
+
             CurrentTick = currTick;
 
             _intermediateY += CurrentGravity * dt;
@@ -329,5 +334,34 @@ namespace Quader.Engine
 
             return res;
         }
+
+#pragma warning disable CS8625
+        public void Dispose()
+        {
+            PieceHardDropped = null;
+            PiecePushed = null;
+            PieceMoved = null;
+            PieceRotated = null;
+            LinesCleared = null;
+            BoardChanged = null;
+            GarbageReceived = null;
+            AttackReceived = null;
+            Reseted = null;
+            StateChanged = null;
+
+            TestQueue.Clear();
+            TestQueue = null;
+
+            Replay?.Moves.Clear();
+            Replay = null;
+            CurrentPiece = null;
+            _cellContainer = null;
+
+            GravitySettings = null;
+            AttackSettings = null;
+
+            _isDisposed = true;
+        }
     }
+#pragma warning restore CS8625
 }

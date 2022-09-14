@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using ColdClearNet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nez;
@@ -16,6 +19,7 @@ using Quader.Engine.PieceGenerators;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 using Quader.Engine.Settings;
+using Quader.Managers;
 using Quader.Serialization;
 using Quader.Skinning;
 
@@ -76,58 +80,21 @@ namespace Quader.Scenes
             });
 
             _logger.Debug("Done initializing");*/
-        }
 
-        public override void Update()
-        {
-            base.Update();
-        }
-
-        /*private BoardHolder[] BuildBoards()
-        {
-            //DestroyBoards();
-
-            var gameSettings = GameSettings.Default;
-
-            var boardPlayer =
-                new BoardBuilder()
-                    .AddGameSettings(gameSettings)
-                    .AddPieceHandler(PieceHandlerType.Player)
-                    .SetPosition(new Vector2(200, 128))
-                    .Build();
-
-            var boardBot =
-                new BoardBuilder()
-                    .AddGameSettings(gameSettings)
-                    .AddPieceHandler(PieceHandlerType.Bot)
-                    .SetPosition(new Vector2(256 + 512 + 128 + 64, 128))
-                    .AddPvpController(boardPlayer.Board)
-                    .Build();
-
-            /*Core.Schedule(2f, true, boardBot, (context) =>
+            for (int i = 0; i < 1; i++)
             {
-                var board = context.GetContext<BoardHolder>();
-                if (board.IsEnabled)
-                    board.Board.PushGarbage(1);
-            });#1#
+                var botPipeManager = new BotIpcManager();
+                botPipeManager.Start(new[] { Piece.I, Piece.J, Piece.L, Piece.O, Piece.S, Piece.T, Piece.Z, Piece.I, Piece.J, Piece.L, Piece.O, Piece.S, Piece.T, Piece.Z, });
+                botPipeManager.Reset(new bool[400], 0, false);
+                var m = botPipeManager.DoMove(0);
+                botPipeManager.DoMove(0);
+                botPipeManager.PushPiece(Piece.O);
+                botPipeManager.DoMove(0);
+                botPipeManager.PushPiece(Piece.T);
+                botPipeManager.Stop();
 
-            AddEntity(boardPlayer.BoardEntity);
-            AddEntity(boardBot.BoardEntity);
-
-            return new[]
-            {
-                boardPlayer,
-                boardBot
-            };
-        }
-
-        private void DestroyBoards()
-        {
-            var entities = FindEntitiesWithTag(BoardTag);
-            foreach (var entity in entities)
-            {
-                entity.Destroy();
+                // Thread.Sleep(2000);
             }
-        }*/
+        }
     }
 }

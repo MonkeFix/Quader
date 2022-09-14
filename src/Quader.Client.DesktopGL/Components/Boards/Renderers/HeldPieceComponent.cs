@@ -53,6 +53,11 @@ namespace Quader.Components.Boards.Renderers
                 throw new Exception("Piece Queue is null");
         }
 
+        public override void OnRemovedFromEntity()
+        {
+            _renderTarget?.Dispose();
+        }
+
         public void HoldPiece()
         {
             if (_isHoldUsed)

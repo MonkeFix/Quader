@@ -28,6 +28,11 @@ namespace Quader.Components.Boards
             Core.GetGlobalManager<ImGuiManager>()?.RegisterDrawCommand(ImGuiDraw);
         }
 
+        public override void OnRemovedFromEntity()
+        {
+            Core.GetGlobalManager<ImGuiManager>()?.UnregisterDrawCommand(ImGuiDraw);
+        }
+
         private void ImGuiDraw()
         {
             ImGui.Begin("Piece Handling");

@@ -247,6 +247,7 @@ public sealed class ColdClear : IDisposable
             return;
 
         ColdClearInterop.DestroyAsync(_bot);
+
         _bot = IntPtr.Zero;
     }
 

@@ -59,12 +59,15 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
     <PackageReference Include="Nopipeline.Task" Version="2.1.5" />
+    <PackageReference Include="ZetaIpc" Version="1.0.4.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.ImGui\Nez.MG38.ImGui.csproj" />
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Persistence\Nez.MG38.Persistence.csproj" />
     <ProjectReference Include="..\..\3rdParty\Nez\Nez.Portable\Nez.MG38.csproj" />
     <ProjectReference Include="..\ColdClearNet\ColdClearNet.csproj" />
+    <ProjectReference Include="..\Quader.Bot.Api\Quader.Bot.Api.csproj" />
+    <ProjectReference Include="..\Quader.Bot.Client\Quader.Bot.Client.csproj" />
     <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>

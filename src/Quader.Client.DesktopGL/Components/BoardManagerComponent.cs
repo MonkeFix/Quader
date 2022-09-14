@@ -22,7 +22,7 @@ namespace Quader.Components
     {
         private readonly ILogger _logger = LoggerFactory.GetLogger<BoardManagerComponent>();
 
-        private IEnumerable<BoardHolder>? _boards;
+        private BoardHolder[]? _boards;
  
         public GameState State => CurrentState;
 
@@ -85,15 +85,6 @@ namespace Quader.Components
         private void Restart()
         {
             CurrentState = GameState.GameTimer;
-
-            /*if (State == GameState.PreGame)
-                CurrentState = GameState.GameTimer;
-            else if (State == GameState.GameOngoing)
-                CurrentState = GameState.GameTimer;
-            else if (State == GameState.PostGame)
-                CurrentState = GameState.GameTimer;
-            else if (State == GameState.GameTimer)
-                CurrentState = GameState.GameTimer;*/
         }
 
         protected void PreGame_Enter()
@@ -131,18 +122,22 @@ namespace Quader.Components
 
             if (_boards != null)
             {
-                foreach (var board in _boards)
-                {
-                    board.BoardEntity.Destroy();
-                }
-
                 var allBoards = Entity.Scene.FindEntitiesWithTag(GameplayScene.BoardTag);
                 foreach (var b in allBoards)
                 {
+                    b.RemoveAllComponents();
                     b.Destroy();
                 }
 
+                foreach (var board in _boards)
+                {
+                    board.Board.Dispose();
+                    // board.BoardEntity.Destroy();
+                }
+
                 _boards = null;
+
+                GC.Collect();
             }
 
             _boards = BuildBoards(2);

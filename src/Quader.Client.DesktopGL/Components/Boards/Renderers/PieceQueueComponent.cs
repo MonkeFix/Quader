@@ -59,6 +59,11 @@ namespace Quader.Components.Boards.Renderers
             return SetPiece();
         }
 
+        public override void OnRemovedFromEntity()
+        {
+            _renderTarget?.Dispose();
+        }
+
         public override void Render(Batcher batcher, Camera camera)
         {
             var offset = new Vector2(

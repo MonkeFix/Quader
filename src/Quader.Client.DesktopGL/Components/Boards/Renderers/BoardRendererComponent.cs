@@ -39,6 +39,11 @@ namespace Quader.Components.Boards.Renderers
             Board.BoardChanged += (_, _) => _renderTarget?.RenderFrom(RenderCells);
         }
 
+        public override void OnRemovedFromEntity()
+        {
+            _renderTarget?.Dispose();
+        }
+
         public void Enable()
         {
             _isEnabled = true;

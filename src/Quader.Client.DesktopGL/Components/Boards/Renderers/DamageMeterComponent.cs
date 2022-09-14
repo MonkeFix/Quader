@@ -45,6 +45,11 @@ namespace Quader.Components.Boards.Renderers
             };
         }
 
+        public override void OnRemovedFromEntity()
+        {
+            _renderTarget?.Dispose();
+        }
+
         public override void Initialize()
         {
             base.Initialize();
