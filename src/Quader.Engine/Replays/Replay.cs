@@ -10,7 +10,7 @@ public class Replay
     [JsonInclude]
     public List<ReplayMove> Moves { get; }
     [JsonInclude]
-    public long StartTick { get; }
+    public double StartTick { get; }
 
     public Replay(Board board, long startTick)
     {
@@ -19,7 +19,7 @@ public class Replay
         StartTick = startTick;
     }
 
-    public void AddMove(BoardMove? move, long tick, ReplayMoveType type, ReplayMoveInfo info = default)
+    public void AddMove(BoardMove? move, double tick, ReplayMoveType type, ReplayMoveInfo info = default)
     {
         if (type == ReplayMoveType.Idle)
             return;

@@ -7,9 +7,16 @@ namespace Quader.Components.Boards
     {
         public Board Board { get; }
 
+        private TimeManagerComponent _timeManager = null!;
+
         public BoardGravityComponent(Board board)
         {
             Board = board;
+        }
+
+        public override void OnAddedToEntity()
+        {
+            _timeManager = Entity.GetComponent<TimeManagerComponent>();
         }
 
         public void Enable()
@@ -29,7 +36,7 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
-            Board.UpdateGravity(Time.DeltaTime, Time.FrameCount);
+            Board.UpdateGravity(_timeManager.DeltaTime, _timeManager.CurrentTimeMs);
         }
     }
 }

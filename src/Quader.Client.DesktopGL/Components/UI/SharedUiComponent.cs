@@ -44,6 +44,12 @@ public class SharedUiComponent : Component
             _sharedActions?.NewGameAction();
         };
 
+        topMenuTable.Add(new TextButton("Replays", _skin)).SetFillX()
+            .GetElement<Button>().OnClicked += b =>
+        {
+            _sharedActions?.OpenReplaysAction();
+        };
+
         topMenuTable.Add(new TextButton("Settings", _skin)).SetFillX()
             .GetElement<Button>().OnClicked += b =>
         {

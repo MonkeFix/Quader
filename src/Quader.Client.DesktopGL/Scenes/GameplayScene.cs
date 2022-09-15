@@ -36,6 +36,7 @@ namespace Quader.Scenes
         private readonly ILogger _logger = LoggerFactory.GetLogger<GameplayScene>();
 
         private BoardManagerComponent _boardManager;
+        private SharedActions _sharedActions;
 
         public GameplayScene()
         {
@@ -65,14 +66,18 @@ namespace Quader.Scenes
 
             AddEntity(ui);*/
 
-            var sharedActions = new SharedActions();
+            _sharedActions = new SharedActions();
+            _sharedActions.OpenReplaysAction = () =>
+            {
+                var t = Core.StartSceneTransition(new FadeTransition(() => new ReplayScene(_sharedActions)));
+            };
 
-            CreateEntity("shared-ui").AddComponent(new SharedUiComponent(sharedActions));
+            CreateEntity("shared-ui").AddComponent(new SharedUiComponent(_sharedActions));
 
             _logger.Debug("Creating Board Entity...");
 
             _boardManager = CreateEntity("board-manager")
-                .AddComponent(new BoardManagerComponent(sharedActions));
+                .AddComponent(new BoardManagerComponent(_sharedActions));
 
             /*Core.Schedule(2f, true, boardBot, (timer) =>
             {
@@ -80,21 +85,6 @@ namespace Quader.Scenes
             });
 
             _logger.Debug("Done initializing");*/
-
-            for (int i = 0; i < 1; i++)
-            {
-                var botPipeManager = new BotIpcManager();
-                botPipeManager.Start(new[] { Piece.I, Piece.J, Piece.L, Piece.O, Piece.S, Piece.T, Piece.Z, Piece.I, Piece.J, Piece.L, Piece.O, Piece.S, Piece.T, Piece.Z, });
-                botPipeManager.Reset(new bool[400], 0, false);
-                var m = botPipeManager.DoMove(0);
-                botPipeManager.DoMove(0);
-                botPipeManager.PushPiece(Piece.O);
-                botPipeManager.DoMove(0);
-                botPipeManager.PushPiece(Piece.T);
-                botPipeManager.Stop();
-
-                // Thread.Sleep(2000);
-            }
         }
     }
 }

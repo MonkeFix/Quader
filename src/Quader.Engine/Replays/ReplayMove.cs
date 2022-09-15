@@ -9,7 +9,7 @@ public struct ReplayMove
     [JsonInclude]
     public ReplayMoveType Type { get; set; }
     [JsonInclude]
-    public long Tick { get; set; }
+    public double Tick { get; set; }
     [JsonInclude]
     public ReplayMoveInfo Info { get; set; }
 }

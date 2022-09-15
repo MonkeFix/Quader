@@ -71,6 +71,7 @@
     <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Managers\TimeProviders\" />
     <Folder Include="Config\" />
     <Folder Include="Serialization\" />
   </ItemGroup>

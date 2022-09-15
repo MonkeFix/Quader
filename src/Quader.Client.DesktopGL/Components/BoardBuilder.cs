@@ -10,6 +10,7 @@ using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Settings;
+using Quader.Managers.TimeProviders;
 using Quader.Scenes;
 using Quader.Skinning;
 
@@ -121,19 +122,25 @@ namespace Quader.Components
                     components.Add(ph1);
 
 #if DEBUG
-                    components.Add(new BoardImGuiComponent(board));
+                    //components.Add(new BoardImGuiComponent(board));
 #endif
+
+                    components.Add(new TimeManagerComponent(board, new LocalTimeProvider()));
 
                     break;
                 case PieceHandlerType.Bot:
                     var ph2 = new PieceHandlerBotComponent(board);
                     _pieceHandler = ph2;
                     components.Add(ph2);
+
+                    components.Add(new TimeManagerComponent(board, new LocalTimeProvider()));
                     break;
                 case PieceHandlerType.Remote:
                     var ph3 = new PieceHandlerRemoteComponent(board);
                     _pieceHandler = ph3;
                     components.Add(ph3);
+
+                    // TODO: Add time provider
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

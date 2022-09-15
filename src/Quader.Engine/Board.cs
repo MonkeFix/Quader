@@ -80,7 +80,7 @@ namespace Quader.Engine
         public GravitySettings GravitySettings { get; private set; }
         public AttackSettings AttackSettings { get; private set; }
 
-        public long CurrentTick { get; private set; }
+        public double CurrentTick { get; private set; }
 
         private bool _isDisposed;
 
@@ -148,12 +148,12 @@ namespace Quader.Engine
         /// Meant to be called every update cycle tick (once in 1/FPS seconds)
         /// </summary>
         /// <param name="dt">Delta time, time difference between current and previous frames</param>
-        public void UpdateGravity(float dt, long currTick)
+        public void UpdateGravity(float dt, double currTimeMs)
         {
             if (_isDisposed)
                 return;
 
-            CurrentTick = currTick;
+            CurrentTick = currTimeMs;
 
             _intermediateY += CurrentGravity * dt;
 
