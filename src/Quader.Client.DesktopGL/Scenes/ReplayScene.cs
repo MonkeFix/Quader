@@ -8,7 +8,7 @@ namespace Quader.Scenes;
 
 public class ReplayScene : Scene
 {
-    public Replay? Replay { get; set; }
+    public BoardMoveHolder? Replay { get; set; }
 
     public const int ScreenSpaceRenderLayer = 999;
 

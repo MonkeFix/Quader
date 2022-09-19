@@ -111,7 +111,7 @@ namespace Quader.Components
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
                 new DamageMeterComponent(board),
-
+                new ReplayComponent(board)
             };
 
             switch (_type)
@@ -160,7 +160,7 @@ namespace Quader.Components
                 }
             }*/
 
-            // board.StartReplay(Time.FrameCount);
+            // board.StartMoveHolder(Time.FrameCount);
 
             if (startDisabled)
             {

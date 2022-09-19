@@ -36,7 +36,7 @@ namespace Quader.Components.Boards
 
         public void Update()
         {
-            Board.UpdateGravity(_timeManager.DeltaTime, _timeManager.CurrentTimeMs);
+            Board.UpdateGravity(_timeManager.DeltaTime, _timeManager.ElapsedMilliseconds);
         }
     }
 }

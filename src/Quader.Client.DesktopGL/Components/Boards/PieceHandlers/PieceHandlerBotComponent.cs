@@ -32,7 +32,7 @@ namespace Quader.Components.Boards.PieceHandlers
         private HeldPieceComponent _hold = null!;
 
         private BoardSkin _boardSkin;
-        private BoardMove _lastMove;
+        private BoardHardDropInfo _lastHardDropInfo;
 
         private bool _holdUsed;
 
@@ -48,7 +48,7 @@ namespace Quader.Components.Boards.PieceHandlers
 
             Board.GarbageReceived += (_, _) =>
             {
-                _botManager?.Reset(Board.ToBoolArray(), _lastMove.Combo, _lastMove.BackToBack > 0);
+                _botManager?.Reset(Board.ToBoolArray(), _lastHardDropInfo.Combo, _lastHardDropInfo.BackToBack > 0);
             };
 
             Board.AttackReceived += (_, attack) =>
@@ -171,7 +171,7 @@ namespace Quader.Components.Boards.PieceHandlers
                     DoMove(move.Movements[i]);
                 }
 
-                _lastMove = Board.HardDrop();
+                _lastHardDropInfo = Board.HardDrop();
             }
             else if (move.Status == BotStatus.Waiting)
             {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Quader.Engine.Pieces;
-using Random = Nez.Random;
 
 namespace Quader.Engine.PieceGenerators
 {
@@ -38,7 +37,7 @@ namespace Quader.Engine.PieceGenerators
 
         private PieceType Rng()
         {
-            return (PieceType) Random.RNG.Next(0, _pieceCount);
+            return (PieceType) RandomMgr.Random.Next(0, _pieceCount);
         }
     }
 }

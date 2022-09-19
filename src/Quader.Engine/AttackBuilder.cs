@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Quader.Engine.Collections;
 using Quader.Engine.Replays;
 using Quader.Engine.Settings;
 
@@ -17,9 +18,9 @@ public class AttackBuilder
         _attackSettings = settings;
     }
 
-    public void Attack(BoardMove move)
+    public void Attack(BoardHardDropInfo hardDropInfo)
     {
-        Attack(CalculateAttack(move));
+        Attack(CalculateAttack(hardDropInfo));
     }
 
     public void Attack(int attackLines)
@@ -31,106 +32,106 @@ public class AttackBuilder
         }
     }
 
-    public int CalculateAttack(BoardMove move)
+    public int CalculateAttack(BoardHardDropInfo hardDropInfo)
     {
         int attack = _attackSettings.Lines0;
 
-        if (move.LinesCleared == 0)
+        if (hardDropInfo.LinesCleared == 0)
             return attack;
 
-        var mods = move.Modificators;
+        var mods = hardDropInfo.Modificators;
 
-        if (mods.HasFlag(BoardMoveModificators.Combo1))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo1))
             attack += _attackSettings.Combos[0];
-        if (mods.HasFlag(BoardMoveModificators.Combo2))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo2))
             attack += _attackSettings.Combos[1];
-        if (mods.HasFlag(BoardMoveModificators.Combo3))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo3))
             attack += _attackSettings.Combos[2];
-        if (mods.HasFlag(BoardMoveModificators.Combo4))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo4))
             attack += _attackSettings.Combos[3];
-        if (mods.HasFlag(BoardMoveModificators.Combo5))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo5))
             attack += _attackSettings.Combos[4];
 
-        if (mods.HasFlag(BoardMoveModificators.AllClear))
+        if (mods.HasFlag(BoardHardDropInfoModificators.AllClear))
             attack += _attackSettings.AllClear;
 
-        if (mods.HasFlag(BoardMoveModificators.BackToBack1))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack1))
             attack += _attackSettings.BackToBacks[0];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack2))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack2))
             attack += _attackSettings.BackToBacks[1];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack3))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack3))
             attack += _attackSettings.BackToBacks[2];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack4))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack4))
             attack += _attackSettings.BackToBacks[3];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack5))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack5))
             attack += _attackSettings.BackToBacks[4];
 
-        if (mods.HasFlag(BoardMoveModificators.TSpin))
+        if (mods.HasFlag(BoardHardDropInfoModificators.TSpin))
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += _attackSettings.TSpinSingle;
-            if (mods.HasFlag(BoardMoveModificators.Double))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Double))
                 attack += _attackSettings.TSpinDouble;
-            if (mods.HasFlag(BoardMoveModificators.Triple))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Triple))
                 attack += _attackSettings.TSpinDouble;
         }
-        else if (mods.HasFlag(BoardMoveModificators.TSpinMini))
+        else if (mods.HasFlag(BoardHardDropInfoModificators.TSpinMini))
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += _attackSettings.TSpinSingleMini;
         }
         else
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += _attackSettings.Lines1;
-            if (mods.HasFlag(BoardMoveModificators.Double))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Double))
                 attack += _attackSettings.Lines2;
-            if (mods.HasFlag(BoardMoveModificators.Triple))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Triple))
                 attack += _attackSettings.Lines3;
-            if (mods.HasFlag(BoardMoveModificators.Quad))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Quad))
                 attack += _attackSettings.Lines4;
         }
 
         return attack;
     }
 
-    /*private void CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, Board.TSpinType tSpinType)
+    /*private void CreateBoardMoveType(ref BoardHardDropInfoModificators moveType, int linesCleared, Board.TSpinType tSpinType)
     {
-        // All Clear - No pieces on the board after a move
+        // All Clear - No pieces on the board after a hardDropInfo
         if (_piecesOnBoard == 0)
-            moveType |= BoardMoveModificators.AllClear;
+            moveType |= BoardHardDropInfoModificators.AllClear;
 
         // Basic clears - 4 lines is the max
         if (linesCleared == 1)
-            moveType |= BoardMoveModificators.Single;
+            moveType |= BoardHardDropInfoModificators.Single;
         else if (linesCleared == 2)
-            moveType |= BoardMoveModificators.Double;
+            moveType |= BoardHardDropInfoModificators.Double;
         else if (linesCleared == 3)
-            moveType |= BoardMoveModificators.Triple;
+            moveType |= BoardHardDropInfoModificators.Triple;
         else if (linesCleared == 4)
         {
-            moveType |= BoardMoveModificators.Quad;
+            moveType |= BoardHardDropInfoModificators.Quad;
             CurrentB2B++;
         }
 
         // Combo handling - the higher the combo - the bigger the spike
         if (CurrentCombo > 1)
-            moveType |= BoardMoveModificators.Combo1;
+            moveType |= BoardHardDropInfoModificators.Combo1;
         if (CurrentCombo >= 6)
-            moveType |= BoardMoveModificators.Combo2;
+            moveType |= BoardHardDropInfoModificators.Combo2;
         if (CurrentCombo >= 10)
-            moveType |= BoardMoveModificators.Combo3;
+            moveType |= BoardHardDropInfoModificators.Combo3;
         if (CurrentCombo >= 15)
-            moveType |= BoardMoveModificators.Combo4;
+            moveType |= BoardHardDropInfoModificators.Combo4;
         if (CurrentCombo >= 18)
-            moveType |= BoardMoveModificators.Combo5;
+            moveType |= BoardHardDropInfoModificators.Combo5;
 
-        // If move does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
+        // If hardDropInfo does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
         if (
             linesCleared > 0 &&
-            !moveType.HasFlag(BoardMoveModificators.Quad) &&
-            !moveType.HasFlag(BoardMoveModificators.TSpin) &&
-            !moveType.HasFlag(BoardMoveModificators.TSpinMini)
+            !moveType.HasFlag(BoardHardDropInfoModificators.Quad) &&
+            !moveType.HasFlag(BoardHardDropInfoModificators.TSpin) &&
+            !moveType.HasFlag(BoardHardDropInfoModificators.TSpinMini)
         )
         {
             CurrentB2B = 0;
@@ -138,15 +139,15 @@ public class AttackBuilder
 
         // Multiple successive T-Spins (including minis) or Quads
         if (CurrentB2B > 0)
-            moveType |= BoardMoveModificators.BackToBack1;
+            moveType |= BoardHardDropInfoModificators.BackToBack1;
         if (CurrentB2B >= 5)
-            moveType |= BoardMoveModificators.BackToBack2;
+            moveType |= BoardHardDropInfoModificators.BackToBack2;
         if (CurrentB2B >= 10)
-            moveType |= BoardMoveModificators.BackToBack3;
+            moveType |= BoardHardDropInfoModificators.BackToBack3;
         if (CurrentB2B >= 30)
-            moveType |= BoardMoveModificators.BackToBack4;
+            moveType |= BoardHardDropInfoModificators.BackToBack4;
         if (CurrentB2B >= 60)
-            moveType |= BoardMoveModificators.BackToBack5;
+            moveType |= BoardHardDropInfoModificators.BackToBack5;
 
         if (tSpinType != Board.TSpinType.None)
             CurrentB2B++;

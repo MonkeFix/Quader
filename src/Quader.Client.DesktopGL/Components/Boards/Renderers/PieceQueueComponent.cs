@@ -97,7 +97,7 @@ namespace Quader.Components.Boards.Renderers
             _renderTarget.RenderFrom(RenderToTexture);
         }
 
-        private void BoardOnPieceHardDropped(object? sender, BoardMove e)
+        private void BoardOnPieceHardDropped(object? sender, BoardHardDropInfo e)
         {
             var p = Request();
             Board.SetPiece(p);

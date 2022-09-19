@@ -17,106 +17,106 @@ public partial class Board
     public Point[] PointsChecked = new Point[4];
 
 
-    public int CalculateAttack(BoardMove move)
+    public int CalculateAttack(BoardHardDropInfo hardDropInfo)
     {
         int attack = AttackSettings.Lines0;
 
-        if (move.LinesCleared == 0)
+        if (hardDropInfo.LinesCleared == 0)
             return attack;
 
-        var mods = move.Modificators;
+        var mods = hardDropInfo.Modificators;
 
-        if (mods.HasFlag(BoardMoveModificators.Combo1))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo1))
             attack += AttackSettings.Combos[0];
-        if (mods.HasFlag(BoardMoveModificators.Combo2))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo2))
             attack += AttackSettings.Combos[1];
-        if (mods.HasFlag(BoardMoveModificators.Combo3))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo3))
             attack += AttackSettings.Combos[2];
-        if (mods.HasFlag(BoardMoveModificators.Combo4))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo4))
             attack += AttackSettings.Combos[3];
-        if (mods.HasFlag(BoardMoveModificators.Combo5))
+        if (mods.HasFlag(BoardHardDropInfoModificators.Combo5))
             attack += AttackSettings.Combos[4];
 
-        if (mods.HasFlag(BoardMoveModificators.AllClear))
+        if (mods.HasFlag(BoardHardDropInfoModificators.AllClear))
             attack += AttackSettings.AllClear;
 
-        if (mods.HasFlag(BoardMoveModificators.BackToBack1))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack1))
             attack += AttackSettings.BackToBacks[0];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack2))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack2))
             attack += AttackSettings.BackToBacks[1];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack3))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack3))
             attack += AttackSettings.BackToBacks[2];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack4))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack4))
             attack += AttackSettings.BackToBacks[3];
-        if (mods.HasFlag(BoardMoveModificators.BackToBack5))
+        if (mods.HasFlag(BoardHardDropInfoModificators.BackToBack5))
             attack += AttackSettings.BackToBacks[4];
 
-        if (mods.HasFlag(BoardMoveModificators.TSpin))
+        if (mods.HasFlag(BoardHardDropInfoModificators.TSpin))
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += AttackSettings.TSpinSingle;
-            if (mods.HasFlag(BoardMoveModificators.Double))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Double))
                 attack += AttackSettings.TSpinDouble;
-            if (mods.HasFlag(BoardMoveModificators.Triple))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Triple))
                 attack += AttackSettings.TSpinDouble;
         }
-        else if (mods.HasFlag(BoardMoveModificators.TSpinMini))
+        else if (mods.HasFlag(BoardHardDropInfoModificators.TSpinMini))
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += AttackSettings.TSpinSingleMini;
         }
         else
         {
-            if (mods.HasFlag(BoardMoveModificators.Single))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Single))
                 attack += AttackSettings.Lines1;
-            if (mods.HasFlag(BoardMoveModificators.Double))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Double))
                 attack += AttackSettings.Lines2;
-            if (mods.HasFlag(BoardMoveModificators.Triple))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Triple))
                 attack += AttackSettings.Lines3;
-            if (mods.HasFlag(BoardMoveModificators.Quad))
+            if (mods.HasFlag(BoardHardDropInfoModificators.Quad))
                 attack += AttackSettings.Lines4;
         }
 
         return attack;
     }
 
-    private void CreateBoardMoveType(ref BoardMoveModificators moveType, int linesCleared, TSpinType tSpinType)
+    private void CreateBoardMoveType(ref BoardHardDropInfoModificators hardDropInfoType, int linesCleared, TSpinType tSpinType)
     {
-        // All Clear - No pieces on the board after a move
+        // All Clear - No pieces on the board after a hardDropInfo
         if (_piecesOnBoard == 0)
-            moveType |= BoardMoveModificators.AllClear;
+            hardDropInfoType |= BoardHardDropInfoModificators.AllClear;
 
         // Basic clears - 4 lines is the max
         if (linesCleared == 1)
-            moveType |= BoardMoveModificators.Single;
+            hardDropInfoType |= BoardHardDropInfoModificators.Single;
         else if (linesCleared == 2)
-            moveType |= BoardMoveModificators.Double;
+            hardDropInfoType |= BoardHardDropInfoModificators.Double;
         else if (linesCleared == 3)
-            moveType |= BoardMoveModificators.Triple;
+            hardDropInfoType |= BoardHardDropInfoModificators.Triple;
         else if (linesCleared == 4)
         {
-            moveType |= BoardMoveModificators.Quad;
+            hardDropInfoType |= BoardHardDropInfoModificators.Quad;
             CurrentB2B++;
         }
 
         // Combo handling - the higher the combo - the bigger the spike
         if (CurrentCombo > 1)
-            moveType |= BoardMoveModificators.Combo1;
+            hardDropInfoType |= BoardHardDropInfoModificators.Combo1;
         if (CurrentCombo >= 6)
-            moveType |= BoardMoveModificators.Combo2;
+            hardDropInfoType |= BoardHardDropInfoModificators.Combo2;
         if (CurrentCombo >= 10)
-            moveType |= BoardMoveModificators.Combo3;
+            hardDropInfoType |= BoardHardDropInfoModificators.Combo3;
         if (CurrentCombo >= 15)
-            moveType |= BoardMoveModificators.Combo4;
+            hardDropInfoType |= BoardHardDropInfoModificators.Combo4;
         if (CurrentCombo >= 18)
-            moveType |= BoardMoveModificators.Combo5;
+            hardDropInfoType |= BoardHardDropInfoModificators.Combo5;
 
-        // If move does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
+        // If hardDropInfo does not contain a Quad, T-Spin or T-Spin Mini, B2B status is 0
         if (
             linesCleared > 0 &&
-            !moveType.HasFlag(BoardMoveModificators.Quad) &&
-            !moveType.HasFlag(BoardMoveModificators.TSpin) &&
-            !moveType.HasFlag(BoardMoveModificators.TSpinMini)
+            !hardDropInfoType.HasFlag(BoardHardDropInfoModificators.Quad) &&
+            !hardDropInfoType.HasFlag(BoardHardDropInfoModificators.TSpin) &&
+            !hardDropInfoType.HasFlag(BoardHardDropInfoModificators.TSpinMini)
         )
         {
             CurrentB2B = 0;
@@ -124,15 +124,15 @@ public partial class Board
 
         // Multiple successive T-Spins (including minis) or Quads
         if (CurrentB2B > 0)
-            moveType |= BoardMoveModificators.BackToBack1;
+            hardDropInfoType |= BoardHardDropInfoModificators.BackToBack1;
         if (CurrentB2B >= 5)
-            moveType |= BoardMoveModificators.BackToBack2;
+            hardDropInfoType |= BoardHardDropInfoModificators.BackToBack2;
         if (CurrentB2B >= 10)
-            moveType |= BoardMoveModificators.BackToBack3;
+            hardDropInfoType |= BoardHardDropInfoModificators.BackToBack3;
         if (CurrentB2B >= 30)
-            moveType |= BoardMoveModificators.BackToBack4;
+            hardDropInfoType |= BoardHardDropInfoModificators.BackToBack4;
         if (CurrentB2B >= 60)
-            moveType |= BoardMoveModificators.BackToBack5;
+            hardDropInfoType |= BoardHardDropInfoModificators.BackToBack5;
 
         if (tSpinType != TSpinType.None)
             CurrentB2B++;
@@ -183,7 +183,7 @@ public partial class Board
         }
 
         // We cannot have more than 4 blocks checked in any case!
-        Insist.IsFalse(oobOverhangs + nonOobOverhangs > 4);
+        // Insist.IsFalse(oobOverhangs + nonOobOverhangs > 4);
 
         if (oobOverhangs > 0 && nonOobOverhangs > 0)
             return TSpinType.Mini;

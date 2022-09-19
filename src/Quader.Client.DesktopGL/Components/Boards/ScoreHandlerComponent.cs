@@ -43,6 +43,8 @@ namespace Quader.Components.Boards
         private float _elapsedSeconds = 0;
         private float _elapsedMinutes = 0;
 
+        private TimeManagerComponent _timeManager = null!;
+
         public ScoreHandlerComponent(Board board)
         {
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
@@ -78,6 +80,11 @@ namespace Quader.Components.Boards
             {
                 _logger.Info($"{_elapsed.TotalSeconds}/{_elapsedSeconds}");
             });*/
+        }
+
+        public override void OnAddedToEntity()
+        {
+            _timeManager = Entity.GetComponent<TimeManagerComponent>();
         }
 
         public void Update()
@@ -130,13 +137,21 @@ namespace Quader.Components.Boards
                 $"{_elapsedSeconds:F3}" + "\n" +
                 $"TP: {TotalPieces}\n" +
                 $"PPS: {Pps:F2}\n" +
-                $"APM: {Apm:F2}";
+                $"APM: {Apm:F2}\n";
 
             if (Board.CurrentCombo > 1)
                 scoreStr += $"\nCombo: {Board.CurrentCombo - 1}";
 
             if (Board.CurrentB2B > 0)
                 scoreStr += $"\nB2B: {Board.CurrentB2B}";
+
+            scoreStr += "\n\n\n\n\n\n\n\n\n\n" +
+                $"DT: {_timeManager.DeltaTime:F4}\n" +
+                $"Start: {_timeManager.StartTimeUtc}\n" + 
+                $"UC: {_timeManager.UpdateCycles}\n" +
+                $"MS: {_timeManager.ElapsedMilliseconds:F0}\n" +
+                $"Sec: {_timeManager.ElapsedSeconds:F3}\n" +
+                $"Min: {_timeManager.ElapsedMinutes:F2}";
 
 
             batcher.DrawString(

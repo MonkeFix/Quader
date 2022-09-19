@@ -15,6 +15,7 @@ public partial class Board
     public void PieceMoveLeft(int delta = 1)
     {
         delta = Math.Min(delta, Width);
+        delta = Math.Max(1, delta);
 
         for (int i = 0; i < delta; i++)
         {
@@ -24,10 +25,9 @@ public partial class Board
                 LastMoveType = LastMoveType.Movement;
 
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+                Replay?.AddMove(null, CurrentTick, BoardMoveType.MoveLeft, new ReplayMoveInfo { MoveLeftFactor = delta });
             }
         }
-
-        Replay?.AddMove(null, CurrentTick, ReplayMoveType.MoveLeft, new ReplayMoveInfo { MoveLeftFactor = delta });
     }
 
     /// <summary>
@@ -37,6 +37,7 @@ public partial class Board
     public void PieceMoveRight(int delta = 1)
     {
         delta = Math.Min(delta, Width);
+        delta = Math.Max(1, delta);
 
         for (int i = 0; i < delta; i++)
         {
@@ -46,10 +47,9 @@ public partial class Board
                 LastMoveType = LastMoveType.Movement;
 
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
+                Replay?.AddMove(null, CurrentTick, BoardMoveType.MoveRight, new ReplayMoveInfo { MoveRightFactor = delta });
             }
         }
-
-        Replay?.AddMove(null, CurrentTick, ReplayMoveType.MoveRight, new ReplayMoveInfo { MoveRightFactor = delta });
     }
 
     public void Rotate(Rotation rotation)
@@ -62,7 +62,7 @@ public partial class Board
             {
                 LastMoveType = LastMoveType.Rotation;
 
-                var rotationType = rotation == Rotation.Clockwise ? ReplayMoveType.RotateCW : ReplayMoveType.RotateCCW;
+                var rotationType = rotation == Rotation.Clockwise ? BoardMoveType.RotateCW : BoardMoveType.RotateCCW;
 
                 Replay?.AddMove(null, CurrentTick, rotationType);
             }
@@ -100,6 +100,15 @@ public partial class Board
 
     public bool SoftDrop(int delta = 1)
     {
+        var res = SoftDropGravity(delta);
+        if (res) 
+            Replay?.AddMove(null, CurrentTick, BoardMoveType.SoftDrop, new ReplayMoveInfo { SoftDropFactor = delta });
+
+        return res;
+    }
+
+    private bool SoftDropGravity(int delta = 1)
+    {
         var res = true;
 
         if (_yNeedsUpdate)
@@ -122,43 +131,48 @@ public partial class Board
 
         _yNeedsUpdate = true;
 
-        Replay?.AddMove(null, CurrentTick, ReplayMoveType.SoftDrop, new ReplayMoveInfo {SoftDropFactor = delta});
-
         return res;
     }
 
-    public BoardMove HardDrop()
+    public BoardHardDropInfo HardDrop()
+    {
+        var res = HardDropGravity();
+        Replay?.AddMove(res, CurrentTick, BoardMoveType.HardDrop);
+        return res;
+    }
+
+    private BoardHardDropInfo HardDropGravity()
     {
         var nearestY = FindNearestY();
 
         if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
         {
             PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
-            return new BoardMove();
+            return new BoardHardDropInfo();
         }
 
         var linesCleared = _cellContainer.CheckLineClears(CurrentPiece.Bounds);
 
-        if (nearestY <= Height && LastMove.LinesCleared == 0 && linesCleared.Length == 0)
+        if (nearestY <= Height && LastHardDropInfo.LinesCleared == 0 && linesCleared.Length == 0)
         {
             PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
-            return new BoardMove();
+            return new BoardHardDropInfo();
         }
 
-        var moveType = BoardMoveModificators.None;
+        var moveType = BoardHardDropInfoModificators.None;
 
         TSpinType tSpinType = TSpinType.None;
 
-        // Handle T-Spins - the last move must be a rotation.
+        // Handle T-Spins - the last hardDropInfo must be a rotation.
         // If there's an overhang - it's a regular T-Spin, if not, it's a T-Spin Mini
         if (CurrentPiece.Type == PieceType.T && LastMoveType == LastMoveType.Rotation)
         {
             tSpinType = CheckTOverhang();
 
             if (tSpinType == TSpinType.Full)
-                moveType |= BoardMoveModificators.TSpin;
+                moveType |= BoardHardDropInfoModificators.TSpin;
             else if (tSpinType == TSpinType.Mini)
-                moveType |= BoardMoveModificators.TSpinMini;
+                moveType |= BoardHardDropInfoModificators.TSpinMini;
         }
 
         _cellContainer.ClearLines(linesCleared);
@@ -173,11 +187,11 @@ public partial class Board
 
         LastMoveType = LastMoveType.None;
 
-        var bm = new BoardMove
+        var bm = new BoardHardDropInfo
         {
             LinesCleared = linesCleared.Length,
             Modificators = moveType,
-            Timestamp = Time.TimeSinceSceneLoad,
+            Timestamp = CurrentTick,
             BackToBack = CurrentB2B,
             Combo = CurrentCombo,
             Success = true,
@@ -219,13 +233,11 @@ public partial class Board
             bm.Attack = CalculateAttack(bm);
         }
 
-        LastMove = bm;
+        LastHardDropInfo = bm;
 
         PieceHardDropped?.Invoke(this, bm);
         BoardChanged?.Invoke(this, EventArgs.Empty);
         ResetPiece(CurrentPiece);
-
-        Replay?.AddMove(bm, CurrentTick, ReplayMoveType.HardDrop);
 
         return bm;
     }

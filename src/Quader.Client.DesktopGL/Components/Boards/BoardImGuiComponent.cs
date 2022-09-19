@@ -76,7 +76,7 @@ namespace Quader.Components.Boards
             ImGui.Text($"Board Data:\n" +
                        $"Total Height: {Board.TotalHeight}\n" +
                        $"Extra Height: {Board.ExtraHeight}\n" +
-                       $"Last Move: {Board.LastMove}, Type: {Board.LastMoveType}" +
+                       $"Last Move: {Board.LastHardDropInfo}, Type: {Board.LastMoveType}" +
                        $"");
 
 

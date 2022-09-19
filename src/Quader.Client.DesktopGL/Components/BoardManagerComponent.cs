@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.AI.FSM;
 using Nez.Persistence;
+using Nez.Persistence.Binary;
 using Quader.Components.Boards;
 using Quader.Components.Boards.PieceHandlers;
 using Quader.Components.UI;
@@ -49,7 +50,7 @@ namespace Quader.Components
                 Restart();
             }
 
-            if (Input.IsKeyPressed(Keys.P) && _boards != null)
+            /*if (Input.IsKeyPressed(Keys.P) && _boards != null)
             {
                 var boardsArr = _boards.ToArray();
 
@@ -57,10 +58,10 @@ namespace Quader.Components
                 {
                     var b = boardsArr[i];
 
-                    var json = Json.ToJson(b.Board.StopReplay(), true);
+                    var json = Json.ToJson(b.Board.StopMoveHolder(), true);
                     File.WriteAllText($"REPLAY_{i}.json", json);
                 }
-            }
+            }*/
         }
 
         public override void OnAddedToEntity()
@@ -178,10 +179,23 @@ namespace Quader.Components
         {
             _logger.Debug("PostGame_Enter");
 
+            var dataStore = Core.Services.GetService<FileDataStore>();
+
             if (_boards != null)
             {
                 foreach (var bh in _boards)
                 {
+                    var replay = bh.BoardEntity.GetComponent<ReplayComponent>().End();
+                    var jsonStr = Json.ToJson(replay);
+                    var dir = $"Replays/{replay.EndDate:yyyy-MM-dd-HH-mm-ss}";
+                    Directory.CreateDirectory("Saves/" + dir);
+                    File.WriteAllText($"Saves/{dir}/{bh.BoardEntity.Name}.json", jsonStr);
+
+                    // testing persistence
+                    dataStore.Save($"{dir}/{bh.BoardEntity.Name}.bin", replay);
+                    var tmpReplay = new BoardMoveHolder(bh.Board, DateTime.UtcNow);
+                    dataStore.Load($"{dir}/{bh.BoardEntity.Name}.bin", tmpReplay);
+
                     bh.Disable();
                 }
             }

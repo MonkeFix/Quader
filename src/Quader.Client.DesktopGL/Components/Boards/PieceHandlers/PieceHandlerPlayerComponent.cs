@@ -108,6 +108,12 @@ namespace Quader.Components.Boards.PieceHandlers
 
                 var moves = GetMovesPerFrame(dt);
 
+                // TODO: Check this
+                /*if (_isLeftDown)
+                    Board.PieceMoveLeft(moves);
+                if (_isRightDown)
+                    Board.PieceMoveRight(moves);*/
+
                 for (int i = 0; i < moves; i++)
                 {
                     if (_isLeftDown)
@@ -154,12 +160,6 @@ namespace Quader.Components.Boards.PieceHandlers
             {
                 _heldPiece?.HoldPiece();
             }
-
-            /*if (Input.IsKeyPressed(_controls.Restart))
-            {
-                Board.Reset(); // TODO: Restart correctly
-                _restartAction.Invoke();
-            }*/
         }
 
         private int GetMovesPerFrame(float dt)

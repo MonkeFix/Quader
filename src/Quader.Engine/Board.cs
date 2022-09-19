@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
+using Quader.Engine.Collections;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.Replays;
@@ -33,7 +34,7 @@ namespace Quader.Engine
         
         public Queue<Point[]> TestQueue { get; private set; } = new ();
 
-        public event EventHandler<BoardMove>? PieceHardDropped;
+        public event EventHandler<BoardHardDropInfo>? PieceHardDropped;
         public event EventHandler<PieceBase>? PiecePushed;
         public event EventHandler<PieceMovedEventArgs>? PieceMoved;
         public event EventHandler<PieceBase>? PieceRotated;
@@ -44,7 +45,7 @@ namespace Quader.Engine
         public event EventHandler? Reseted;
         public event EventHandler<GameState>? StateChanged; 
 
-        public Replay? Replay { get; private set; }
+        public BoardMoveHolder? Replay { get; private set; }
 
         /// <summary>
         /// Fires when board cannot spawn a new piece. It usually means that the player just lost.
@@ -75,10 +76,11 @@ namespace Quader.Engine
 
         public float IntermediateY => _intermediateY;
 
-        public BoardMove LastMove { get; private set; }
+        public BoardHardDropInfo LastHardDropInfo { get; private set; }
 
         public GravitySettings GravitySettings { get; private set; }
         public AttackSettings AttackSettings { get; private set; }
+        public GameSettings GameSettings { get; }
 
         public double CurrentTick { get; private set; }
 
@@ -86,10 +88,8 @@ namespace Quader.Engine
 
         public Board(GameSettings settings)
         {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings),
-                    "Settings cannot be null. Use GameSettings.Default");
-            
+            GameSettings = settings ?? throw new ArgumentNullException(nameof(settings),
+                "Settings cannot be null. Use GameSettings.Default");
             GravitySettings = settings.Gravity;
             AttackSettings = settings.Attack;
 
@@ -107,17 +107,17 @@ namespace Quader.Engine
             CurrentGravity = settings.Gravity.BaseGravity;
         }
 
-        public void StartReplay(long startTick)
+        public void StartMoveHolder(DateTime startDate)
         {
-            Replay = new Replay(this, startTick);
+            Replay = new BoardMoveHolder(this, startDate);
         }
 
-        public Replay StopReplay()
+        public BoardMoveHolder StopMoveHolder(DateTime endDate)
         {
             if (Replay == null)
-                throw new Exception("Replay hasn't been started");
+                throw new Exception("BoardMoveHolder hasn't been started");
 
-            return Replay;
+            return Replay.End(endDate);
         }
 
         public void SetPiece(PieceType type)
@@ -168,7 +168,7 @@ namespace Quader.Engine
                 var diff = Math.Max((int)(_intermediateY - 1.0f), 1);
                 for (int i = 0; i < diff; i++)
                 {
-                    SoftDrop();
+                    SoftDropGravity();
                     _yNeedsUpdate = true;
                 }
 
@@ -181,7 +181,7 @@ namespace Quader.Engine
             }
 
             if (CurrentLock <= 0)
-                HardDrop();
+                HardDropGravity();
 
             CurrentGravity += GravitySettings.GravityIncrease * dt;
 
@@ -199,7 +199,7 @@ namespace Quader.Engine
                 GarbageDelayCooldown = 0;
             }
 
-            Replay?.AddMove(null, CurrentTick, ReplayMoveType.Idle);
+            // BoardMoveHolder?.AddMove(null, CurrentTick, BoardMoveType.Idle);
         }
 
         public int FindNearestY()
@@ -219,9 +219,9 @@ namespace Quader.Engine
 
         
 
-        public void Attack(BoardMove move)
+        public void Attack(BoardHardDropInfo hardDropInfo)
         {
-            Attack(CalculateAttack(move));
+            Attack(CalculateAttack(hardDropInfo));
         }
 
         public void Attack(int attackLines)
