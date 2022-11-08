@@ -5,6 +5,7 @@ using Quader.Engine;
 using Quader.Skinning;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Quader.Debugging.Logging;
 using Quader.Engine.Replays;
 
 namespace Quader.Components.Boards
@@ -27,6 +28,8 @@ namespace Quader.Components.Boards
         private Vector2 _offset;
 
         private BoardManagerComponent _boardManager;
+        
+        private readonly ILogger _logger = LoggerFactory.GetLogger<LoseWinHandlerComponent>();
 
         public LoseWinHandlerComponent(Board board, BoardManagerComponent boardManager)
         {
@@ -75,6 +78,7 @@ namespace Quader.Components.Boards
         {
             IsEnded = false;
             _state = WonOrLost.None;
+            _logger.Trace($"Enabling. New State: {_state}");
         }
 
         public void Disable()
@@ -82,6 +86,7 @@ namespace Quader.Components.Boards
             IsEnded = true;
             if (_state == WonOrLost.None)
                 _state = WonOrLost.Won;
+            _logger.Trace($"Disabling. New state: {_state}");
         }
     }
 }

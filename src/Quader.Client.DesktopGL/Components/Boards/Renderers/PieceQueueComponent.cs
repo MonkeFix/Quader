@@ -148,10 +148,13 @@ namespace Quader.Components.Boards.Renderers
 
             var p = Request();
             Board.SetPiece(p);
+            
+            _logger.Trace($"Enabling. New piece: {p.Type}");
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             // Enabled = false;
         }
     }

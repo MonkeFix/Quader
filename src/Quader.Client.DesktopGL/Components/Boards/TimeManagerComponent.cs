@@ -2,6 +2,7 @@
 using ImGuiNET;
 using Nez;
 using Nez.ImGuiTools;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Replays;
 using Quader.Managers.TimeProviders;
@@ -18,11 +19,13 @@ public class TimeManagerComponent : Component, IBoardComponent, IUpdatable, IBoa
     public ulong UpdateCycles => _timeProvider.UpdateCycles;
     public float DeltaTime => _timeProvider.DeltaTime;
 
-    public DateTime StartTimeUtc { get; private set; }
+    public DateTimeOffset StartTimeUtc { get; private set; }
 
     private readonly ITimeProvider _timeProvider;
 
     private BoardMoveHolder _boardMoveHolder;
+    
+    private readonly ILogger _logger = LoggerFactory.GetLogger<TimeManagerComponent>();
 
     public TimeManagerComponent(Board board, ITimeProvider timeProvider)
     {
@@ -50,12 +53,15 @@ public class TimeManagerComponent : Component, IBoardComponent, IUpdatable, IBoa
 
     public void Enable()
     {
+        var time = DateTimeOffset.UtcNow;
+        _logger.Trace($"Enabling at {time}");
         Enabled = true;
-        StartTimeUtc = DateTime.UtcNow;
+        StartTimeUtc = time;
     }
 
     public void Disable()
     {
+        _logger.Trace("Disabling");
         Enabled = false;
     }
 

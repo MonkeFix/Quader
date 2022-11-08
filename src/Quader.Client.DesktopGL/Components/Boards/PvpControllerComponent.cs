@@ -1,4 +1,5 @@
 ﻿using Nez;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 
 namespace Quader.Components.Boards
@@ -7,6 +8,8 @@ namespace Quader.Components.Boards
     {
         public Board Board { get; }
         public Board BoardOpponent { get; }
+        
+        private readonly ILogger _logger = LoggerFactory.GetLogger<PvpControllerComponent>();
 
         public PvpControllerComponent(Board boardPlayer, Board boardOpponent)
         {
@@ -28,11 +31,13 @@ namespace Quader.Components.Boards
 
         public void Enable()
         {
+            _logger.Trace("Enabling");
             Enabled = true;
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             Enabled = false;
         }
     }

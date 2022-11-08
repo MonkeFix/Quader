@@ -14,14 +14,14 @@ public class BoardMoveHolder : IPersistable
     [JsonInclude]
     public List<BoardMove> Moves { get; private set; }
     [JsonInclude]
-    public DateTime StartDate { get; private set; }
+    public DateTimeOffset StartDate { get; private set; }
     [JsonInclude]
-    public DateTime EndDate { get; private set; }
+    public DateTimeOffset EndDate { get; private set; }
 
     [JsonExclude]
     public bool HasEnded { get; private set; }
 
-    public BoardMoveHolder(Board board, DateTime startDate)
+    public BoardMoveHolder(Board board, DateTimeOffset startDate)
     {
         Board = board;
         Moves = new List<BoardMove>(1000);
@@ -30,8 +30,8 @@ public class BoardMoveHolder : IPersistable
 
     public BoardMoveHolder AddMove(BoardHardDropInfo? move, double tick, BoardMoveType type, ReplayMoveInfo info = default)
     {
-        //if (HasEnded)
-        //    throw new Exception("BoardMoveHolder has already ended");
+        if (HasEnded)
+            throw new Exception("BoardMoveHolder has already ended");
 
         if (type == BoardMoveType.Idle)
             return this;
@@ -47,7 +47,7 @@ public class BoardMoveHolder : IPersistable
         return this;
     }
 
-    public BoardMoveHolder End(DateTime endTime)
+    public BoardMoveHolder End(DateTimeOffset endTime)
     {
         EndDate = endTime;
         HasEnded = true;

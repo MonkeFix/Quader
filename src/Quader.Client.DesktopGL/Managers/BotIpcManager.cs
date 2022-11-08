@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using Quader.Debugging.Logging;
 using Nez.Persistence;
 using Quader.Bot.Api;
@@ -21,8 +22,8 @@ public class BotIpcManager : IDisposable
     public BotIpcManager()
     {
         _ipcProcess = new Process();
-
-        _ipcProcess.StartInfo.FileName = "Quader.Bot.Client.exe";
+        
+        _ipcProcess.StartInfo.FileName = "Quader.Bot.Client"; // + ".exe"; // for windows
         //_ipcProcess.StartInfo.Arguments = "1234";
         //_ipcProcess.StartInfo.RedirectStandardInput = true;
         _ipcProcess.StartInfo.UseShellExecute = false;
@@ -30,6 +31,8 @@ public class BotIpcManager : IDisposable
 
         _ipcClient = new IpcClient();
         _ipcClient.Initialize(10077);
+        
+        Thread.Sleep(1000);
 
         var syncRequest = Json.ToJson(new IpcRequest
         {

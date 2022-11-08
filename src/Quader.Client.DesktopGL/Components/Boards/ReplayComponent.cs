@@ -1,5 +1,6 @@
 ﻿using System;
 using Nez;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Engine.Replays;
 
@@ -15,6 +16,8 @@ public class ReplayComponent : Component, IBoardComponent, IBoardToggleable
 
     private bool _isStarted;
 
+    private readonly ILogger _logger = LoggerFactory.GetLogger<ReplayComponent>();
+
     public ReplayComponent(Board board)
     {
         Board = board;
@@ -29,6 +32,8 @@ public class ReplayComponent : Component, IBoardComponent, IBoardToggleable
     {
         if (_isStarted)
             return;
+        
+        _logger.Trace($"Staring at {_timeManager.StartTimeUtc}");
 
         Board.StartMoveHolder(_timeManager.StartTimeUtc);
         _isStarted = true;
@@ -39,21 +44,23 @@ public class ReplayComponent : Component, IBoardComponent, IBoardToggleable
         if (!_isStarted)
             throw new Exception("BoardMoveHolder has not been started");
 
-        var replay = Board.StopMoveHolder(DateTime.UtcNow);
-
-
-
+        var endTime = DateTimeOffset.UtcNow;
+        _logger.Trace($"Ending at {endTime}");
+        var replay = Board.StopMoveHolder(endTime);
+        
         return replay;
     }
 
     public void Enable()
     {
+        _logger.Trace("Enabling");
         _isEnabled = true;
         Start();
     }
 
     public void Disable()
     {
+        _logger.Trace("Disabling");
         _isEnabled = false;
     }
 }

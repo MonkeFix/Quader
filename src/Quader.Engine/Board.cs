@@ -107,12 +107,12 @@ namespace Quader.Engine
             CurrentGravity = settings.Gravity.BaseGravity;
         }
 
-        public void StartMoveHolder(DateTime startDate)
+        public void StartMoveHolder(DateTimeOffset startDate)
         {
             Replay = new BoardMoveHolder(this, startDate);
         }
 
-        public BoardMoveHolder StopMoveHolder(DateTime endDate)
+        public BoardMoveHolder StopMoveHolder(DateTimeOffset endDate)
         {
             if (Replay == null)
                 throw new Exception("BoardMoveHolder hasn't been started");
@@ -183,7 +183,7 @@ namespace Quader.Engine
             if (CurrentLock <= 0)
                 HardDropGravity();
 
-            CurrentGravity += GravitySettings.GravityIncrease * dt;
+            CurrentGravity += GravitySettings.GravityIncrease * (dt * 10);
 
             if (IncomingDamage.Any())
             {
@@ -200,6 +200,12 @@ namespace Quader.Engine
             }
 
             // BoardMoveHolder?.AddMove(null, CurrentTick, BoardMoveType.Idle);
+        }
+
+        private void ProlongLock()
+        {
+            var amount = 0.02f;
+            CurrentLock = Math.Min(CurrentLock + amount, GravitySettings.LockDelay);
         }
 
         public int FindNearestY()

@@ -55,6 +55,7 @@ namespace Quader.Components.Boards.Renderers
             base.Initialize();
 
             _renderTarget = RenderTarget.Create(30, (int)Height);
+            _renderTarget.RenderFrom((batcher) => RenderToTexture(batcher));
         }
 
         private void RenderToTexture(Batcher batcher)

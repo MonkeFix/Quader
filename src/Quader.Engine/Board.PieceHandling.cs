@@ -24,6 +24,7 @@ public partial class Board
                 CurrentPiece.X -= 1;
                 LastMoveType = LastMoveType.Movement;
 
+                ProlongLock();
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(-1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
                 Replay?.AddMove(null, CurrentTick, BoardMoveType.MoveLeft, new ReplayMoveInfo { MoveLeftFactor = delta });
             }
@@ -46,6 +47,7 @@ public partial class Board
                 CurrentPiece.X += 1;
                 LastMoveType = LastMoveType.Movement;
 
+                ProlongLock();
                 PieceMoved?.Invoke(this, new PieceMovedEventArgs(new Point(1, 0), new Point(CurrentPiece.X, CurrentPiece.Y)));
                 Replay?.AddMove(null, CurrentTick, BoardMoveType.MoveRight, new ReplayMoveInfo { MoveRightFactor = delta });
             }
@@ -64,6 +66,7 @@ public partial class Board
 
                 var rotationType = rotation == Rotation.Clockwise ? BoardMoveType.RotateCW : BoardMoveType.RotateCCW;
 
+                ProlongLock();
                 Replay?.AddMove(null, CurrentTick, rotationType);
             }
 

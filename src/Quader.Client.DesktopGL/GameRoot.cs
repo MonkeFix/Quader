@@ -95,6 +95,7 @@ namespace Quader
             _logger.Info("Creating global ImGUI Manager");
             var imGuiManager = new ImGuiManager();
             Core.RegisterGlobalManager(imGuiManager);
+            imGuiManager.Enabled = false;
 
             _logger.Info("Creating skin");
             Skin skin = Skin.CreateDefaultSkin();

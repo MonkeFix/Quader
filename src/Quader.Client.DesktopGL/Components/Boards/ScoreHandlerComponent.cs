@@ -6,6 +6,7 @@ using Nez;
 using Nez.UI;
 using Quader.Debugging.Logging;
 using Quader.Engine;
+using Quader.Engine.Replays;
 using Quader.Skinning;
 
 namespace Quader.Components.Boards
@@ -45,6 +46,20 @@ namespace Quader.Components.Boards
 
         private TimeManagerComponent _timeManager = null!;
 
+        private int _totalQuads;
+        private int _totalTriples;
+        private int _totalDoubles;
+        private int _totalTSpins;
+        private int _totalTSpinMinis;
+        private int _totalAllClears;
+        private int _totalTSpinSingles;
+        private int _totalTSpinDoubles;
+        private int _totalTSpinTriples;
+        private int _currentCombo;
+        private int _maxCombo;
+        private int _currentB2b;
+        private int _maxB2b;
+
         public ScoreHandlerComponent(Board board)
         {
             _boardSkin = Core.Services.GetService<Skin>().Get<BoardSkin>();
@@ -59,6 +74,43 @@ namespace Quader.Components.Boards
                 TotalPieces++;
 
                 _attackTotal += boardMove.Attack;
+
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.TSpin))
+                {
+                    _totalTSpins++;
+                    if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Single))
+                        _totalTSpinSingles++;
+                    else if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Double))
+                        _totalTSpinDoubles++;
+                    else if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Triple))
+                        _totalTSpinTriples++;
+                }
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.TSpinMini))
+                {
+                    _totalTSpinMinis++;
+                    if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Single))
+                        _totalTSpinSingles++;
+                    else if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Double))
+                        _totalTSpinDoubles++;
+                    else if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Triple))
+                        _totalTSpinTriples++;
+                }
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Double))
+                    _totalDoubles++;
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Triple))
+                    _totalTriples++;
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.Quad))
+                    _totalQuads++;
+                if (boardMove.Modificators.HasFlag(BoardHardDropInfoModificators.AllClear))
+                    _totalAllClears++;
+
+                _currentCombo = boardMove.Combo;
+                _currentB2b = boardMove.BackToBack;
+
+                if (_currentCombo > _maxCombo)
+                    _maxCombo = _currentCombo;
+                if (_currentB2b > _maxB2b)
+                    _maxB2b = _currentB2b;
 
                 _logger.Trace($"Attack: {boardMove.Attack}. Combo: {boardMove.Combo}. B2B: {boardMove.BackToBack}. Lines Cleared: {boardMove.LinesCleared}. Modificators: {boardMove.Modificators}");
             };
@@ -102,18 +154,21 @@ namespace Quader.Components.Boards
 
         public void Enable()
         {
+            _logger.Trace("Enabling");
             _elapsedSeconds = 0;
             _isEnabled = true;
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             _isEnabled = false;
         }
 
         public override void Render(Batcher batcher, Camera camera)
         {
-            var debugText = $"Pieces on Board: {Board.PiecesOnBoard}\n" +
+            var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys().Select(k => k.ToString());
+            var debugText = $"Pieces on Board: {Board.PiecesOnBoard} | PK: {string.Join(", ", pressedKeys)}\n" +
                             $"Lines Cleared: {LinesCleared}\n" +
                             $"Current Gravity: {Board.CurrentGravity:F3}\n" +
                             $"Current Lock: {Board.CurrentLock:F3}\n" +
@@ -137,7 +192,8 @@ namespace Quader.Components.Boards
                 $"{_elapsedSeconds:F3}" + "\n" +
                 $"TP: {TotalPieces}\n" +
                 $"PPS: {Pps:F2}\n" +
-                $"APM: {Apm:F2}\n";
+                $"APM: {Apm:F2}\n" +
+                $"";
 
             if (Board.CurrentCombo > 1)
                 scoreStr += $"\nCombo: {Board.CurrentCombo - 1}";
@@ -145,19 +201,39 @@ namespace Quader.Components.Boards
             if (Board.CurrentB2B > 0)
                 scoreStr += $"\nB2B: {Board.CurrentB2B}";
 
-            scoreStr += "\n\n\n\n\n\n\n\n\n\n" +
-                $"DT: {_timeManager.DeltaTime:F4}\n" +
-                $"Start: {_timeManager.StartTimeUtc}\n" + 
-                $"UC: {_timeManager.UpdateCycles}\n" +
-                $"MS: {_timeManager.ElapsedMilliseconds:F0}\n" +
-                $"Sec: {_timeManager.ElapsedSeconds:F3}\n" +
-                $"Min: {_timeManager.ElapsedMinutes:F2}";
+            // scoreStr += "\n\n\n\n\n\n\n\n\n\n" +
+            //     $"DT: {_timeManager.DeltaTime:F4}\n" +
+            //     $"Start: {_timeManager.StartTimeUtc}\n" + 
+            //     $"UC: {_timeManager.UpdateCycles}\n" +
+            //     $"MS: {_timeManager.ElapsedMilliseconds:F0}\n" +
+            //     $"Sec: {_timeManager.ElapsedSeconds:F3}\n" +
+            //     $"Min: {_timeManager.ElapsedMinutes:F2}";
 
 
             batcher.DrawString(
                 _boardSkin.MainFont,
                 scoreStr,
                 Entity.Position - new Vector2(180, -200), Color.Red
+            );
+
+            var statsStr =
+                $"Doubles: {_totalDoubles}\n" +
+                $"Triples: {_totalTriples}\n" +
+                $"Quads: {_totalQuads}\n" +
+                $"T-Spins: {_totalTSpins}\n" +
+                $"T-Spin Minis: {_totalTSpinMinis}\n" +
+                $"T-Spin Single: {_totalTSpinSingles}\n" +
+                $"T-Spin Double: {_totalTSpinDoubles}\n" +
+                $"T-Spin Triples: {_totalTSpinTriples}\n" +
+                $"All Clears: {_totalAllClears}\n" +
+                $"Max Combo: {_maxCombo}\n" +
+                $"Max B2B: {_maxB2b}";
+
+            batcher.DrawString(
+                _boardSkin.MainFont,
+                statsStr,
+                Entity.Position + new Vector2(440, 0),
+                Color.White
             );
         }
     }

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
 using Nez.UI;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 using Quader.Skinning;
 using Quader.Utils;
@@ -23,6 +24,8 @@ namespace Quader.Components.Boards.Renderers
         private RenderTarget2D _renderTarget = null!;
 
         private bool _isEnabled = true;
+        
+        private readonly ILogger _logger = LoggerFactory.GetLogger<BoardRendererComponent>();
 
         public BoardRendererComponent(Board board)
         {
@@ -46,12 +49,14 @@ namespace Quader.Components.Boards.Renderers
 
         public void Enable()
         {
+            _logger.Trace("Enabling");
             _isEnabled = true;
             _renderTarget?.RenderFrom(RenderCells);
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             _isEnabled = false;
             _renderTarget?.RenderFrom(RenderCells);
         }

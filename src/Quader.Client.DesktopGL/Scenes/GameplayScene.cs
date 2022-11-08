@@ -53,8 +53,11 @@ namespace Quader.Scenes
 
             _logger.Debug("Initializing");
 
-            SetDesignResolution(Width, Height, SceneResolutionPolicy.BestFit);
-            Screen.SetSize(1920, 1080);
+            var mw = Screen.MonitorWidth;
+            var mh = Screen.MonitorHeight;
+
+            SetDesignResolution(mw, mh, SceneResolutionPolicy.BestFit);
+            Screen.SetSize(mw, mh);
 
             /*var ui = new Entity("ui");
             var canvas = ui.AddComponent(new UICanvas());

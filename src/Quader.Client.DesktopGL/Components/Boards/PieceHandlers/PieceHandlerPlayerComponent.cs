@@ -1,4 +1,6 @@
-﻿using Nez;
+﻿using System;
+using Microsoft.Xna.Framework.Input;
+using Nez;
 using Quader.Components.Boards.Renderers;
 using Quader.Config;
 using Quader.Debugging.Logging;
@@ -63,7 +65,7 @@ namespace Quader.Components.Boards.PieceHandlers
 
         public void Start()
         {
-
+            _logger.Trace("Starting");
         }
 
         public void Update()
@@ -181,11 +183,13 @@ namespace Quader.Components.Boards.PieceHandlers
 
         public void Enable()
         {
+            _logger.Trace("Enabling");
             Enabled = true;
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             Enabled = false;
         }
     }

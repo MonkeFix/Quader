@@ -110,8 +110,7 @@ namespace Quader.Components
                 
                 new ScoreHandlerComponent(board),
                 new BoardGravityComponent(board),
-                new DamageMeterComponent(board),
-                new ReplayComponent(board)
+                new DamageMeterComponent(board)
             };
 
             switch (_type)
@@ -129,7 +128,7 @@ namespace Quader.Components
 
                     break;
                 case PieceHandlerType.Bot:
-                    var ph2 = new PieceHandlerBotComponent(board);
+                    var ph2 = new PieceHandlerBotLocalComponent(board); //PieceHandlerBotComponent(board);
                     _pieceHandler = ph2;
                     components.Add(ph2);
 
@@ -150,6 +149,8 @@ namespace Quader.Components
             if (_otherBoard != null)
                 components.Add(new PvpControllerComponent(board, _otherBoard));
 
+            components.Add(new ReplayComponent(board));
+            
             _entity.AddComponents(components);
 
             /*void RestartAction()

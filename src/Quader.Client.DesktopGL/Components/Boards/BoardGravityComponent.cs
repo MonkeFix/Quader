@@ -1,4 +1,5 @@
 ﻿using Nez;
+using Quader.Debugging.Logging;
 using Quader.Engine;
 
 namespace Quader.Components.Boards
@@ -8,6 +9,8 @@ namespace Quader.Components.Boards
         public Board Board { get; }
 
         private TimeManagerComponent _timeManager = null!;
+        
+        private readonly ILogger _logger = LoggerFactory.GetLogger<BoardGravityComponent>();
 
         public BoardGravityComponent(Board board)
         {
@@ -21,17 +24,14 @@ namespace Quader.Components.Boards
 
         public void Enable()
         {
+            _logger.Trace("Enabling");
             Enabled = true;
         }
 
         public void Disable()
         {
+            _logger.Trace("Disabling");
             Enabled = false;
-        }
-
-        public void Toggle()
-        {
-            Enabled = !Enabled;
         }
 
         public void Update()

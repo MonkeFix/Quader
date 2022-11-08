@@ -51,6 +51,8 @@ namespace Quader.Components.Boards.Renderers
             
             if (_pieceQueue == null)
                 throw new Exception("Piece Queue is null");
+            
+            _renderTarget.RenderFrom(RenderPiece);
         }
 
         public override void OnRemovedFromEntity()

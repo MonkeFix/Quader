@@ -141,7 +141,7 @@ namespace Quader.Components
                 GC.Collect();
             }
 
-            _boards = BuildBoards(2);
+            _boards = BuildBoards(1);
         }
 
         protected void GameTimer_Tick()
@@ -239,10 +239,15 @@ namespace Quader.Components
 
                 if (i == 0)
                 {
+                    var center = new Vector2(
+                        Screen.Width / 2f - 160,
+                        Screen.Height / 2f - 300
+                    );
                     board = new BoardBuilder(this)
                         .AddGameSettings(gameSettings)
                         .AddPieceHandler(PieceHandlerType.Player)
-                        .SetPosition(new Vector2(200, 128))
+                        //.SetPosition(new Vector2(200, 128))
+                        .SetPosition(center)
                         .Build();
                 }
                 else
@@ -256,6 +261,7 @@ namespace Quader.Components
                             .Build();
                 }
 
+                board.BoardEntity.Scale = new Vector2(0.8f, 0.8f);
                 board.Board.PieceCannotBeSpawned += (sender, args) =>
                 {
                     CurrentState = GameState.PostGame;
