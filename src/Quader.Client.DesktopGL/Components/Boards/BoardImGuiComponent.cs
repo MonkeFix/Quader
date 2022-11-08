@@ -5,6 +5,7 @@ using Nez.ImGuiTools;
 using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.Pieces;
+using Quader.Engine.Utils;
 
 namespace Quader.Components.Boards
 {
@@ -53,7 +54,7 @@ namespace Quader.Components.Boards
                 }
 
                 var totalLast = vals.Select(data => data.LastTime);
-                var totalMean = vals.Select(data => data._average);
+                var totalMean = vals.Select(data => data.Mean);
 
                 double tl = 0, tm = 0;
 

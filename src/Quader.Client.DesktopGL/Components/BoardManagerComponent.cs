@@ -169,6 +169,13 @@ namespace Quader.Components
         protected void GameOngoing_Tick()
         {
             //_logger.Debug("GameOngoing_Tick");
+            if (_sharedActions.ClearImmediately)
+            {
+                foreach (var boardHolder in _boards)
+                {
+                    boardHolder.Board.Clear();
+                }
+            }
         }
         protected void GameOngoing_Exit()
         {

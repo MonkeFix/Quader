@@ -68,6 +68,12 @@ public class SharedUiComponent : Component
             _sharedActions?.QuitAction();
         };
 
+        topMenuTable.Add(new CheckBox("Clear Immediately", _skin)).SetFillX()
+            .GetElement<CheckBox>().OnChanged += b =>
+        {
+            _sharedActions.ClearImmediately = b;
+        };
+
         uiCanvas.Stage.AddElement(topMenuTable);
     }
 

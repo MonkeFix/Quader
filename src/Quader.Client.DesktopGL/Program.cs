@@ -26,7 +26,8 @@ public static class Program
         {
             new ConsoleLogger(),
             new DiagnosticsLogger(),
-            new FileLogger()
+            new FileLogger(),
+            new MemoryLogger()
         };
 
         var logger = LoggerFactory.GetLogger("Kernel");

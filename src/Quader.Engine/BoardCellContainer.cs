@@ -65,6 +65,17 @@ namespace Quader.Engine
                 SetCellAt(x, y, BoardCellType.None);
             }
         }
+
+        public void ClearAll()
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    _board[y][x] = BoardCellType.None;
+                }
+            }
+        }
         
         public bool IsLineFull(int y)
         {

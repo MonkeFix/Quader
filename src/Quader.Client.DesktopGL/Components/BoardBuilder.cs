@@ -7,6 +7,7 @@ using Nez.UI;
 using Quader.Components.Boards;
 using Quader.Components.Boards.PieceHandlers;
 using Quader.Components.Boards.Renderers;
+using Quader.Components.UI;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
 using Quader.Engine.Settings;
@@ -150,6 +151,7 @@ namespace Quader.Components
                 components.Add(new PvpControllerComponent(board, _otherBoard));
 
             components.Add(new ReplayComponent(board));
+            components.Add(new PracticeModeUiComponent(board));
             
             _entity.AddComponents(components);
 

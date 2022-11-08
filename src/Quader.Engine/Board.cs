@@ -293,6 +293,12 @@ namespace Quader.Engine
             return row;
         }
 
+        public void Clear()
+        {
+            _cellContainer.ClearAll();
+            BoardChanged?.Invoke(this, EventArgs.Empty);
+        }
+        
         public void Reset()
         {
             LastMoveType = LastMoveType.None;
