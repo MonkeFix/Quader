@@ -1,10 +1,12 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Quader.WebApi.Configuration;
 using Quader.WebApi.Data;
 using Quader.WebApi.Services.Auth;
@@ -82,7 +84,45 @@ public class Startup
             });
         });
 
-        services.AddSwaggerGen();
+        var tok =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiRGV2ZWxvcGVyIiwibmJmIjoxNjY3ODQ5NjkzLCJleHAiOjE2Njg0NTQ0OTMsImlhdCI6MTY2Nzg0OTY5MywiaXNzIjoiUXVhZGVyLldlYkFwaSB2LjAuMSIsImF1ZCI6IlF1YWRlciJ9.UKTLLmlKjgzexRX16ENob09SZOmodHIVb1luMb7ZK7w";
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc(AppVersionInfo.OpenApiInfo.Version, AppVersionInfo.OpenApiInfo);
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
+                                  Enter 'Bearer' [space] and then your token in the text input below.
+                                  \r\n\r\nExample: 'Bearer 12345abcdef'",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+            
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+            
+                    },
+                    new List<string>()
+                }
+            });
+            
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath);
+        });
 
         services.Configure<CookiePolicyOptions>(options =>
         {
@@ -113,7 +153,7 @@ public class Startup
         if (env.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint($"/swagger/{AppVersionInfo.OpenApiInfo.Version}/swagger.json", $"Quader.WebApi {AppVersionInfo.BuildVersion}"));
         }
         else
         {
