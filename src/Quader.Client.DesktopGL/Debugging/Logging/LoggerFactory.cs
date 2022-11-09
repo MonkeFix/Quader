@@ -7,7 +7,7 @@ namespace Quader.Debugging.Logging
 {
     public static class LoggerFactory
     {
-        private static readonly Dictionary<string, ILogger> LogHelpers = new ();
+        private static readonly Dictionary<string, ILogger> Loggers = new ();
 
         public static List<ILoggerFrontend> DefaultLoggers { get; set; }
 
@@ -49,12 +49,12 @@ namespace Quader.Debugging.Logging
 
         public static ILogger GetLogger(string context, List<ILoggerFrontend> loggers)
         {
-            if (!LogHelpers.ContainsKey(context))
+            if (!Loggers.ContainsKey(context))
             {
-                LogHelpers[context] = new Logger(context, loggers);
+                Loggers[context] = new Logger(context, loggers);
             }
 
-            return LogHelpers[context];
+            return Loggers[context];
         }
     }
 }

@@ -47,10 +47,7 @@ public class GameSettings
             return _default;
         }
     }
-    [JsonInclude]
-    public GravitySettings Gravity { get; set; } = null!;
-    [JsonInclude]
-    public BoardSettings Board { get; set; } = null!;
-    [JsonInclude]
-    public AttackSettings Attack { get; set; } = null!;
+    public GravitySettings Gravity = null!;
+    public BoardSettings Board = null!;
+    public AttackSettings Attack = null!;
 }

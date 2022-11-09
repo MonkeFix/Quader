@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
@@ -32,6 +33,7 @@ public class ConsoleLogger : ILoggerFrontend
         ColorFatal = ConsoleColor.DarkRed;
     }
 
+    [DebuggerHidden]
     public void Log(string message, LogLevel level)
     {
         lock (_lockObject)

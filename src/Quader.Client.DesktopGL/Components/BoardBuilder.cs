@@ -7,6 +7,7 @@ using Nez.UI;
 using Quader.Components.Boards;
 using Quader.Components.Boards.PieceHandlers;
 using Quader.Components.Boards.Renderers;
+using Quader.Components.Debugging;
 using Quader.Components.UI;
 using Quader.Engine;
 using Quader.Engine.PieceGenerators;
@@ -122,7 +123,9 @@ namespace Quader.Components
                     components.Add(ph1);
 
 #if DEBUG
-                    //components.Add(new BoardImGuiComponent(board));
+                    components.Add(new BoardImGuiComponent(board));
+                    components.Add(new LogsImGuiComponent());
+                    components.Add(new ProfilerImGuiComponent());
 #endif
 
                     components.Add(new TimeManagerComponent(board, new LocalTimeProvider()));

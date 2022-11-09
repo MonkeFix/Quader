@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Quader.Debugging.Logging.Loggers;
 
 public class DiagnosticsLogger : ILoggerFrontend
 {
+    [DebuggerHidden]
     public void Log(string message, LogLevel level)
     {
-        System.Diagnostics.Debug.WriteLine(message);
+        Debug.WriteLine(message);
     }
 }

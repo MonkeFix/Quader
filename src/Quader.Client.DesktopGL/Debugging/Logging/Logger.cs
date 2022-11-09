@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Quader.Debugging.Logging;
 
@@ -37,6 +38,7 @@ public class Logger : ILogger
         return true;
     }
 
+    [DebuggerHidden]
     public void Log(object message, LogLevel level = LogLevel.Debug)
     {
         var builtString = BuildString(message, level);
