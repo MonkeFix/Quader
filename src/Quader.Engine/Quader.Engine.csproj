@@ -1,17 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	  <TargetFrameworks>net6.0</TargetFrameworks>
 	  <Nullable>enable</Nullable>
+	  <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\3rdParty\Nez\Nez.Persistence\Nez.MG38.Persistence.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Collections\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\..\..\Nez\Nez.Persistence\Nez.FNA.Standard.Persistence.csproj" />
   </ItemGroup>
 </Project>

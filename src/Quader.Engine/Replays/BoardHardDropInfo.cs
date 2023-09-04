@@ -56,33 +56,37 @@ public class BoardHardDropInfo : IPersistable
     /// <summary>
     /// Gets timestamp of the hardDropInfo in UTC
     /// </summary>
-    [JsonInclude]
-    public double Timestamp { get; set; }
+    public double Timestamp;
+
     /// <summary>
     /// Gets total lines cleared by the hardDropInfo
     /// </summary>
-    [JsonInclude]
-    public int LinesCleared { get; set; }
+    public int LinesCleared;
+
     /// <summary>
     /// Gets flagged board hardDropInfo type. Use <b>BoardMoveType.HasFlag()</b> or bitwise OR operator to check the types applied
     /// </summary>
-    [JsonInclude] public BoardHardDropInfoModificators Modificators { get; set; }
+    public BoardHardDropInfoModificators Modificators;
+
     /// <summary>
     /// Gets current back-to-back status. Back-to-back increments only if the last hardDropInfo was any T-Spin or Quad, in every other case it resets back to zero
     /// </summary>
-    [JsonInclude] public int BackToBack { get; set; }
+    public int BackToBack;
+
     /// <summary>
     /// Gets current combo. Note, that combo starts counting with every line clear
     /// </summary>
-    [JsonInclude] public int Combo { get; set; }
+    public int Combo;
+
     /// <summary>
     /// Gets whether or not was the hardDropInfo successful. If not, it usually means that the player just lost
     /// </summary>
-    [JsonInclude] public bool Success { get; set; }
+    public bool Success;
+
     /// <summary>
     /// Gets outgoing attack
     /// </summary>
-    [JsonInclude] public int Attack { get; set; }
+    public int Attack;
 
     public override string ToString()
     {

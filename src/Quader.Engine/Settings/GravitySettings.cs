@@ -1,6 +1,4 @@
-﻿using Nez.Persistence;
-
-namespace Quader.Engine.Settings;
+﻿namespace Quader.Engine.Settings;
 
 public class GravitySettings
 {

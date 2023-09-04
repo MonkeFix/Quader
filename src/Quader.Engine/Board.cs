@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Nez;
 using Quader.Engine.Collections;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;

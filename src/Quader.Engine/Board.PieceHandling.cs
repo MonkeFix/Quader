@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
-using Nez;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 

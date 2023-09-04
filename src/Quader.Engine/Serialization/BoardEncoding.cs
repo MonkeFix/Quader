@@ -1,15 +1,9 @@
-﻿using Nez.Persistence;
-
-namespace Quader.Engine.Serialization;
+﻿namespace Quader.Engine.Serialization;
 
 public class BoardEncoding
 {
-    [JsonInclude] 
-    public string Code { get; set; } = null!;
-    [JsonInclude]
-    public int Width { get; set; }
-    [JsonInclude]
-    public int Height { get; set; }
-    [JsonInclude]
-    public int TotalHeight { get; set; }
+    public string Code = null!;
+    public int Width;
+    public int Height;
+    public int TotalHeight;
 }

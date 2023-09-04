@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+        <PublishAot>true</PublishAot>
+        <RootNamespace>Quader</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <RdXmlFile Include="rd.xml" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+        <NativeLibrary Include="-lSDL2" />
+        <NativeLibrary Include="-lFNA3D" />
+        <NativeLibrary Include="-lFAudio" />
+        <NativeLibrary Include="-ltheorafile" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+        <NativeLibrary Include="SDL2.lib" />
+        <NativeLibrary Include="FNA3D.lib" />
+        <NativeLibrary Include="FAudio.lib" />
+        <NativeLibrary Include="libtheorafile.lib" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <DirectPInvokeList Include="SDLApis.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Content/**/*.*" Exclude="**/*.fx; Content/Content-Goes-Here.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
+        <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="..\..\fnalibs\x64\**\*.*" Visible="false" Condition="'$(OS)' == 'Windows_NT' AND '$(Platform)' != 'x86'">
+            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\fnalibs\osx\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsOSX) == 'true'">
+            <Link>osx\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\fnalibs\lib\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+            <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\fnalibs\lib64\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+            <Link>lib64\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\lunge\src\LiteLog\LiteLog.csproj" />
+      <ProjectReference Include="..\..\..\lunge\src\lunge.Library.Particles\lunge.Library.Particles.csproj" />
+      <ProjectReference Include="..\..\..\lunge\src\lunge.Library\lunge.Library.csproj" />
+      <ProjectReference Include="..\ColdClearNet\ColdClearNet.csproj" />
+      <ProjectReference Include="..\Quader.Bot.Api\Quader.Bot.Api.csproj" />
+      <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Update="ContentPathGenerator.tt">
+        <Generator>TextTemplatingFileGenerator</Generator>
+        <LastGenOutput>ContentPathGenerator.cs</LastGenOutput>
+      </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Update="ContentPathGenerator.cs">
+        <DependentUpon>ContentPathGenerator.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="ZetaIpc" Version="1.0.4.12" />
+    </ItemGroup>
+
+
+</Project>
