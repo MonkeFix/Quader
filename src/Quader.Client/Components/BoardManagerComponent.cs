@@ -190,7 +190,7 @@ namespace Quader.Components
                     var replay = bh.BoardEntity.GetComponent<ReplayComponent>().End();
                     var jsonStr = Json.ToJson(replay);
                     var dir = $"Replays/{replay.EndDate:yyyy-MM-dd-HH-mm-ss}";
-                    Directory.CreateDirectory("Saves/" + dir);
+                    Directory.CreateDirectory(Path.Combine(Storage.GetStorageRoot(), dir));
                     File.WriteAllText($"Saves/{dir}/{bh.BoardEntity.Name}.json", jsonStr);
 
                     // testing persistence
