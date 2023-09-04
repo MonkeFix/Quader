@@ -11,6 +11,7 @@ using Quader.Engine;
 using Quader.Engine.Replays;
 using Quader.Engine.Settings;
 using Quader.Scenes;
+using Quader.Shared;
 
 namespace Quader.Components
 {
@@ -93,7 +94,7 @@ namespace Quader.Components
                     board.BoardEntity.Destroy();
                 }
 
-                var allBoards = Entity.Scene.FindEntitiesWithTag(GameplayScene.BoardTag);
+                var allBoards = Entity.Scene.FindEntitiesWithTag(BoardInfo.BoardTag);
                 foreach (var b in allBoards)
                 {
                     b.Destroy();
@@ -118,7 +119,7 @@ namespace Quader.Components
 
             if (_boards != null)
             {
-                var allBoards = Entity.Scene.FindEntitiesWithTag(GameplayScene.BoardTag);
+                var allBoards = Entity.Scene.FindEntitiesWithTag(BoardInfo.BoardTag);
                 foreach (var b in allBoards)
                 {
                     b.RemoveAllComponents();

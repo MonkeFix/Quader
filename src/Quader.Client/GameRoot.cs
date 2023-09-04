@@ -31,11 +31,10 @@ public class GameRoot : Core
 
         Window.AllowUserResizing = false;
 
-        IsFixedTimeStep = false;
+        IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromSeconds(1.0 / TargetFps);
 
-        _logger.Info("Initializing FMOD");
-            
+        //_logger.Info("Initializing FMOD");
         //FMODManager.Init(FMODMode.Core, "Content");
 
         _logger.Info("Loading Piece Settings");

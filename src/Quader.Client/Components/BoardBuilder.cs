@@ -14,6 +14,7 @@ using Quader.Engine.PieceGenerators;
 using Quader.Engine.Settings;
 using Quader.Managers.TimeProviders;
 using Quader.Scenes;
+using Quader.Shared;
 using Quader.Skinning;
 
 namespace Quader.Components
@@ -45,7 +46,7 @@ namespace Quader.Components
 
             _boardManager = boardManager;
 
-            _entity.Tag = GameplayScene.BoardTag;
+            _entity.Tag = BoardInfo.BoardTag;
             _boardIndex++;
         }
 
@@ -124,8 +125,9 @@ namespace Quader.Components
 
 #if DEBUG
                     components.Add(new BoardImGuiComponent(board));
-                    components.Add(new LogsImGuiComponent());
-                    components.Add(new ProfilerImGuiComponent());
+                    // Now added in SceneBase
+                    //components.Add(new LogsImGuiComponent());
+                    //components.Add(new ProfilerImGuiComponent());
 #endif
 
                     components.Add(new TimeManagerComponent(board, new LocalTimeProvider()));

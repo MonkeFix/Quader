@@ -35,6 +35,8 @@ namespace Nez
 			public const string Font_cfg = @"Content/fonts/font_cfg.bmfc";
 			public const string Main_font = @"Content/fonts/main_font.fnt";
 			public const string Main_font_0 = @"Content/fonts/main_font_0.png";
+			public const string Silkscreen8 = @"Content/fonts/silkscreen8.fnt";
+			public const string Silkscreen8_0 = @"Content/fonts/silkscreen8_0.png";
 		}
 
 		public static class Skins
