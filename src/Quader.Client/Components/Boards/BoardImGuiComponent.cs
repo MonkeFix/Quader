@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using ImGuiNET;
+using Microsoft.Xna.Framework;
 using Nez;
 using Nez.ImGuiTools;
 using Quader.Components.Boards.Renderers;
@@ -126,7 +127,7 @@ namespace Quader.Components.Boards
                 if (Board.TestQueue.Count > 0)
                 {
                     var p = Board.TestQueue.Dequeue();
-                    SharedSettings.CurrentTest = p;
+                    SharedSettings.CurrentTest = p.Select(oldP => new Point(oldP.X, oldP.Y)).ToArray();
                 }
                 else
                 {

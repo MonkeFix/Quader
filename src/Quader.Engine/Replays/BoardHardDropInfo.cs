@@ -1,7 +1,4 @@
 ﻿using System;
-using Nez.Persistence;
-using Nez.Persistence.Binary;
-
 namespace Quader.Engine.Replays;
 
 [Flags]
@@ -51,7 +48,7 @@ public enum BoardHardDropInfoModificators
 }
 // ReSharper enable InconsistentNaming
 
-public class BoardHardDropInfo : IPersistable
+public class BoardHardDropInfo
 {
     /// <summary>
     /// Gets timestamp of the hardDropInfo in UTC
@@ -91,27 +88,5 @@ public class BoardHardDropInfo : IPersistable
     public override string ToString()
     {
         return $"{Timestamp}: LC: {LinesCleared}, Mods: {Modificators}, B2B: {BackToBack}, Combo: {Combo}, Success: {Success}, Attack: {Attack}";
-    }
-
-    public void Recover(IPersistableReader reader)
-    {
-        Timestamp = reader.ReadDouble();
-        LinesCleared = reader.ReadInt();
-        Modificators = (BoardHardDropInfoModificators)reader.ReadInt();
-        BackToBack = reader.ReadInt();
-        Combo = reader.ReadInt();
-        Success = reader.ReadBool();
-        Attack = reader.ReadInt();
-    }
-
-    public void Persist(IPersistableWriter writer)
-    {
-        writer.Write(Timestamp);
-        writer.Write(LinesCleared);
-        writer.Write((int)Modificators);
-        writer.Write(BackToBack);
-        writer.Write(Combo);
-        writer.Write(Success);
-        writer.Write(Attack);
     }
 }

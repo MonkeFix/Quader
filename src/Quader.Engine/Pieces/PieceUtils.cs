@@ -1,32 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Nez.Persistence;
+using System.Drawing;
+using System.Text.Json.Serialization;
 
 namespace Quader.Engine.Pieces
 {
     public class PieceSettings
     {
-        [JsonInclude]
-        public Color ColorI { get; set; } = new(49, 178, 131);
-        [JsonInclude]
-        public Color ColorZ { get; set; } = new(179, 51, 58);
-        [JsonInclude]
-        public Color ColorS { get; set; } = new(129, 177, 48);
-        [JsonInclude]
-        public Color ColorL { get; set; } = new(178, 98, 49);
-        [JsonInclude]
-        public Color ColorJ { get; set; } = new(82, 57, 206);
-        [JsonInclude]
-        public Color ColorT { get; set; } = new(165, 62, 155);
-        [JsonInclude]
-        public Color ColorO { get; set; } = new(178, 153, 49);
-
-        [JsonInclude]
-        public Color ColorGarbage { get; set; } = new(102, 102, 102);
-
-        [JsonInclude]
-        public Dictionary<PieceRotationType, Point[]> DefaultWallKickData { get; set; } = new()
+        public static Color ColorI = Color.FromArgb(255, 49, 178, 131);
+        public static Color ColorZ = Color.FromArgb(255, 179, 51, 58);
+        public static Color ColorS = Color.FromArgb(255, 129, 177, 48);
+        public static Color ColorL = Color.FromArgb(255, 178, 98, 49);
+        public static Color ColorJ = Color.FromArgb(255, 82, 57, 206);
+        public static Color ColorT = Color.FromArgb(255, 165, 62, 155);
+        public static Color ColorO = Color.FromArgb(255, 178, 153, 49);
+        
+        public static Color ColorGarbage = Color.FromArgb(255, 102, 102, 102);
+        
+        public Dictionary<PieceRotationType, Point[]> DefaultWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0), new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) } },
@@ -40,8 +31,7 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
 
-        [JsonInclude]
-        public Dictionary<PieceRotationType, Point[]> PieceIWallKickData { get; set; } = new()
+        public Dictionary<PieceRotationType, Point[]> PieceIWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-2, 0), new Point(1, 0), new Point(-2, -1), new Point(1, 2) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0), new Point(2, 0), new Point(-1, 0), new Point(2, 1), new Point(-1, -2) } },
@@ -55,8 +45,7 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
 
-        [JsonInclude]
-        public Dictionary<PieceRotationType, Point[]> PieceOWallKickData { get; set; } = new()
+        public Dictionary<PieceRotationType, Point[]> PieceOWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0) } },
@@ -88,7 +77,7 @@ namespace Quader.Engine.Pieces
                     new Point(0, -1)
                 }
             },
-            { PieceType.Pixel, new[] { Point.Zero } },
+            { PieceType.Pixel, new[] { Point.Empty } },
         };
     }
 

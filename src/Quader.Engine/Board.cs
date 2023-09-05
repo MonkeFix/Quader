@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
-using Microsoft.Xna.Framework;
 using Quader.Engine.Collections;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
 using Quader.Engine.Replays;
-using Quader.Engine.Serialization;
 using Quader.Engine.Settings;
 using Random = System.Random;
 

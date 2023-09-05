@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Drawing;
 
 namespace Quader.Engine.Pieces.Impl
 {
@@ -8,19 +8,11 @@ namespace Quader.Engine.Pieces.Impl
         public override PieceType Type => PieceType.O;
         public override BoardCellType BoardCellType => BoardCellType.O;
         public override OffsetType OffsetType => OffsetType.BetweenCells;
-        protected override Point[] SpawnPos { get; }
-        protected override Point[] RightPos { get; }
-        protected override Point[] Deg180Pos { get; }
-        protected override Point[] LeftPos { get; }
+        protected override Point[] SpawnPos { get; } = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
+        protected override Point[] RightPos { get; } = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
+        protected override Point[] Deg180Pos { get; } = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
+        protected override Point[] LeftPos { get; } = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
 
         public override Dictionary<PieceRotationType, Point[]> WallKickData => PieceUtils.PieceSettings!.PieceOWallKickData;
-
-        public PieceO()
-        {
-            SpawnPos = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
-            RightPos = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
-            Deg180Pos = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
-            LeftPos = new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(-1, -1) };
-        }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Xna.Framework;
-using Nez;
+﻿using Nez;
 using Nez.Persistence;
 using Nez.UI;
 using Quader.Engine;
@@ -59,7 +56,7 @@ public class BoardDrawerComponent : Component, IUpdatable, IBoardComponent
     {
         var mp = Input.MousePosition;
 
-        var scaledMp = new Point(
+        var scaledMp = new System.Drawing.Point(
             (int)((mp.X - Entity.Position.X * Entity.Scale.X) / _boardSkin.CellSize),
             (int)(((mp.Y - Entity.Position.Y + Board.ExtraHeight * _boardSkin.CellSize) * Entity.Scale.Y) /
                   _boardSkin.CellSize)

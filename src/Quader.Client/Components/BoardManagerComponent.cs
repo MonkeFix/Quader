@@ -195,9 +195,9 @@ namespace Quader.Components
                     File.WriteAllText($"Saves/{dir}/{bh.BoardEntity.Name}.json", jsonStr);
 
                     // testing persistence
-                    dataStore.Save($"{dir}/{bh.BoardEntity.Name}.bin", replay);
-                    var tmpReplay = new BoardMoveHolder(bh.Board, DateTime.UtcNow);
-                    dataStore.Load($"{dir}/{bh.BoardEntity.Name}.bin", tmpReplay);
+                    //dataStore.Save($"{dir}/{bh.BoardEntity.Name}.bin", replay);
+                    //var tmpReplay = new BoardMoveHolder(bh.Board, DateTime.UtcNow);
+                    //dataStore.Load($"{dir}/{bh.BoardEntity.Name}.bin", tmpReplay);
 
                     bh.Disable();
                 }

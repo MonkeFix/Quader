@@ -122,7 +122,7 @@ namespace Quader.Skinning
             }
         }
 
-        private void RenderPiece(Batcher batcher, Point[] points, BoardCellType cellType)
+        private void RenderPiece(Batcher batcher, System.Drawing.Point[] points, BoardCellType cellType)
         {
             foreach (var p in points)
             {

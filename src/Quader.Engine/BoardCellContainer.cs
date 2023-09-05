@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Drawing;
 
 namespace Quader.Engine
 {
+    /// <summary>
+    /// Helper class that holds the board data in a two dimensional array
+    /// </summary>
     public class BoardCellContainer
     {
         public int Width { get; }
@@ -25,11 +28,17 @@ namespace Quader.Engine
             Reset();
         }
         
+        /// <summary>
+        /// Clears all the cells setting them to BoardCellType.None
+        /// </summary>
         public void Reset()
         {
             ForEach((x, y) => _board[y][x] = BoardCellType.None);
         }
         
+        /// <summary>
+        /// Moves all the board content up by one block
+        /// </summary>
         public void MoveUp()
         {
             for (int y = 1; y < Height; y++)
@@ -44,6 +53,10 @@ namespace Quader.Engine
             }
         }
 
+        /// <summary>
+        /// Moves all the board content down by one block starting at specified Y
+        /// </summary>
+        /// <param name="fromY"></param>
         public void MoveDown(int fromY = 0)
         {
             for (int y = fromY - 1; y >= 0; y--)
@@ -58,6 +71,10 @@ namespace Quader.Engine
             }
         }
         
+        /// <summary>
+        /// Clears a single line at specified Y
+        /// </summary>
+        /// <param name="y"></param>
         public void ClearLine(int y)
         {
             for (int x = 0; x < Width; x++)
@@ -127,6 +144,10 @@ namespace Quader.Engine
             return linesCleared.ToArray();
         }
 
+        /// <summary>
+        /// Clears specified lines
+        /// </summary>
+        /// <param name="ys"></param>
         public void ClearLines(int[] ys)
         {
             foreach (var y in ys)
@@ -135,6 +156,11 @@ namespace Quader.Engine
             }
         }
 
+        /// <summary>
+        /// Calculates whether any point in the specified array intersects either board bounds on other blocks
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
         public bool Intersects(Point[] points)
         {
             foreach (var point in points)

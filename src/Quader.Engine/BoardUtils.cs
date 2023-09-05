@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
-using Microsoft.Xna.Framework;
 
 namespace Quader.Engine;
 
 public static class BoardUtils
 {
+    /// <summary>
+    /// Moves the piece's points from the default position to a new one
+    /// </summary>
+    /// <param name="data">Default piece data</param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Point[] AdjustPositions(Point[] data, Point offset)
     {

@@ -97,12 +97,13 @@ namespace Quader.Components.Boards.Renderers
                 {
                     var drawX = (p.X + curX) * size;
                     var drawY =  (p.Y + curY) * size;
+                    var oldCol = PieceUtils.GetColorByPieceType(piece.Type);
 
                     batcher.Draw(
                         ghostSprite,
                         new Vector2(drawX, drawY),
                         ghostSprite.SourceRect,
-                        PieceUtils.GetColorByPieceType(piece.Type) * 0.9f,
+                        new Color(oldCol.R, oldCol.G, oldCol.B, oldCol.A) * 0.9f,
                         0,
                         Vector2.Zero,
                         Vector2.One, 

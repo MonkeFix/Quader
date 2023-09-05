@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using System.Drawing;
 
 namespace Quader.Engine.Pieces.Impl
 {

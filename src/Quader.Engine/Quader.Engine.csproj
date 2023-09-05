@@ -6,8 +6,4 @@
   <ItemGroup>
     <Folder Include="Collections\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\FNA\FNA.Core.csproj" />
-    <ProjectReference Include="..\..\..\Nez\Nez.Persistence\Nez.FNA.Standard.Persistence.csproj" />
-  </ItemGroup>
 </Project>

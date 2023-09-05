@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
+using System.Drawing;
 using Quader.Engine.Pieces;
 using Quader.Engine.Replays;
 
@@ -275,7 +275,7 @@ public partial class Board
 
             var adjusted = BoardUtils.AdjustPositions(
                 expectedPos,
-                new Point(CurrentPiece.X, CurrentPiece.Y) + test
+                new Point(CurrentPiece.X + test.X, CurrentPiece.Y + test.Y)
             );
 
             TestQueue.Enqueue(adjusted);
