@@ -21,7 +21,32 @@
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [x] Board Serialization/Deserialization
  - [x] Move SRS tables to a JSON file
- - [x] Add skins
+ - [ ] Add skins
+	- [x] Add basic skin files:
+		- [x] Full board
+		- [x] Pieces
+	- [ ] Split up board image to its components:
+		- [ ] Hold
+		- [ ] Main field
+		- [ ] Garbage meter
+		- [ ] Piece queue
+	- [ ] Implement skin changing at runtime
+ - [ ] Add a proper loading screen at game startup
+ - [ ] Add main menu
+ - [ ] Add settings menu
+ - [ ] Add several gamemodes
+	- [x] Practice (singleplayer)
+	- [ ] Vs Bot
+	- [ ] Vs other player (1v1)
+	- [ ] Vs other players and/or bots (FFA)
+ - [ ] Add full replay support
+	- [ ] Replay saving
+	- [ ] Replay viewer
+ - [ ] Implement player stats as well as stat persistance
+	- [ ] Average/Highest/Lowest APM
+	- [ ] Average/Highest/Lowest PPS
+	- [ ] Win/lose streaks
+	- [ ] Win/lose count
  - [x] Add Game Settings (Gravity, Board Resolution, etc.)
  - [ ] Implement correct input handling
    - [x] Handling simultaneous key presses
