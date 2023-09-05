@@ -15,8 +15,7 @@ namespace Quader;
 
 public class GameRoot : Core
 {
-    private readonly string _configFilePath = "config.json";
-
+    public static readonly string ConfigFilePath = "config.json";
     public static JsonSettings DefaultJsonSettings { get; private set; } = null!;
 
     private readonly ILogger _logger = LoggerFactory.GetLogger<GameRoot>();
@@ -47,26 +46,6 @@ public class GameRoot : Core
             },
             PrettyPrint = true
         };
-
-        var pieceSettingsFilename = Path.Combine("Content", "data", "default_piece_settings.json");
-        PieceSettings pieceSettings;
-
-        if (!File.Exists(pieceSettingsFilename))
-        {
-            _logger.Warn($"Piece Settings file does not exist ({pieceSettingsFilename}), taking the defaults");
-            using var sw = new StreamWriter(pieceSettingsFilename, false);
-            pieceSettings = new PieceSettings();
-            sw.WriteLine(Json.ToJson(pieceSettings, DefaultJsonSettings));
-        }
-        else
-        {
-            using var sr = new StreamReader(pieceSettingsFilename);
-            var json = sr.ReadToEnd();
-            pieceSettings = Json.FromJson<PieceSettings>(json, DefaultJsonSettings);
-            _logger.Info("Successfully loaded Piece Settings from file");
-        }
-
-        PieceUtils.PieceSettings = pieceSettings;
 
         PauseOnFocusLost = false;
         
@@ -101,37 +80,10 @@ public class GameRoot : Core
 
         PauseOnFocusLost = false;
 
-        _logger.Info("Creating skin");
-        Skin skin = Skin.CreateDefaultSkin();
-
-        _logger.Info("Loading content files");
-
-        var skinTexture = Content.LoadTexture(Nez.Content.Skins.Default_3);
-        var boardTexture = Content.LoadTexture(Nez.Content.Skins.Board_default);
-        var mainFont = Content.LoadBitmapFont(Nez.Content.Fonts.Main_font, true);
-        var debugFont = Content.LoadBitmapFont(Nez.Content.Fonts.Debug_font, true);
-        skin.Add("default", new BoardSkin(skinTexture, boardTexture, mainFont, debugFont));
-        Services.AddService(typeof(Skin), skin);
-        
-        _logger.Info($"Loading Game Config ({_configFilePath})");
-        GameConfig gc;
-
-        try
-        {
-            gc = GameConfig.LoadFromFile(_configFilePath);
-        }
-        catch (FileNotFoundException e)
-        {
-            _logger.Info("Config file was not found, taking the defaults");
-            gc = new GameConfig();
-        }
-
-        Services.AddService(gc);
-
         _logger.Debug("Setting up scene");
         try
         {
-            Scene = new GameplayScene();
+            Scene = new StartupScene();  // new GameplayScene();
         }
         catch (Exception e)
         {
@@ -147,7 +99,7 @@ public class GameRoot : Core
         _logger.Info("Unloading content");
 
         var gc = Services.GetService<GameConfig>();
-        GameConfig.SaveToFile(gc, _configFilePath);
+        GameConfig.SaveToFile(gc, ConfigFilePath);
 
         //KeyValueDataStore.Default.Flush(_dataStore);
 

@@ -16,7 +16,7 @@ namespace Quader.Skinning
 
         public Sprite this[BoardCellType type] => _pieceSpriteMap[type];
 
-        public static readonly PieceType[] AvailablePieces = {
+        public static readonly IEnumerable<PieceType> AvailablePieces = new PieceType[]{
             PieceType.I,
             PieceType.J,
             PieceType.L,
@@ -31,6 +31,7 @@ namespace Quader.Skinning
 
         public BitmapFont MainFont { get; }
         public BitmapFont DebugFont { get; }
+        public BitmapFont SilkscreenFont { get; }
 
         public Dictionary<PieceType, RenderTarget2D> PieceTextures { get; }
 
@@ -43,12 +44,14 @@ namespace Quader.Skinning
             Texture2D skinTexture,
             Texture2D boardTexture, 
             BitmapFont mainFont,
-            BitmapFont debugFont
+            BitmapFont debugFont,
+            BitmapFont silkscreenFont
             )
         {
             BoardTexture = boardTexture;
             MainFont = mainFont;
             DebugFont = debugFont;
+            SilkscreenFont = silkscreenFont;
             _pieceSpriteMap = new Dictionary<BoardCellType, Sprite>(Count);
             _spriteList = new List<Sprite>(Count);
 
