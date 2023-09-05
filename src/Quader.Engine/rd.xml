@@ -1,0 +1,8 @@
+<Directives>
+	<Application>
+		<Assembly Name="mscorlib" />
+		<Assembly Name="Quader.Engine">
+
+		</Assembly>
+	</Application>
+</Directives>

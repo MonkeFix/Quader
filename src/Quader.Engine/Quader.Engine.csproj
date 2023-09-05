@@ -1,9 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-	  <Nullable>enable</Nullable>
-	  <TargetFramework>net7.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="Collections\" />
-  </ItemGroup>
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <TargetFramework>net7.0</TargetFramework>
+        <PublishAot>true</PublishAot>
+    </PropertyGroup>
+    <ItemGroup>
+        <RdXmlFile Include="rd.xml" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Collections\" />
+    </ItemGroup>
 </Project>
