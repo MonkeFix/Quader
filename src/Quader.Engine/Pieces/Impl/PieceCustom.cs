@@ -33,7 +33,7 @@ namespace Quader.Engine.Pieces.Impl
             OffsetType = offsetType;
             BoardCellType = cellType;
 
-            WallKickData = wallKickData ?? PieceUtils.PieceSettings!.DefaultWallKickData;
+            WallKickData = wallKickData ?? PieceSettings.DefaultWallKickData;
             BaseColor = baseColor ?? PieceSettings.ColorGarbage;
         }
     }

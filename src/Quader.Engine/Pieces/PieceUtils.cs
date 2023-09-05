@@ -17,7 +17,7 @@ namespace Quader.Engine.Pieces
         
         public static Color ColorGarbage = Color.FromArgb(255, 102, 102, 102);
         
-        public Dictionary<PieceRotationType, Point[]> DefaultWallKickData = new()
+        public static Dictionary<PieceRotationType, Point[]> DefaultWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0), new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) } },
@@ -31,7 +31,7 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
 
-        public Dictionary<PieceRotationType, Point[]> PieceIWallKickData = new()
+        public static Dictionary<PieceRotationType, Point[]> PieceIWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-2, 0), new Point(1, 0), new Point(-2, -1), new Point(1, 2) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0), new Point(2, 0), new Point(-1, 0), new Point(2, 1), new Point(-1, -2) } },
@@ -45,7 +45,7 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), new Point(0, -1), new Point(0, -2) } },
         };
 
-        public Dictionary<PieceRotationType, Point[]> PieceOWallKickData = new()
+        public static Dictionary<PieceRotationType, Point[]> PieceOWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0) } },
             { PieceRotationType.RightToSpawn, new[] { new Point(0, 0) } },
@@ -59,7 +59,7 @@ namespace Quader.Engine.Pieces
             { PieceRotationType.Deg180ToSpawn, new[] { new Point(0, 0), } },
         };
 
-        public Dictionary<PieceType, Point[]> DefaultPieceCellPositioning { get; set; } = new()
+        public static Dictionary<PieceType, Point[]> DefaultPieceCellPositioning { get; set; } = new()
         {
             { PieceType.I, new[] { new Point(-1, -1), new Point(-2, -1), new Point(1, -1), new Point(0, -1) } },
             { PieceType.S, new[] { new Point(0, 0), new Point(-1, 0), new Point(0, -1), new Point(1, -1) } },
