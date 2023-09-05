@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Content/**/*.*" Exclude="**/*.fx; Content/Content-Goes-Here.txt">
+        <Content Include="Content/**/*.*" Exclude="**/*.fx; Content/Content.mgcb">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
