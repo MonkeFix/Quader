@@ -34,7 +34,7 @@ namespace Quader.Engine.Pieces.Impl
             BoardCellType = cellType;
 
             WallKickData = wallKickData ?? PieceUtils.PieceSettings!.DefaultWallKickData;
-            BaseColor = baseColor ?? PieceUtils.PieceSettings!.ColorGarbage;
+            BaseColor = baseColor ?? PieceSettings.ColorGarbage;
         }
     }
 }
