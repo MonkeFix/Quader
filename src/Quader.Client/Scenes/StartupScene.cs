@@ -44,7 +44,7 @@ public class StartupScene : SceneBase
 
         Task.Run(() =>
         {
-            var pieceSettingsFilename = Path.Combine("Content", "data", "default_piece_settings.json");
+            var pieceSettingsFilename = Nez.Content.Data.Default_piece_settings;
             PieceSettings pieceSettings;
 
             if (!File.Exists(pieceSettingsFilename))
@@ -63,20 +63,20 @@ public class StartupScene : SceneBase
             }
 
             PieceUtils.PieceSettings = pieceSettings;
-        
+
             _logger.Info("Creating skin");
             Skin skin = Skin.CreateDefaultSkin();
 
             _logger.Info("Loading content files");
 
-            var skinTexture = Content.LoadTexture(Nez.Content.Skins.Default_3);
-            var boardTexture = Content.LoadTexture(Nez.Content.Skins.Board_default);
-            var mainFont = Content.LoadBitmapFont(Nez.Content.Fonts.Main_font, true);
-            var debugFont = Content.LoadBitmapFont(Nez.Content.Fonts.Debug_font, true);
-            var silkscreenFont = Content.LoadBitmapFont(Nez.Content.Fonts.Silkscreen8, true);
+            var skinTexture = Core.Content.LoadTexture(Nez.Content.Skins.Default_3);
+            var boardTexture = Core.Content.LoadTexture(Nez.Content.Skins.Board_default);
+            var mainFont = Core.Content.LoadBitmapFont(Nez.Content.Fonts.Main_font, true);
+            var debugFont = Core.Content.LoadBitmapFont(Nez.Content.Fonts.Debug_font, true);
+            var silkscreenFont = Core.Content.LoadBitmapFont(Nez.Content.Fonts.Silkscreen8, true);
             skin.Add("default", new BoardSkin(skinTexture, boardTexture, mainFont, debugFont, silkscreenFont));
             Core.Services.AddService(skin);
-        
+
             _logger.Info($"Loading Game Config ({GameRoot.ConfigFilePath})");
             GameConfig gc;
 
@@ -91,10 +91,10 @@ public class StartupScene : SceneBase
             }
 
             Core.Services.AddService(gc);
-            
+
             syncContext?.Post(state => { onLoaded(context); }, null);
         });
-        
-        
+
+
     }
 }
