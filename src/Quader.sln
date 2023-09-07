@@ -5,8 +5,6 @@ VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{7B554911-D9DB-47FB-9D38-B95876CEF10C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quader.Engine", "Quader.Engine\Quader.Engine.csproj", "{A3D27F30-5AEA-4FC3-9B1E-1C4FE6ABEECC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColdClearNet", "ColdClearNet\ColdClearNet.csproj", "{D40BE6CD-891A-469E-B9C2-79913884F07D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Bot.Client", "Quader.Bot.Client\Quader.Bot.Client.csproj", "{55F8C6A0-2262-4F31-9B9D-40EAD30EA7EC}"
@@ -29,16 +27,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nez.FNA.Standard.ImGui", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FNA.Core", "..\..\FNA\FNA.Core.csproj", "{99BD05B1-6EBA-47C4-9E83-96E7158D3DA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Engine.DllTests", "Quader.Engine.DllTests\Quader.Engine.DllTests.csproj", "{D3B4C38A-E4FA-4CF5-95F6-9FF21D6AE3FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Engine", "Quader.Engine\Quader.Engine.csproj", "{A3225776-75B7-4EA5-B2A3-39E2C7BBB35F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A3D27F30-5AEA-4FC3-9B1E-1C4FE6ABEECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3D27F30-5AEA-4FC3-9B1E-1C4FE6ABEECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3D27F30-5AEA-4FC3-9B1E-1C4FE6ABEECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3D27F30-5AEA-4FC3-9B1E-1C4FE6ABEECC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D40BE6CD-891A-469E-B9C2-79913884F07D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -83,6 +81,14 @@ Global
 		{99BD05B1-6EBA-47C4-9E83-96E7158D3DA4}.Debug|Any CPU.Build.0 = Debug|x64
 		{99BD05B1-6EBA-47C4-9E83-96E7158D3DA4}.Release|Any CPU.ActiveCfg = Release|x64
 		{99BD05B1-6EBA-47C4-9E83-96E7158D3DA4}.Release|Any CPU.Build.0 = Release|x64
+		{D3B4C38A-E4FA-4CF5-95F6-9FF21D6AE3FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B4C38A-E4FA-4CF5-95F6-9FF21D6AE3FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B4C38A-E4FA-4CF5-95F6-9FF21D6AE3FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B4C38A-E4FA-4CF5-95F6-9FF21D6AE3FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3225776-75B7-4EA5-B2A3-39E2C7BBB35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3225776-75B7-4EA5-B2A3-39E2C7BBB35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3225776-75B7-4EA5-B2A3-39E2C7BBB35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3225776-75B7-4EA5-B2A3-39E2C7BBB35F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

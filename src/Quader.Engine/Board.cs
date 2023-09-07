@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Quader.Engine.Collections;
 using Quader.Engine.Pieces;
 using Quader.Engine.Pieces.Impl;
@@ -19,6 +20,7 @@ namespace Quader.Engine
         Movement
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public partial class Board : IDisposable
     {
         /// <summary>
@@ -74,7 +76,7 @@ namespace Quader.Engine
 
         public float IntermediateY => _intermediateY;
 
-        public BoardHardDropInfo LastHardDropInfo { get; private set; }
+        public BoardHardDropInfo? LastHardDropInfo { get; private set; }
 
         public GravitySettings GravitySettings { get; private set; }
         public AttackSettings AttackSettings { get; private set; }

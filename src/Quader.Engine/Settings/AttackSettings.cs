@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Quader.Engine.Settings;
 
+[StructLayout(LayoutKind.Sequential)]
 public class AttackSettings
 {
     public int Lines0;
@@ -14,7 +16,9 @@ public class AttackSettings
     public int TSpinTriple;
     public int TSpinSingleMini;
     public int AllClear;
-    public List<int> BackToBacks;
-    public List<int> Combos;
+    [MarshalAs(UnmanagedType.ByValArray)]
+    public int[] BackToBacks;
+    [MarshalAs(UnmanagedType.ByValArray)]
+    public int[] Combos;
     public int GarbageDelayMs;
 }

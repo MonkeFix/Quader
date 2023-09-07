@@ -7,16 +7,6 @@ namespace Quader.Engine.Pieces
 {
     public class PieceSettings
     {
-        public static Color ColorI = Color.FromArgb(255, 49, 178, 131);
-        public static Color ColorZ = Color.FromArgb(255, 179, 51, 58);
-        public static Color ColorS = Color.FromArgb(255, 129, 177, 48);
-        public static Color ColorL = Color.FromArgb(255, 178, 98, 49);
-        public static Color ColorJ = Color.FromArgb(255, 82, 57, 206);
-        public static Color ColorT = Color.FromArgb(255, 165, 62, 155);
-        public static Color ColorO = Color.FromArgb(255, 178, 153, 49);
-        
-        public static Color ColorGarbage = Color.FromArgb(255, 102, 102, 102);
-        
         public static Dictionary<PieceRotationType, Point[]> DefaultWallKickData = new()
         {
             { PieceRotationType.SpawnToRight, new[] { new Point(0, 0), new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) } },
@@ -85,26 +75,6 @@ namespace Quader.Engine.Pieces
     {
         public static PieceSettings? PieceSettings { get; set; }
 
-        public static Color GetColorByPieceType(PieceType type)
-        {
-            if (PieceSettings == null)
-                throw new ArgumentNullException(nameof(PieceSettings), "PieceSettings object is not initialized");
-
-            switch (type)
-            {
-                case PieceType.I: return PieceSettings.ColorI;
-                case PieceType.O: return PieceSettings.ColorO;
-                case PieceType.T: return PieceSettings.ColorT;
-                case PieceType.L: return PieceSettings.ColorL;
-                case PieceType.J: return PieceSettings.ColorJ;
-                case PieceType.S: return PieceSettings.ColorS;
-                case PieceType.Z: return PieceSettings.ColorZ;
-                case PieceType.Pixel: return PieceSettings.ColorGarbage;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-        }
-
         public static BoardCellType GetBoardCellTypeByPieceType(PieceType type)
         {
             switch (type)
@@ -141,32 +111,5 @@ namespace Quader.Engine.Pieces
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
-
-        /*public static Color GetColorByBoardCell(BoardCellType type)
-        {
-            switch (type)
-            {
-                case BoardCellType.None:
-                    return Color.Transparent;
-                case BoardCellType.I:
-                    return ColorI;
-                case BoardCellType.O:
-                    return ColorO;
-                case BoardCellType.T:
-                    return ColorT;
-                case BoardCellType.L:
-                    return ColorL;
-                case BoardCellType.J:
-                    return ColorJ;
-                case BoardCellType.S:
-                    return ColorS;
-                case BoardCellType.Z:
-                    return ColorZ;
-                case BoardCellType.Garbage:
-                    return ColorGarbage;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-        }*/
     }
 }

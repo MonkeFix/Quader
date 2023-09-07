@@ -1,11 +1,7 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 using ImGuiNET;
 using Nez;
 using Nez.ImGuiTools;
-using Quader.Engine;
-using Quader.Engine.Utils;
-
 namespace Quader.Components.Debugging;
 
 public class ProfilerImGuiComponent : Component
@@ -32,7 +28,7 @@ public class ProfilerImGuiComponent : Component
 
         ImGui.Separator();
 
-        foreach (var timeData in GlobalTimeManager.TimeData)
+        /*foreach (var timeData in GlobalTimeManager.TimeData)
         {
             if (!_timeCache.ContainsKey(timeData.Key))
                 _timeCache[timeData.Key] = new float[timeData.Value.MaxSampleSize];
@@ -52,7 +48,7 @@ public class ProfilerImGuiComponent : Component
                 1f,
                 new System.Numerics.Vector2(400, 50)
             );
-        }
+        }*/
 
         if (ImGui.Button("Break"))
         {

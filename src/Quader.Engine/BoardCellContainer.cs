@@ -7,7 +7,7 @@ namespace Quader.Engine
     /// <summary>
     /// Helper class that holds the board data in a two dimensional array
     /// </summary>
-    public class BoardCellContainer
+    internal class BoardCellContainer
     {
         public int Width { get; }
         public int Height { get; }

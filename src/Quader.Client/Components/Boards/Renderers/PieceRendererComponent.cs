@@ -97,7 +97,7 @@ namespace Quader.Components.Boards.Renderers
                 {
                     var drawX = (p.X + curX) * size;
                     var drawY =  (p.Y + curY) * size;
-                    var oldCol = PieceUtils.GetColorByPieceType(piece.Type);
+                    var oldCol = PieceColors.GetColorByPieceType(piece.Type);
 
                     batcher.Draw(
                         ghostSprite,

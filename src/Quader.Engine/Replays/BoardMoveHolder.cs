@@ -18,7 +18,7 @@ public class BoardMoveHolder
         StartDate = startDate;
     }
 
-    public BoardMoveHolder AddMove(BoardHardDropInfo? move, double tick, BoardMoveType type, ReplayMoveInfo info = default)
+    public BoardMoveHolder AddMove(BoardHardDropInfo? move, double tick, BoardMoveType type, ReplayMoveInfo? info = default)
     {
         if (HasEnded)
             throw new Exception("BoardMoveHolder has already ended");

@@ -1,12 +1,10 @@
-﻿using System.Linq;
-using ImGuiNET;
+﻿using ImGuiNET;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.ImGuiTools;
 using Quader.Components.Boards.Renderers;
 using Quader.Engine;
 using Quader.Engine.Pieces;
-using Quader.Engine.Utils;
 
 namespace Quader.Components.Boards
 {
@@ -44,7 +42,7 @@ namespace Quader.Components.Boards
                        $"Alt Delta Time ms: {Time.AltDeltaTime * 1000:F2}\n" +
                        $"Frame Count: {Time.FrameCount}");
             
-            if (ImGui.CollapsingHeader("Time Data"))
+            /*if (ImGui.CollapsingHeader("Time Data"))
             {
                 ImGui.Text($"Time Data:");
 
@@ -70,7 +68,7 @@ namespace Quader.Components.Boards
                 }
 
                 ImGui.Text($"Total: Last: {tl:F6}, Mean: {tm:F6}");
-            }
+            }*/
 
             ImGui.Separator();
 

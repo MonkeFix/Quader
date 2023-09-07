@@ -4,12 +4,9 @@ using Nez;
 using Nez.ImGuiTools;
 using Nez.Persistence;
 using Nez.Persistence.Binary;
-using Nez.UI;
 using Quader.Config;
-using Quader.Engine.Pieces;
 using Quader.Scenes;
 using Quader.Serialization;
-using Quader.Skinning;
 
 namespace Quader;
 

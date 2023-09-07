@@ -1,8 +1,40 @@
 <Directives>
 	<Application>
-		<Assembly Name="mscorlib" />
-		<Assembly Name="Quader.Engine">
+		<Assembly Name="mscorlib" Dynamic="Required All">
+			<Type Name="System.Collections.Generic.List`1[[System.Int32,System.Private.CoreLib]]" Dynamic="Required All" MarshalStructure="Required All" />
+			<Type Name="System.Int32[][]" Dynamic="Required All" MarshalStructure="Required All" />
+		</Assembly>
 
+		<Assembly Name="System.Collections" Dynamic="Required All">
+			<Type Name="System.Collections.Generic.List`1[[System.Int32,System.Private.CoreLib]]" Dynamic="Required All" MarshalStructure="Required All" />
+		</Assembly>
+		<Assembly Name="System.Drawing.Primitives" Dynamic="Required All">
+			<Type Name="System.Drawing.Point, System.Drawing.Primitives" Dynamic="Required All" />
+			<Type Name="System.Drawing.Point[], System.Drawing.Primitives" Dynamic="Required All" />
+		</Assembly>
+
+		
+		<Assembly Name="Quader.Engine" Dynamic="Required All">
+			<Type Name="System.Drawing.Point, System.Drawing.Primitives" Dynamic="Required All" />
+			<Type Name="System.Drawing.Point[], System.Drawing.Primitives" Dynamic="Required All" />
+
+			<Type Name="Quader.Engine.Numerics.Point" Dynamic="Required All" />
+			<Type Name="Quader.Engine.Numerics.Point[]" Dynamic="Required All" />
+			
+			
+			<Type Name="Quader.Engine.Native.TestDllClass" Dynamic="Required All" />
+			
+			<Type Name="Quader.Engine.Replays.BoardHardDropInfo" Dynamic="Required All" />
+			
+			<Type Name="Quader.Engine.Settings.GravitySettings" Dynamic="Required All" />
+			<Type Name="Quader.Engine.Settings.AttackSettings" Dynamic="Required All" />
+			<Type Name="Quader.Engine.Settings.BoardSettings" Dynamic="Required All" />
+			<Type Name="Quader.Engine.Settings.GameSettings" Dynamic="Required All" />
+			
+			<Type Name="Quader.Engine.Pieces.PieceBase" Dynamic="Required All" />
+			
+			<Type Name="Quader.Engine.BoardCellContainer" Dynamic="Required All" />
+			<Type Name="Quader.Engine.Board" Dynamic="Required All" />
 		</Assembly>
 	</Application>
 </Directives>

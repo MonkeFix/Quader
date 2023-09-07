@@ -144,7 +144,7 @@ namespace Quader.Components.Boards.PieceHandlers
                         var drawX = Entity.Position.X + rawX * 32;
                         var drawY = Entity.Position.Y + (19 - rawY) * 32;
 
-                        var oldCol = PieceUtils.GetColorByPieceType(p);
+                        var oldCol = PieceColors.GetColorByPieceType(p);
 
                         batcher.Draw(
                             _boardSkin.GhostSprite,

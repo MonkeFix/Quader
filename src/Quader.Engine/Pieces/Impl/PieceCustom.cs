@@ -15,7 +15,6 @@ namespace Quader.Engine.Pieces.Impl
 
         public override OffsetType OffsetType { get; }
         public override Dictionary<PieceRotationType, Point[]> WallKickData { get; }
-        public override Color BaseColor { get; }
 
 
         public PieceCustom(
@@ -34,7 +33,6 @@ namespace Quader.Engine.Pieces.Impl
             BoardCellType = cellType;
 
             WallKickData = wallKickData ?? PieceSettings.DefaultWallKickData;
-            BaseColor = baseColor ?? PieceSettings.ColorGarbage;
         }
     }
 }

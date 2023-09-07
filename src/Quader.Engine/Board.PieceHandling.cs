@@ -147,6 +147,7 @@ public partial class Board
     {
         var nearestY = FindNearestY();
 
+        // If cannot spawn a new piece at starting coordinates, game over
         if (!TryApplyPiece(CurrentPiece.CurrentPos, CurrentPiece.X, nearestY))
         {
             PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
@@ -155,7 +156,7 @@ public partial class Board
 
         var linesCleared = _cellContainer.CheckLineClears(CurrentPiece.Bounds);
 
-        if (nearestY <= Height && LastHardDropInfo.LinesCleared == 0 && linesCleared.Length == 0)
+        if (nearestY <= Height && LastHardDropInfo!.LinesCleared == 0 && linesCleared.Length == 0)
         {
             PieceCannotBeSpawned?.Invoke(this, EventArgs.Empty);
             return new BoardHardDropInfo();
@@ -200,18 +201,22 @@ public partial class Board
             Attack = 0
         };
 
+        // If we're expecting some damage..
         if (_attackQueue.Count > 0)
         {
+            // ..and we cleared at least one line..
             if (bm.LinesCleared > 0)
             {
+                // ..calculating how much damage we will do
                 var damageCancel = CalculateAttack(bm);
                 var res = false;
 
+                // going through the queue to gradually decrease incoming garbage
                 while (_attackQueue.Count > 0)
                 {
                     var attack = _attackQueue.RemoveFront();
                     damageCancel -= attack;
-
+                    
                     if (damageCancel <= 0)
                     {
                         if (damageCancel != 0)
@@ -226,11 +231,12 @@ public partial class Board
             }
             else if (GarbageDelayCooldown <= 0f)
             {
+                // If the move proceed without line clears, add garbage on the board
                 PushGarbage(_attackQueue.RemoveFront());
                 GarbageDelayCooldown = AttackSettings.GarbageDelayMs;
             }
         }
-        else
+        else // No incoming garbage, so safely calculating our own attack
         {
             bm.Attack = CalculateAttack(bm);
         }

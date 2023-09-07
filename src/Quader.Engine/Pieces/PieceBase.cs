@@ -46,8 +46,6 @@ namespace Quader.Engine.Pieces
         } 
 
         private Rectangle? _bounds = null;
-        
-        public virtual Color BaseColor => PieceUtils.GetColorByPieceType(Type);
 
         public Point[] CurrentPos
         {

@@ -30,7 +30,7 @@ namespace Quader.Engine.Collections
         /// <summary>
         /// The circular array holding the items.
         /// </summary>
-        T[] buffer;
+        T[]? buffer;
 
         /// <summary>
         /// Creates a new instance of the Deque class with
