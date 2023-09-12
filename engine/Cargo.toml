@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "quader_engine",
+    "quader_engine_samples"
+]
+
+[profile.release]
+lto = true
