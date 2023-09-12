@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ColdClearNet\ColdClearNet.csproj" />
-    <ProjectReference Include="..\Quader.Bot.Api\Quader.Bot.Api.csproj" />
+    <ProjectReference Include="..\..\..\Nez\Nez.Persistence\Nez.FNA.Standard.Persistence.csproj" />
+    <ProjectReference Include="..\..\engine\Quader.Bot.Api\Quader.Bot.Api.csproj" />
   </ItemGroup>
 
 </Project>

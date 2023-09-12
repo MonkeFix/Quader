@@ -66,9 +66,9 @@
       <ProjectReference Include="..\..\..\lunge\src\LiteLog\LiteLog.csproj" />
       <ProjectReference Include="..\..\..\lunge\src\lunge.Library.Particles\lunge.Library.Particles.csproj" />
       <ProjectReference Include="..\..\..\lunge\src\lunge.Library\lunge.Library.csproj" />
-      <ProjectReference Include="..\ColdClearNet\ColdClearNet.csproj" />
-      <ProjectReference Include="..\Quader.Bot.Api\Quader.Bot.Api.csproj" />
-      <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
+      <ProjectReference Include="..\..\engine\ColdClearNet\ColdClearNet.csproj" />
+      <ProjectReference Include="..\..\engine\Quader.Bot.Api\Quader.Bot.Api.csproj" />
+      <ProjectReference Include="..\..\engine\Quader.Engine\Quader.Engine.csproj" />
     </ItemGroup>
     
     <ItemGroup>
