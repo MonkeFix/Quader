@@ -23,9 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteLog", "..\lunge\src\Lit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lunge.Library.Particles", "..\lunge\src\lunge.Library.Particles\lunge.Library.Particles.csproj", "{ECFA776F-D00C-4AD9-9AA9-36CFCF630425}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColdClearNet", "engine\ColdClearNet\ColdClearNet.csproj", "{AE7B2FA1-6B5A-47AC-9AC4-86763793AF5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColdClearNet", "client\ColdClearNet\ColdClearNet.csproj", "{AE7B2FA1-6B5A-47AC-9AC4-86763793AF5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Bot.Api", "engine\Quader.Bot.Api\Quader.Bot.Api.csproj", "{D03F8EE4-C56E-4DA5-AF38-72E00F700AD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Bot.Api", "client\Quader.Bot.Api\Quader.Bot.Api.csproj", "{D03F8EE4-C56E-4DA5-AF38-72E00F700AD5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Bot.Client", "client\Quader.Bot.Client\Quader.Bot.Client.csproj", "{C1B38A88-A642-405D-9DAE-442AF551F696}"
 EndProject
@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Engine.DllTests", "c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Client", "client\Quader.Client\Quader.Client.csproj", "{24B47EB2-44CC-4D46-A5EF-B033641CA1D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Engine", "engine\Quader.Engine\Quader.Engine.csproj", "{B086CC6E-B8E2-4C5E-B5CE-F6A8CDCCC5E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quader.Engine", "client\Quader.Engine\Quader.Engine.csproj", "{B086CC6E-B8E2-4C5E-B5CE-F6A8CDCCC5E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

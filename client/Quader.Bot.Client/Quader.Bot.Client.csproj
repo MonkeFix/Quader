@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Nez\Nez.Persistence\Nez.FNA.Standard.Persistence.csproj" />
-    <ProjectReference Include="..\..\engine\Quader.Bot.Api\Quader.Bot.Api.csproj" />
+    <ProjectReference Include="..\..\client\Quader.Bot.Api\Quader.Bot.Api.csproj" />
   </ItemGroup>
 
 </Project>
