@@ -21,6 +21,12 @@
  - [x] Optimize the way Pieces calculate it's position: find nearest Y for the piece ghost only on board change, etc
  - [x] Board Serialization/Deserialization
  - [x] Move SRS tables to a JSON file
+ - [ ] Rewrite the entire engine
+	- [ ] Implement existing functionality
+	- [ ] Add Hold handling
+	- [ ] Add Win/Lose handling
+	- [ ] Add Time Manager
+	- [ ] Add debugging utils
  - [ ] Add skins
 	- [x] Add basic skin files:
 		- [x] Full board

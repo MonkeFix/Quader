@@ -17,3 +17,4 @@ A Cross-Platform Online stacker puzzle game written in C# using MonoGame Framewo
  - [TODO List](/docs/TODO.md)
  - [Games Comparison](/docs/GAMES_COMP.md)
  - [Server Architecture](/docs/SERVER_ARCH.md)
+ - [Quader Architecture](/docs/GAME_ARCH.md)
