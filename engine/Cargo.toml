@@ -1,5 +1,5 @@
 [workspace]
-
+resolver = "2"
 members = [
     "quader_engine",
     "quader_engine_samples"
