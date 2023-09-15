@@ -6,4 +6,4 @@ riderModule.iml
 .DS_Store
 .idea
 .vs
-engine/**/target
+core/**/target
