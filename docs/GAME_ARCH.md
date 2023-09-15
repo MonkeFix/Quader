@@ -30,3 +30,45 @@
 
  - `quader_server` - handles multiplayer games. Will be written in Rust.
 
+## Engine Public API TODO:
+
+ - [ ] **BOARD:**
+   - [ ] Create Board
+   - [ ] Destroy Board
+   - [ ] Get/Set Current Piece
+   - [ ] Get/Set Current Piece Generator
+   - [ ] Get Current Bag
+   - [ ] Start/Stop Game (+Replay)
+   - [ ] Hold/Unhold Piece
+   - [ ] Update (Gravity, Lock, etc.)
+   - [ ] Find Nearest Y
+   - [ ] Get Damage/Garbage Handler
+   - [ ] Reset
+   - [ ] Clear
+   - [ ] Get/Set Cell at Position
+   - [ ] Serialize/Deserialize
+ - [ ] **PIECE:**
+   - [ ] Create
+   - [ ] Move Left/Right
+   - [ ] Rotate Clockwise/Counter-Clockwise/180 degrees
+   - [ ] Soft Drop
+   - [ ] Hard Drop
+   - [ ] Reset
+   - [ ] Test Movement
+   - [ ] Test Rotation
+   - [ ] Get/Set Default Colors
+   - [ ] Get/Set Default Wall Kick Data
+   - [ ] Get/Set Default Positioning
+   - [ ] Get Bounds
+   - [ ] Get Current Position
+   - [ ] Get Current Rotation
+ - [ ] **DAMAGE/GARBAGE:**
+   - [ ] Push Garbage
+   - [ ] Push Solid Row
+   - [ ] Calculate Damage
+   - [ ] Predict Damage?
+ - [ ] **RANDOM MANAGER:**
+   - [ ] Get/Set Seed
+ - [ ] **TIME MANAGER:**
+   - [ ] Get Time Spent in Current Game/Match
+   - [ ] Get Total Time Spent from Engine Start
