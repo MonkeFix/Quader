@@ -7,7 +7,21 @@ name = "quader_engine"
 version = "0.1.0"
 
 [[package]]
+name = "quader_engine_c_api"
+version = "0.1.0"
+dependencies = [
+ "quader_engine",
+]
+
+[[package]]
 name = "quader_engine_samples"
+version = "0.1.0"
+dependencies = [
+ "quader_engine",
+]
+
+[[package]]
+name = "quader_server"
 version = "0.1.0"
 dependencies = [
  "quader_engine",

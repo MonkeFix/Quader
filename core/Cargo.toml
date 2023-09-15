@@ -3,7 +3,8 @@ resolver = "2"
 members = [
     "quader_engine",
     "quader_engine_samples",
-    "quader_server"
+    "quader_server",
+    "quader_engine_c_api"
 ]
 
 [profile.release]
