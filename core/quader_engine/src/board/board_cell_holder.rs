@@ -6,7 +6,7 @@ pub const BOARD_WIDTH: usize = 10;
 pub const BOARD_HEIGHT: usize = 80;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum BlockType {
+pub enum CellType {
     None,
     I, O, T, L, J, S, Z,
     Garbage,
@@ -19,42 +19,42 @@ pub trait BoolArray {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub struct Row([BlockType; BOARD_WIDTH]);
+pub struct Row([CellType; BOARD_WIDTH]);
 
 impl Row {
     pub fn new() -> Self {
-        Row([BlockType::None; BOARD_WIDTH])
+        Row([CellType::None; BOARD_WIDTH])
     }
 
-    pub fn set(&mut self, x: u32, block_type: BlockType) {
-        self.0[x as usize] = block_type;
+    pub fn set(&mut self, x: u32, cell_type: CellType) {
+        self.0[x as usize] = cell_type;
     }
 
-    pub fn get(&self, x: u32) -> BlockType {
+    pub fn get(&self, x: u32) -> CellType {
         self.0[x as usize]
     }
 
     pub fn is_full(&self) -> bool {
-        self.0.iter().all(|&b| b != BlockType::None && b != BlockType::Solid)
+        self.0.iter().all(|&b| b != CellType::None && b != CellType::Solid)
     }
 
     pub fn is_empty(&self) -> bool {
-        self.0.iter().all(|&b| b == BlockType::None)
+        self.0.iter().all(|&b| b == CellType::None)
     }
 
-    pub const EMPTY: &'static Self = &Row([BlockType::None; BOARD_WIDTH]);
-    pub const SOLID: &'static Self = &Row([BlockType::Solid; BOARD_WIDTH]);
+    pub const EMPTY: &'static Self = &Row([CellType::None; BOARD_WIDTH]);
+    pub const SOLID: &'static Self = &Row([CellType::Solid; BOARD_WIDTH]);
 }
 
 // TODO: Fix "Serialize, Deserialize" traits
 #[derive(Debug, Copy, Clone)]
-pub struct BoardBlockHolder {
+pub struct BoardCellHolder {
     layout: [Row; BOARD_HEIGHT],
     width: u32,
     height: u32
 }
 
-impl BoardBlockHolder {
+impl BoardCellHolder {
     pub fn get_width(&self) -> u32 {
         self.width
     }
@@ -63,14 +63,14 @@ impl BoardBlockHolder {
     }
 
     pub fn new(width: u32, height: u32) -> Self {
-        BoardBlockHolder {
+        BoardCellHolder {
             width, height,
             layout: [*Row::EMPTY; BOARD_HEIGHT].into()
         }
     }
 
     pub fn default() -> Self {
-        BoardBlockHolder {
+        BoardCellHolder {
             width: BOARD_WIDTH as u32, height: BOARD_HEIGHT as u32,
             layout: [*Row::EMPTY; BOARD_HEIGHT].into()
         }
@@ -103,12 +103,12 @@ impl BoardBlockHolder {
         self.layout[y as usize].is_full()
     }
 
-    pub fn get_block_at(&self, x: u32, y: u32) -> BlockType {
+    pub fn get_cell_at(&self, x: u32, y: u32) -> CellType {
         self.layout[y as usize].get(x)
     }
 
-    pub fn set_block_at(&mut self, x: u32, y: u32, block: BlockType) {
-        self.layout[y as usize].set(x, block);
+    pub fn set_cell_at(&mut self, x: u32, y: u32, cell: CellType) {
+        self.layout[y as usize].set(x, cell);
     }
 
     pub fn is_out_of_bounds(&self, x: u32, y: u32) -> bool {
@@ -119,7 +119,7 @@ impl BoardBlockHolder {
         points
             .iter()
             .any(|p| {
-                self.is_out_of_bounds(p.x, p.y) || self.get_block_at(p.x, p.y) != BlockType::None
+                self.is_out_of_bounds(p.x, p.y) || self.get_cell_at(p.x, p.y) != CellType::None
             })
     }
 
@@ -156,13 +156,13 @@ impl BoardBlockHolder {
     }
 }
 
-impl BoolArray for BoardBlockHolder {
+impl BoolArray for BoardCellHolder {
     fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT] {
         let mut result = [[false; BOARD_WIDTH]; BOARD_HEIGHT];
 
         for (y, row) in self.layout.iter().enumerate() {
             for (x, bt) in row.0.iter().enumerate() {
-                result[y][x] = *bt != BlockType::None;
+                result[y][x] = *bt != CellType::None;
             }
         }
 
@@ -170,16 +170,12 @@ impl BoolArray for BoardBlockHolder {
     }
 }
 
-fn empty_row() -> [BlockType; BOARD_WIDTH] {
-    [BlockType::None; BOARD_WIDTH]
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn create_empty_holder() -> BoardBlockHolder {
-        BoardBlockHolder::new(BOARD_WIDTH as u32, BOARD_HEIGHT as u32)
+    fn create_empty_holder() -> BoardCellHolder {
+        BoardCellHolder::new(BOARD_WIDTH as u32, BOARD_HEIGHT as u32)
     }
 
     #[test]
@@ -210,9 +206,9 @@ mod tests {
     fn resets_correctly() {
         let mut holder = create_empty_holder();
 
-        holder.set_block_at(0, 0, BlockType::I);
+        holder.set_cell_at(0, 0, CellType::I);
 
-        assert_eq!(BlockType::I, holder.get_block_at(0, 0));
+        assert_eq!(CellType::I, holder.get_cell_at(0, 0));
 
         holder.reset();
 
