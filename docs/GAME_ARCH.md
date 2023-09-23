@@ -30,7 +30,36 @@
 
  - `quader_server` - handles multiplayer games. Will be written in Rust.
 
-## Engine Public API TODO:
+## Quader Engine
+
+The Quader Engine is written in Rust and is used by the client and the server.
+
+### Engine API Overview
+
+`Quader` is the main class that holds all the necessary handlers:
+
+ - Game State Manager
+   - Board:
+     - Layout:
+       - Stores all cells
+       - Checks for piece collisions
+     - Piece:
+       - Rotation (clockwise, counter-clockwise and 180 degrees)
+       - Movement (left/right, soft drop, hard drop)
+       - Stores its own layout in form of a 2D array
+       - Stores its bounds
+     - Damage/Garbage Handler
+       - Calculates incoming and outgoing damage
+       - Pushes garbage when necessary
+   - Random Manager
+     - Creates a seed that is shared across all boards
+   - Time Manager
+     - Stores time spent in matches
+   - Replay Manager
+     - Stores replays of played matches
+   - ColdClear bot
+
+### Engine TODO
 
  - [ ] **BOARD:**
    - [ ] Create Board
