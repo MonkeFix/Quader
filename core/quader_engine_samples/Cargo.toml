@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 "quader_engine" = { path = "../quader_engine" }
 "sdl2" = "0.35"
+"imgui"="0.11"
+"imgui-glow-renderer"="0.11"
+"imgui-sdl2"="0.15"
+"glow"="0.12"
