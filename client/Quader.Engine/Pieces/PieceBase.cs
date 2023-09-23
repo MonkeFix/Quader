@@ -34,6 +34,8 @@ namespace Quader.Engine.Pieces
 
         public virtual OffsetType OffsetType { get; } = OffsetType.Cell;
 
+        private Dictionary<PieceStartPosition, Point[]>? _allPos;
+
         public Rectangle Bounds
         {
             get
@@ -87,6 +89,23 @@ namespace Quader.Engine.Pieces
 
         public virtual Dictionary<PieceRotationType, Point[]> WallKickData { get; } = PieceSettings.DefaultWallKickData;
 
+
+        public Dictionary<PieceStartPosition, Point[]> GetAllPositions()
+        {
+            if (_allPos == null)
+            {
+                _allPos = new Dictionary<PieceStartPosition, Point[]>
+                {
+                    { PieceStartPosition.Initial, SpawnPos },
+                    { PieceStartPosition.RotationClockwise, RightPos },
+                    { PieceStartPosition.Rotation180Deg, Deg180Pos },
+                    { PieceStartPosition.RotationCounterClockwise, LeftPos }
+                };
+            }
+
+            return _allPos;
+        }
+        
         public class WallKickCheckParams
         {
             public Point[] Tests { get; set; } = null!;
