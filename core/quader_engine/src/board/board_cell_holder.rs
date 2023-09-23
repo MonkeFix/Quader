@@ -1,5 +1,4 @@
-﻿use std::ops::Deref;
-use serde::{Deserialize, Serialize, Serializer};
+﻿use serde::{Deserialize, Serialize};
 use crate::board::CellType;
 use crate::primitives::{Point, Rect};
 
@@ -52,7 +51,7 @@ impl Default for BoardCellHolder {
     fn default() -> Self {
         BoardCellHolder {
             width: BOARD_WIDTH, height: BOARD_HEIGHT,
-            layout: [*Row::EMPTY; BOARD_HEIGHT].into()
+            layout: [*Row::EMPTY; BOARD_HEIGHT]
         }
     }
 }
@@ -68,7 +67,7 @@ impl BoardCellHolder {
     pub fn new(width: usize, height: usize) -> Self {
         BoardCellHolder {
             width, height,
-            layout: [*Row::EMPTY; BOARD_HEIGHT].into()
+            layout: [*Row::EMPTY; BOARD_HEIGHT]
         }
     }
 
@@ -86,7 +85,6 @@ impl BoardCellHolder {
         };
 
         (std::cmp::max(max, 0)..self.height)
-            .into_iter()
             .filter(|&y| self.is_row_full(y))
             .collect()
     }
@@ -195,7 +193,6 @@ mod tests {
 
     fn str_to_row(s: &str) -> Row {
         assert!(s.len() <= 10);
-        assert!(s.len() > 0);
 
         let mut row = Row::default();
 

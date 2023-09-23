@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 "quader_engine" = { path = "../quader_engine" }
+"sdl2" = "0.35"

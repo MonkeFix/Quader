@@ -98,6 +98,37 @@ pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
     }
 }
 
+/// Rotates a 3x3 array counter-clockwise
+pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
+    let n = a.len();
+    let mut tmp: u8;
+
+    for i in 0..n/2 {
+        for j in i..n - i - 1 {
+            tmp = a[i][j];
+            a[i][j] = a[j][n - i - 1];
+            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
+            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
+            a[n - j - 1][i] = tmp;
+        }
+    }
+}
+
+pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
+    let n = a.len();
+    let mut tmp: T;
+
+    for i in 0..n/2 {
+        for j in i..n - i - 1 {
+            tmp = a[i][j];
+            a[i][j] = a[j][n - i - 1];
+            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
+            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
+            a[n - j - 1][i] = tmp;
+        }
+    }
+}
+
 impl Piece {
     pub fn new(wall_kick_data: &Rc<WallKickData>, piece_type: PieceType) -> Self {
         let wall_kick_type = match piece_type {
@@ -232,12 +263,10 @@ impl Piece {
             return;
         }
 
-        let pos;
-
-        match result.wall_kick_pos {
-            Some(p) => pos = p,
+        let pos = match result.wall_kick_pos {
+            Some(p) => p,
             None => return
-        }
+        };
 
         self.rotate_simple(rotation);
 
@@ -306,5 +335,32 @@ impl Piece {
                 RotationDirection::Deg180 => (RotationMove::InitToRight, &self.right_pos),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::piece::rotate_array;
+
+    #[test]
+    fn rotate_matrix() {
+        let mut r1 = vec![0, 0, 1];
+        let mut r2 = vec![1, 1, 1];
+        let mut r3 = vec![0, 0, 0];
+
+        let mut piece_j = vec![
+            &mut r1, &mut r2, &mut r3
+        ];
+
+        let mut r4 = vec![1, 1, 0];
+        let mut r5 = vec![0, 1, 0];
+        let mut r6 = vec![0, 1, 0];
+
+        let rotated_piece_j = vec![
+            &mut r4, &mut r5, &mut r6
+        ];
+
+        rotate_array(&mut piece_j);
+        assert_eq!(piece_j, rotated_piece_j);
     }
 }
