@@ -1,0 +1,140 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'quader_engine'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=quader_engine"
+                ],
+                "filter": {
+                    "name": "quader_engine",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'sample'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=sample",
+                    "--package=quader_engine"
+                ],
+                "filter": {
+                    "name": "sample",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'quader_engine_samples'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=quader_engine_samples",
+                    "--package=quader_engine_samples"
+                ],
+                "filter": {
+                    "name": "quader_engine_samples",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'quader_engine_samples'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=quader_engine_samples",
+                    "--package=quader_engine_samples"
+                ],
+                "filter": {
+                    "name": "quader_engine_samples",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'quader_server'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=quader_server",
+                    "--package=quader_server"
+                ],
+                "filter": {
+                    "name": "quader_server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'quader_server'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=quader_server",
+                    "--package=quader_server"
+                ],
+                "filter": {
+                    "name": "quader_server",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'cold_clear'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=quader_engine_c_api"
+                ],
+                "filter": {
+                    "name": "cold_clear",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
