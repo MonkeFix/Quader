@@ -7,8 +7,13 @@ edition = "2021"
 
 [dependencies]
 "quader_engine" = { path = "../quader_engine" }
-"sdl2" = "0.35"
-"imgui"="0.11"
-"imgui-glow-renderer"="0.11"
-"imgui-sdl2"="0.15"
-"glow"="0.12"
+macroquad = "0.4.4"
+serde = "1.0.188"
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
