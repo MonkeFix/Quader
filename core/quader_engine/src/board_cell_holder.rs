@@ -39,6 +39,38 @@ impl Default for Row {
     }
 }
 
+impl<'a> IntoIterator for &'a Row {
+    type Item = CellType;
+    type IntoIter = RowIterator<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RowIterator {
+            row: self,
+            index: 0
+        }
+    }
+}
+
+pub struct RowIterator<'a> {
+    row: &'a Row,
+    index: usize
+}
+
+impl<'a> Iterator for RowIterator<'a> {
+    type Item = CellType;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index >= self.row.0.len() {
+            // TODO: Check if we need to set self.index to zero
+            return None;
+        }
+
+        let result = self.row.0[self.index];
+        self.index += 1;
+        Some(result)
+    }
+}
+
 // TODO: Fix "Serialize, Deserialize" traits
 #[derive(Debug, Copy, Clone)]
 pub struct BoardCellHolder {
@@ -152,6 +184,10 @@ impl BoardCellHolder {
 
     pub fn set_row(&mut self, y: usize, row: Row) {
         self.layout[y] = row;
+    }
+
+    pub fn get_layout(&self) -> &[Row; BOARD_HEIGHT] {
+        &self.layout
     }
 }
 

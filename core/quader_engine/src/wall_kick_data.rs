@@ -18,7 +18,7 @@ pub struct WallKickData {
 }
 
 impl WallKickData {
-    fn new() -> Self {
+    pub fn new() -> Self {
 
         let default = HashMap::from([
             ( RotationMove::InitToRight,   vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, 1),  Point::new(0, -2), Point::new(-1, -2) ] ),

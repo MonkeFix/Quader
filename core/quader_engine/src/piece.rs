@@ -1,4 +1,5 @@
-use std::rc::Rc;
+use std::fmt::{Display, Formatter};
+use std::rc::{Rc, Weak};
 use serde::{Deserialize, Serialize};
 use crate::primitives::{Point, Rect};
 use crate::board::{CellType};
@@ -7,6 +8,23 @@ use crate::wall_kick_data::{WallKickData, WallKickType};
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum PieceType {
     I, O, T, L, J, S, Z, Pixel
+}
+
+impl Display for PieceType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            PieceType::I => "I",
+            PieceType::O => "O",
+            PieceType::T => "T",
+            PieceType::L => "L",
+            PieceType::J => "J",
+            PieceType::S => "S",
+            PieceType::Z => "Z",
+            PieceType::Pixel => "Pixel",
+        };
+
+        write!(f, "{}", str)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -68,7 +86,7 @@ pub struct Piece {
     x: u32,
     y: u32,
     current_rotation: RotationState,
-    wall_kick_data: Rc<WallKickData>,
+    wall_kick_data: Weak<WallKickData>,
     wall_kick_type: WallKickType
 }
 
@@ -130,7 +148,7 @@ pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
 }
 
 impl Piece {
-    pub fn new(wall_kick_data: &Rc<WallKickData>, piece_type: PieceType) -> Self {
+    pub fn new(wall_kick_data: Weak<WallKickData>, piece_type: PieceType) -> Self {
         let wall_kick_type = match piece_type {
             PieceType::I => WallKickType::PieceI,
             PieceType::O => WallKickType::PieceO,
@@ -218,9 +236,17 @@ impl Piece {
             x: 0,
             y: 0,
             current_rotation: RotationState::Initial,
-            wall_kick_data: Rc::clone(wall_kick_data),
+            wall_kick_data: wall_kick_data,
             wall_kick_type,
         }
+    }
+
+    pub fn get_positions(&self) -> &[Point] {
+        &self.init_pos
+    }
+
+    pub fn get_type(&self) -> &PieceType {
+        &self.piece_type
     }
 
     pub fn set_x(&mut self, x: u32) {
@@ -252,7 +278,10 @@ impl Piece {
 
     pub fn rotate<F: FnOnce(WallKickCheckParams) -> WallKickCheckResult>(&mut self, rotation: RotationDirection, predicate: F) {
         let r = self.get_rotation_type(&rotation);
-        let tests = &self.wall_kick_data.get(&self.wall_kick_type)[&r.0];
+
+        let wkd = self.wall_kick_data.upgrade().unwrap();
+
+        let tests = &wkd.get(&self.wall_kick_type)[&r.0];
 
         let result = predicate(WallKickCheckParams {
             tests,
