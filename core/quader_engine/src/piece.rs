@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::rc::{Rc, Weak};
 use serde::{Deserialize, Serialize};
-use crate::primitives::{Point, Rect};
+use crate::primitives::{Point, Rect, Color};
 use crate::board::{CellType};
 use crate::wall_kick_data::{WallKickData, WallKickType};
 
@@ -70,7 +70,7 @@ pub struct WallKickCheckParams<'a> {
 #[derive(Debug)]
 pub struct WallKickCheckResult {
     pub is_success: bool,
-    pub wall_kick_pos: Option<Point<u32>>
+    pub wall_kick_pos: Option<Point<i32>>
 }
 
 #[derive(Debug)]
@@ -117,7 +117,7 @@ pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
 }
 
 /// Rotates a 3x3 array counter-clockwise
-pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
+/*pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
     let n = a.len();
     let mut tmp: u8;
 
@@ -145,7 +145,7 @@ pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
             a[n - j - 1][i] = tmp;
         }
     }
-}
+}*/
 
 impl Piece {
     pub fn new(wall_kick_data: Weak<WallKickData>, piece_type: PieceType) -> Self {
@@ -236,13 +236,18 @@ impl Piece {
             x: 0,
             y: 0,
             current_rotation: RotationState::Initial,
-            wall_kick_data: wall_kick_data,
+            wall_kick_data,
             wall_kick_type,
         }
     }
 
     pub fn get_positions(&self) -> &[Point] {
-        &self.init_pos
+        match self.current_rotation {
+            RotationState::Initial => &self.init_pos,
+            RotationState::Clockwise => &self.right_pos,
+            RotationState::CounterClockwise => &self.left_pos,
+            RotationState::Deg180 => &self.deg180_pos
+        }
     }
 
     pub fn get_type(&self) -> &PieceType {
@@ -267,6 +272,18 @@ impl Piece {
         self.y
     }
 
+    pub fn move_left(&mut self) {
+        self.set_x(self.x - 1);
+    }
+
+    pub fn move_right(&mut self) {
+        self.set_x(self.x + 1);
+    }
+
+    pub fn move_down(&mut self) {
+        self.set_y(self.y + 1);
+    }
+
     pub fn get_current_pos(&self) -> &[Point] {
         match self.current_rotation {
             RotationState::Initial => &self.init_pos,
@@ -276,37 +293,34 @@ impl Piece {
         }
     }
 
-    pub fn rotate<F: FnOnce(WallKickCheckParams) -> WallKickCheckResult>(&mut self, rotation: RotationDirection, predicate: F) {
-        let r = self.get_rotation_type(&rotation);
+    pub fn get_wall_kick_type(&self) -> &WallKickType {
+        &self.wall_kick_type
+    }
 
-        let wkd = self.wall_kick_data.upgrade().unwrap();
-
-        let tests = &wkd.get(&self.wall_kick_type)[&r.0];
-
-        let result = predicate(WallKickCheckParams {
-            tests,
-            expected_pos: r.1
-        });
-
-        if !result.is_success {
-            return;
-        }
-
-        let pos = match result.wall_kick_pos {
-            Some(p) => p,
-            None => return
-        };
-
+    pub fn rotate(&mut self, rotation: RotationDirection, x_offset: i32, y_offset: i32) {
         self.rotate_simple(rotation);
 
-        self.x += pos.x;
-        self.y += pos.y;
+        self.x += x_offset as u32;
+        self.y += y_offset as u32;
 
         self.bounds = self.calc_bounds();
     }
 
     pub fn get_bounds(&self) -> &Rect {
         &self.bounds
+    }
+
+    pub fn get_color(&self) -> Color {
+        match self.piece_type {
+            PieceType::I => *Color::PIECE_I,
+            PieceType::O => *Color::PIECE_O,
+            PieceType::T => *Color::PIECE_T,
+            PieceType::L => *Color::PIECE_L,
+            PieceType::J => *Color::PIECE_J,
+            PieceType::S => *Color::PIECE_S,
+            PieceType::Z => *Color::PIECE_Z,
+            PieceType::Pixel => *Color::PIECE_GARBAGE,
+        }
     }
 
     fn calc_bounds(&self) -> Rect {
@@ -327,8 +341,8 @@ impl Piece {
         self.current_rotation = match self.current_rotation {
             RotationState::Initial => RotationState::Clockwise,
             RotationState::Clockwise => RotationState::Deg180,
-            RotationState::Deg180 => RotationState::Initial,
-            RotationState::CounterClockwise => RotationState::CounterClockwise
+            RotationState::Deg180 => RotationState::CounterClockwise,
+            RotationState::CounterClockwise => RotationState::Initial
         }
     }
 
@@ -341,7 +355,7 @@ impl Piece {
         }
     }
 
-    fn get_rotation_type(&self, rotation: &RotationDirection) -> (RotationMove, &Vec<Point>) {
+    pub fn get_rotation_type(&self, rotation: &RotationDirection) -> (RotationMove, &Vec<Point>) {
         match self.current_rotation {
             RotationState::Initial => match rotation {
                 RotationDirection::Clockwise => (RotationMove::InitToRight, &self.right_pos),
@@ -353,12 +367,12 @@ impl Piece {
                 RotationDirection::CounterClockwise => (RotationMove::RightToInit, &self.init_pos),
                 RotationDirection::Deg180 => (RotationMove::Deg180ToLeft, &self.left_pos),
             }
-            RotationState::CounterClockwise => match rotation {
+            RotationState::Deg180 => match rotation {
                 RotationDirection::Clockwise => (RotationMove::Deg180ToLeft, &self.left_pos),
                 RotationDirection::CounterClockwise => (RotationMove::Deg180ToRight, &self.right_pos),
                 RotationDirection::Deg180 => (RotationMove::Deg180ToInit, &self.init_pos),
             }
-            RotationState::Deg180 => match rotation {
+            RotationState::CounterClockwise => match rotation {
                 RotationDirection::Clockwise => (RotationMove::LeftToInit, &self.init_pos),
                 RotationDirection::CounterClockwise => (RotationMove::LeftToDeg180, &self.deg180_pos),
                 RotationDirection::Deg180 => (RotationMove::InitToRight, &self.right_pos),
@@ -369,7 +383,7 @@ impl Piece {
 
 #[cfg(test)]
 mod tests {
-    use crate::piece::rotate_array;
+/*    use crate::piece::rotate_array;
 
     #[test]
     fn rotate_matrix() {
@@ -391,5 +405,5 @@ mod tests {
 
         rotate_array(&mut piece_j);
         assert_eq!(piece_j, rotated_piece_j);
-    }
+    }*/
 }

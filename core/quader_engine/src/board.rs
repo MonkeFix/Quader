@@ -3,8 +3,9 @@ use std::ops::{Add, AddAssign};
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
 use crate::board_cell_holder::{BOARD_HEIGHT, BOARD_WIDTH, BoardCellHolder, Row};
-use crate::piece::{Piece, PieceType};
+use crate::piece::{Piece, PieceType, RotationDirection, WallKickCheckParams, WallKickCheckResult};
 use crate::primitives::Point;
+use crate::wall_kick_data::WallKickData;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum CellType {
@@ -19,13 +20,14 @@ pub struct Board {
     width: u32,
     height: u32,
     cell_holder: Box<BoardCellHolder>,
-    cur_piece: Option<Rc<Piece>>,
+    cur_piece: Option<Box<Piece>>,
     gravity: f32,
     lock: f32,
     intermediate_y: f32,
     y_needs_update: bool,
     y_to_check: u32,
-    cells_on_board: usize
+    cells_on_board: usize,
+    wkd: Rc<WallKickData>
 }
 
 pub fn adjust_positions<T: std::ops::AddAssign + Copy>(data: &mut [Point<T>], offset: Point<T>) {
@@ -45,20 +47,21 @@ pub fn adjust_positions_clone<T: std::ops::Add + Copy>(data: &[Point<T>], offset
         .collect()
 }
 
+pub fn adjust_point<T: AddAssign + Copy>(point: &mut Point<T>, offset: Point<T>) {
+    point.x += offset.x;
+    point.y += offset.y;
+}
+
+pub fn adjust_point_clone<T: Add<Output = T> + Copy>(point: &Point<T>, offset: Point<T>) -> Point<T> {
+    Point::new(
+        point.x + offset.x,
+        point.y + offset.y
+    )
+}
+
 impl Default for Board {
     fn default() -> Self {
-        Board {
-            width: BOARD_WIDTH as u32,
-            height: BOARD_HEIGHT as u32,
-            cell_holder: Box::new(BoardCellHolder::default()),
-            cur_piece: None,
-            gravity: 0.0,
-            lock: 0.0,
-            intermediate_y: 0.0,
-            y_needs_update: true,
-            y_to_check: 0,
-            cells_on_board: 0
-        }
+        Board::new(BOARD_WIDTH as u32, BOARD_HEIGHT as u32)
     }
 }
 
@@ -74,13 +77,61 @@ impl Board {
             intermediate_y: 0.0,
             y_needs_update: true,
             y_to_check: 0,
-            cells_on_board: 0
+            cells_on_board: 0,
+            wkd: Rc::new(WallKickData::new())
         }
     }
 
-    pub fn set_piece(&mut self, piece: &Rc<Piece>) {
-        let p = Rc::clone(piece);
+    pub fn set_piece(&mut self, piece: Piece) {
+        let p = Box::new(piece);
         self.cur_piece = Some(p);
+    }
+
+    pub fn create_piece(&mut self, piece_type: PieceType) {
+        let mut piece = Piece::new(Rc::downgrade(&self.wkd), piece_type);
+
+        piece.set_x(5);
+        piece.set_y(5);
+
+        self.set_piece(piece);
+    }
+
+    pub fn get_piece(&self) -> Option<&Piece> {
+        match &self.cur_piece {
+            None => None,
+            Some(piece) => Some(piece.as_ref())
+        }
+    }
+
+    pub fn move_left(&mut self) {
+        if self.test_movement(-1, 0) {
+            self.cur_piece.as_mut().expect("Piece must be set").move_left();
+        }
+    }
+
+    pub fn move_right(&mut self) {
+        if self.test_movement(1, 0) {
+            self.cur_piece.as_mut().expect("Piece must be set").move_right();
+        }
+    }
+
+    pub fn rotate(&mut self, rotation: RotationDirection) {
+        let piece = self.cur_piece.as_ref().expect("Piece must be set");
+        let rot_type = piece.get_rotation_type(&rotation);
+        let wkd = &self.wkd;
+        let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];
+
+        let test = self.test_rotation(WallKickCheckParams {
+            tests,
+            expected_pos: rot_type.1
+        });
+
+        if let Some(point) = test {
+            self.cur_piece
+                .as_mut()
+                .unwrap()
+                .rotate(rotation, point.x, point.y);
+        }
     }
 
     pub fn update(&mut self, dt: f32) {
@@ -103,7 +154,7 @@ impl Board {
         }
 
         if self.lock <= 0f32 {
-            self.hard_drop();
+            // self.hard_drop();
         }
 
         // TODO: Change zero
@@ -129,6 +180,27 @@ impl Board {
         y
     }
 
+    fn test_rotation(&self, kick_params: WallKickCheckParams) -> Option<Point> {
+        let tests = kick_params.tests;
+        let expected_pos = kick_params.expected_pos;
+        let piece = self.cur_piece.as_ref().unwrap();
+
+        for t in tests {
+            let test = Point::new(t.x, -t.y);
+
+            let adjusted = adjust_positions_clone(
+                expected_pos,
+                Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y)
+            );
+
+            if !self.cell_holder.intersects_any(&adjusted) {
+                return Some(test);
+            }
+        }
+
+        None
+    }
+
     pub fn get_layout(&self) -> &[Row; BOARD_HEIGHT] {
         self.cell_holder.get_layout()
     }
@@ -137,26 +209,43 @@ impl Board {
         todo!();
     }
 
+    pub fn soft_drop(&mut self) {
+        if self.y_needs_update {
+            self.y_to_check = self.find_nearest_y();
+            self.y_needs_update = false;
+        }
+
+        if self.test_movement(0, 1) {
+            self.cur_piece.as_mut().unwrap().move_down();
+        }
+
+        self.y_needs_update = true;
+    }
+
     pub fn hard_drop(&self) {
         todo!();
     }
 
-    pub fn test_movement(&mut self, x: u32, y: u32) -> bool {
-        let piece = self.cur_piece.as_mut().unwrap();
+    pub fn test_movement(&self, x: i32, y: i32) -> bool {
+        let piece = self.cur_piece.as_ref().unwrap();
         let b = piece.get_bounds();
 
-        if b.x as u32 + b.width + x > self.width {
+        if b.x + x < 0 || b.x + b.width as i32 + x > self.width as i32 {
             return false;
         }
-        if b.y as u32 + b.height + y > self.height {
+        if b.y + b.height as i32 + y > self.height as i32 {
             return false;
         }
 
         let pos = piece.get_positions();
-        let offset: Point<i32> = Point::new(piece.get_x() as i32 + x as i32, piece.get_y() as i32 + y as i32);
+        let offset: Point<i32> = Point::new(piece.get_x() as i32 + x, piece.get_y() as i32 + y);
         let new_pos = adjust_positions_clone(pos, offset);
 
         !self.cell_holder.intersects_any(&new_pos)
+    }
+
+    pub fn set_cell_at(&mut self, x: usize, y: usize, cell: CellType) {
+        self.cell_holder.set_cell_at(x, y, cell);
     }
 
     fn try_apply_piece(&mut self, points: &[Point], x: i32, y: i32) -> bool {

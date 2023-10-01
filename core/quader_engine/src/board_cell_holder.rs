@@ -1,9 +1,10 @@
 ﻿use serde::{Deserialize, Serialize};
 use crate::board::CellType;
-use crate::primitives::{Point, Rect};
+use crate::primitives::{Point, Rect, Color};
 
 pub const BOARD_WIDTH: usize = 10;
 pub const BOARD_HEIGHT: usize = 80;
+pub const BOARD_VISIBLE_HEIGHT: usize = BOARD_HEIGHT / 2;
 
 pub trait BoolArray {
     fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT];
@@ -62,6 +63,7 @@ impl<'a> Iterator for RowIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.row.0.len() {
             // TODO: Check if we need to set self.index to zero
+            // self.index = 0;
             return None;
         }
 
@@ -85,6 +87,22 @@ impl Default for BoardCellHolder {
             width: BOARD_WIDTH, height: BOARD_HEIGHT,
             layout: [*Row::EMPTY; BOARD_HEIGHT]
         }
+    }
+}
+
+pub fn cell_to_color(cell: &CellType) -> Color {
+    match cell {
+        CellType::None => *Color::BLACK,
+        CellType::I => *Color::PIECE_I,
+        CellType::O => *Color::PIECE_O,
+        CellType::T => *Color::PIECE_T,
+        CellType::L => *Color::PIECE_L,
+        CellType::J => *Color::PIECE_J,
+        CellType::S => *Color::PIECE_S,
+        CellType::Z => *Color::PIECE_Z,
+        CellType::Garbage => *Color::PIECE_GARBAGE,
+        CellType::Solid => *Color::PIECE_GARBAGE,
+        CellType::Failing => *Color::WHITE,
     }
 }
 
@@ -155,7 +173,7 @@ impl BoardCellHolder {
             let cur = self.layout[y];
 
             self.layout[y] = *Row::EMPTY;
-            self.layout[(y - 1)] = cur;
+            self.layout[y - 1] = cur;
         }
     }
 
@@ -164,7 +182,7 @@ impl BoardCellHolder {
             let cur = self.layout[y];
 
             self.layout[y] = *Row::EMPTY;
-            self.layout[(y + 1)] = cur;
+            self.layout[y + 1] = cur;
         }
     }
 
@@ -196,8 +214,8 @@ impl BoolArray for BoardCellHolder {
         let mut result = [[false; BOARD_WIDTH]; BOARD_HEIGHT];
 
         for (y, row) in self.layout.iter().enumerate() {
-            for (x, bt) in row.0.iter().enumerate() {
-                result[y][x] = *bt != CellType::None;
+            for (x, &bt) in row.0.iter().enumerate() {
+                result[y][x] = bt != CellType::None;
             }
         }
 

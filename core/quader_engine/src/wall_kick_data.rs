@@ -82,3 +82,9 @@ impl WallKickData {
         &self.piece_o
     }
 }
+
+impl Default for WallKickData {
+    fn default() -> Self {
+        WallKickData::new()
+    }
+}
