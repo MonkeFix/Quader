@@ -62,35 +62,35 @@ The Quader Engine is written in Rust and is used by the client and the server.
 ### Engine TODO
 
  - [ ] **BOARD:**
-   - [ ] Create Board
-   - [ ] Destroy Board
-   - [ ] Get/Set Current Piece
+   - [x] Create Board
+   - [x] Destroy Board
+   - [x] Get/Set Current Piece
    - [ ] Get/Set Current Piece Generator
    - [ ] Get Current Bag
    - [ ] Start/Stop Game (+Replay)
    - [ ] Hold/Unhold Piece
    - [ ] Update (Gravity, Lock, etc.)
-   - [ ] Find Nearest Y
+   - [x] Find Nearest Y
    - [ ] Get Damage/Garbage Handler
-   - [ ] Reset
+   - [x] Reset
    - [ ] Clear
-   - [ ] Get/Set Cell at Position
+   - [x] Get/Set Cell at Position
    - [ ] Serialize/Deserialize
  - [ ] **PIECE:**
-   - [ ] Create
-   - [ ] Move Left/Right
-   - [ ] Rotate Clockwise/Counter-Clockwise/180 degrees
-   - [ ] Soft Drop
-   - [ ] Hard Drop
-   - [ ] Reset
-   - [ ] Test Movement
-   - [ ] Test Rotation
-   - [ ] Get/Set Default Colors
-   - [ ] Get/Set Default Wall Kick Data
-   - [ ] Get/Set Default Positioning
-   - [ ] Get Bounds
-   - [ ] Get Current Position
-   - [ ] Get Current Rotation
+   - [x] Create
+   - [x] Move Left/Right
+   - [x] Rotate Clockwise/Counter-Clockwise/180 degrees
+   - [x] Soft Drop
+   - [x] Hard Drop
+   - [x] Reset
+   - [x] Test Movement
+   - [x] Test Rotation
+   - [x] Get/Set Default Colors
+   - [x] Get/Set Default Wall Kick Data
+   - [x] Get/Set Default Positioning
+   - [x] Get Bounds
+   - [x] Get Current Position
+   - [x] Get Current Rotation
  - [ ] **DAMAGE/GARBAGE:**
    - [ ] Push Garbage
    - [ ] Push Solid Row
