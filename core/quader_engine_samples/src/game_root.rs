@@ -1,4 +1,3 @@
-use macroquad::ui::{hash, root_ui, widgets};
 use macroquad::prelude::*;
 use crate::board_controller::BoardController;
 use crate::renderable::Renderable;
@@ -13,10 +12,6 @@ pub struct GameRoot {
 impl GameRoot {
     pub fn new() -> Self {
 
-        /*let mut cell_holder = BoardCellHolder::default();
-        cell_holder.set_cell_at(1, 1, CellType::J);
-        let wkd = Rc::new(WallKickData::default());
-*/
         GameRoot {
             close_requested: false,
             board: Box::new(BoardController::new(128., 128.)),
@@ -34,7 +29,7 @@ impl GameRoot {
                 break 'main_loop;
             }
     
-            self.update(macroquad::time::get_frame_time());
+            self.update(get_frame_time());
     
             clear_background(WHITE);
             self.render();

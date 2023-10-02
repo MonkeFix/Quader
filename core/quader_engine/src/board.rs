@@ -70,7 +70,7 @@ impl Board {
         Board {
             width,
             height,
-            cell_holder: Box::new(BoardCellHolder::default()),
+            cell_holder: Box::<BoardCellHolder>::default(),
             cur_piece: None,
             gravity: 0.0,
             lock: 0.0,
@@ -89,16 +89,11 @@ impl Board {
     }*/
 
     pub fn create_piece(&mut self, piece_type: PieceType) {
-        let piece = Piece::new(Rc::downgrade(&self.wkd), piece_type);
-
+        let piece = Piece::new(piece_type);
 
         let p = Box::new(piece);
         self.cur_piece = Some(p);
         self.reset_piece();
-        // piece.set_x(5);
-        // piece.set_y(5);
-
-        // self.set_piece(piece);
     }
 
     pub fn reset_piece(&mut self) {

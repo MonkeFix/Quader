@@ -86,7 +86,6 @@ pub struct Piece {
     x: u32,
     y: u32,
     current_rotation: RotationState,
-    wall_kick_data: Weak<WallKickData>,
     wall_kick_type: WallKickType
 }
 
@@ -148,7 +147,7 @@ pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
 }*/
 
 impl Piece {
-    pub fn new(wall_kick_data: Weak<WallKickData>, piece_type: PieceType) -> Self {
+    pub fn new(piece_type: PieceType) -> Self {
         let wall_kick_type = match piece_type {
             PieceType::I => WallKickType::PieceI,
             PieceType::O => WallKickType::PieceO,
@@ -236,7 +235,6 @@ impl Piece {
             x: 0,
             y: 0,
             current_rotation: RotationState::Initial,
-            wall_kick_data,
             wall_kick_type,
         }
     }
@@ -367,7 +365,7 @@ impl Piece {
         }
     }
 
-    pub fn get_rotation_type(&self, rotation: &RotationDirection) -> (RotationMove, &Vec<Point>) {
+    pub fn get_rotation_type(&self, rotation: &RotationDirection) -> (RotationMove, &[Point]) {
         match self.current_rotation {
             RotationState::Initial => match rotation {
                 RotationDirection::Clockwise => (RotationMove::InitToRight, &self.right_pos),

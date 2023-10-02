@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
+use once_cell::sync::Lazy;
 use crate::piece::RotationMove;
 use crate::primitives::Point;
 
@@ -16,6 +18,11 @@ pub struct WallKickData {
     piece_i: WK,
     piece_o: WK,
 }
+
+pub static WALL_KICK_DATA: Lazy<Mutex<WallKickData>> = Lazy::new(|| {
+    let wkd = WallKickData::new();
+    Mutex::new(wkd)
+});
 
 impl WallKickData {
     pub fn new() -> Self {
