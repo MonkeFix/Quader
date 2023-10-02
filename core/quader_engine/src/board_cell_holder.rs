@@ -3,7 +3,7 @@ use crate::board::CellType;
 use crate::primitives::{Point, Rect, Color};
 
 pub const BOARD_WIDTH: usize = 10;
-pub const BOARD_HEIGHT: usize = 80;
+pub const BOARD_HEIGHT: usize = 40;
 pub const BOARD_VISIBLE_HEIGHT: usize = BOARD_HEIGHT / 2;
 
 pub trait BoolArray {
