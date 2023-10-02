@@ -63,7 +63,7 @@ impl<'a> Iterator for RowIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.row.0.len() {
             // TODO: Check if we need to set self.index to zero
-            // self.index = 0;
+            self.index = 0;
             return None;
         }
 
@@ -169,25 +169,29 @@ impl BoardCellHolder {
     }
 
     pub fn move_up(&mut self) {
-        for y in 1..self.height {
-            let cur = self.layout[y];
+        (1..self.height)
+            .for_each(|y| {
+                let cur = self.layout[y];
 
-            self.layout[y] = *Row::EMPTY;
-            self.layout[y - 1] = cur;
-        }
+                self.layout[y] = *Row::EMPTY;
+                self.layout[y - 1] = cur;
+            });
     }
 
     pub fn move_down(&mut self, from_y: usize) {
-        for y in (from_y - 1)..=0 {
-            let cur = self.layout[y];
+        (0..=(from_y - 1))
+            .rev()
+            .for_each(|y| {
+                let cur = self.layout[y];
 
-            self.layout[y] = *Row::EMPTY;
-            self.layout[y + 1] = cur;
-        }
+                self.layout[y] = *Row::EMPTY;
+                self.layout[y + 1] = cur;
+            });
     }
 
     pub fn clear_rows(&mut self, ys: &[usize]) {
         for &y in ys {
+            println!("Clearing row with y: {}", y);
             self.move_down(y);
         }
     }

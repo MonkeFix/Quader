@@ -89,19 +89,21 @@ impl Board {
     }*/
 
     pub fn create_piece(&mut self, piece_type: PieceType) {
-        let mut piece = Piece::new(Rc::downgrade(&self.wkd), piece_type);
+        let piece = Piece::new(Rc::downgrade(&self.wkd), piece_type);
 
-        self.reset_piece(&mut piece);
+
         let p = Box::new(piece);
         self.cur_piece = Some(p);
+        self.reset_piece();
         // piece.set_x(5);
         // piece.set_y(5);
 
         // self.set_piece(piece);
     }
 
-    pub fn reset_piece(&mut self, piece: &mut Piece) {
+    pub fn reset_piece(&mut self) {
         self.intermediate_y = 0.0;
+        let piece = self.cur_piece.as_mut().unwrap();
 
         match piece.get_offset_type() {
             OffsetType::Cell => piece.set_x(BOARD_WIDTH as u32 / 2 - 1),
@@ -113,6 +115,8 @@ impl Board {
         } else {
             piece.set_y(BOARD_VISIBLE_HEIGHT as u32);
         }
+
+        piece.reset();
     }
 
     pub fn get_piece(&self) -> Option<&Piece> {
@@ -249,8 +253,25 @@ impl Board {
         self.y_needs_update = true;
     }
 
-    pub fn hard_drop(&self) {
-        todo!();
+    pub fn hard_drop(&mut self) {
+        let nearest_y = self.find_nearest_y();
+
+        if !self.try_apply_piece(nearest_y) {
+            return;
+        }
+
+        let lines_cleared = self.cell_holder.check_row_clears(None);
+
+        if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
+            return;
+        }
+
+        self.cell_holder.clear_rows(&lines_cleared);
+        if !lines_cleared.is_empty() {
+            // self.cells_on_board -= lines_cleared.len() * self.width as usize;
+        }
+
+        self.reset_piece();
     }
 
     pub fn test_movement(&self, x: i32, y: i32) -> bool {
@@ -275,8 +296,11 @@ impl Board {
         self.cell_holder.set_cell_at(x, y, cell);
     }
 
-    fn try_apply_piece(&mut self, points: &[Point], x: i32, y: i32) -> bool {
-        let adjusted = adjust_positions_clone(points, Point::new(x, y));
+    fn try_apply_piece(&mut self, y: u32) -> bool {
+        let piece = self.cur_piece.as_ref().unwrap();
+        let points = piece.get_current_pos();
+        let x = piece.get_x() as i32;
+        let adjusted = adjust_positions_clone(points, Point::new(x, y as i32));
 
         let mut res = true;
         let piece = self.cur_piece.as_ref().unwrap();

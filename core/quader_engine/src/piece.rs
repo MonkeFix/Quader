@@ -241,6 +241,11 @@ impl Piece {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.current_rotation = RotationState::Initial;
+        self.bounds = self.calc_bounds();
+    }
+
     pub fn get_positions(&self) -> &[Point] {
         match self.current_rotation {
             RotationState::Initial => &self.init_pos,
