@@ -2,8 +2,8 @@
 use std::ops::{Add, AddAssign};
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
-use crate::board_cell_holder::{BOARD_HEIGHT, BOARD_WIDTH, BoardCellHolder, Row};
-use crate::piece::{Piece, PieceType, RotationDirection, WallKickCheckParams, WallKickCheckResult};
+use crate::board_cell_holder::{BOARD_HEIGHT, BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardCellHolder, Row};
+use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams, WallKickCheckResult};
 use crate::primitives::Point;
 use crate::wall_kick_data::WallKickData;
 
@@ -82,18 +82,37 @@ impl Board {
         }
     }
 
-    pub fn set_piece(&mut self, piece: Piece) {
+    /*pub fn set_piece(&mut self, piece: &mut Piece) {
+        self.reset_piece(piece);
         let p = Box::new(piece);
         self.cur_piece = Some(p);
-    }
+    }*/
 
     pub fn create_piece(&mut self, piece_type: PieceType) {
         let mut piece = Piece::new(Rc::downgrade(&self.wkd), piece_type);
 
-        piece.set_x(5);
-        piece.set_y(5);
+        self.reset_piece(&mut piece);
+        let p = Box::new(piece);
+        self.cur_piece = Some(p);
+        // piece.set_x(5);
+        // piece.set_y(5);
 
-        self.set_piece(piece);
+        // self.set_piece(piece);
+    }
+
+    pub fn reset_piece(&mut self, piece: &mut Piece) {
+        self.intermediate_y = 0.0;
+
+        match piece.get_offset_type() {
+            OffsetType::Cell => piece.set_x(BOARD_WIDTH as u32 / 2 - 1),
+            OffsetType::BetweenCells => piece.set_x(((BOARD_WIDTH as f32) / 2.0).round() as u32)
+        }
+
+        if piece.get_type() == &PieceType::I {
+            piece.set_y(BOARD_VISIBLE_HEIGHT as u32 + 1);
+        } else {
+            piece.set_y(BOARD_VISIBLE_HEIGHT as u32);
+        }
     }
 
     pub fn get_piece(&self) -> Option<&Piece> {
@@ -135,6 +154,10 @@ impl Board {
     }
 
     pub fn update(&mut self, dt: f32) {
+        if self.cur_piece.is_none() {
+            return;
+        }
+
         self.intermediate_y += self.gravity * dt;
         if self.y_needs_update {
             self.y_to_check = self.find_nearest_y();
@@ -162,22 +185,26 @@ impl Board {
     }
 
     pub fn find_nearest_y(&self) -> u32 {
-        let piece = self.cur_piece.as_ref().unwrap();
-        let mut y = piece.get_y();
-        let points = piece.get_positions();
+
+        if let Some(piece) = self.cur_piece.as_ref() {
+            let mut y = piece.get_y();
+            let points = piece.get_positions();
 
 
-        for i in piece.get_y()..=self.height {
-            let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
-            let new_points = adjust_positions_clone(&points, offset);
-            if self.cell_holder.intersects_any(&new_points) {
-                break;
+            for i in piece.get_y()..=self.height {
+                let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
+                let new_points = adjust_positions_clone(points, offset);
+                if self.cell_holder.intersects_any(&new_points) {
+                    break;
+                }
+
+                y = i;
             }
 
-            y = i;
+            return y;
         }
 
-        y
+        0
     }
 
     fn test_rotation(&self, kick_params: WallKickCheckParams) -> Option<Point> {

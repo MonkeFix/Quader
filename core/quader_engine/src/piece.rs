@@ -284,6 +284,10 @@ impl Piece {
         self.set_y(self.y + 1);
     }
 
+    pub fn get_offset_type(&self) -> &OffsetType {
+        &self.offset_type
+    }
+
     pub fn get_current_pos(&self) -> &[Point] {
         match self.current_rotation {
             RotationState::Initial => &self.init_pos,
@@ -300,8 +304,11 @@ impl Piece {
     pub fn rotate(&mut self, rotation: RotationDirection, x_offset: i32, y_offset: i32) {
         self.rotate_simple(rotation);
 
-        self.x += x_offset as u32;
-        self.y += y_offset as u32;
+        let ix = self.x as i32 + x_offset;
+        let iy = self.y as i32 + y_offset;
+
+        self.x = ix as u32;
+        self.y = iy as u32;
 
         self.bounds = self.calc_bounds();
     }
