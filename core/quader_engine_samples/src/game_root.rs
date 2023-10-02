@@ -54,7 +54,7 @@ impl GameRoot {
         self.board.update(dt);
     }
 
-    fn render(&self) {
+    fn render(&mut self) {
         self.board.render();
 
         if self.debug_render_enabled {
@@ -63,7 +63,7 @@ impl GameRoot {
     }
 
     fn render_ui(&self) {
-        let (fps, frame_time, time) = (macroquad::time::get_fps(), macroquad::time::get_frame_time(), macroquad::time::get_time());
+        /*let (fps, frame_time, time) = (macroquad::time::get_fps(), macroquad::time::get_frame_time(), macroquad::time::get_time());
 
         root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
             let (mouse_x, mouse_y) = mouse_position();
@@ -102,6 +102,6 @@ impl GameRoot {
                         ui.label(None, "Middle");
                     }
                 });
-        });
+        });*/
     }
 }
