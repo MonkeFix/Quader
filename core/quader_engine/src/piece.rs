@@ -146,6 +146,8 @@ pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
     }
 }*/
 
+
+
 impl Piece {
     pub fn new(piece_type: PieceType) -> Self {
         let wall_kick_type = match piece_type {
@@ -304,7 +306,7 @@ impl Piece {
         &self.wall_kick_type
     }
 
-    pub fn rotate(&mut self, rotation: RotationDirection, x_offset: i32, y_offset: i32) {
+    pub fn rotate(&mut self, rotation: &RotationDirection, x_offset: i32, y_offset: i32) {
         self.rotate_simple(rotation);
 
         let ix = self.x as i32 + x_offset;
@@ -337,7 +339,7 @@ impl Piece {
         calc_bounds(self.get_current_pos(), self.x as i32, self.y as i32)
     }
 
-    fn rotate_simple(&mut self, rotation: RotationDirection) {
+    fn rotate_simple(&mut self, rotation: &RotationDirection) {
         match rotation {
             RotationDirection::Clockwise => self.rotate_right(),
             RotationDirection::CounterClockwise => self.rotate_left(),

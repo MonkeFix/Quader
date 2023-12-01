@@ -1,7 +1,9 @@
+use std::cell::RefCell;
 use std::collections::VecDeque;
+use std::rc::Rc;
 use rand::prelude::*;
-use rand::rngs::ThreadRng;
 use crate::piece::{Piece, PieceType};
+use crate::rng_manager::RngManager;
 
 pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::S,
@@ -13,63 +15,73 @@ pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::T
 ];
 
+pub const BAG_SIZE: usize = AVAILABLE_PIECES.len();
+
 pub trait PieceGenerator {
     fn get_queue_size(&self) -> usize { 5 }
-    fn init(&mut self) -> Vec<Box<Piece>>;
-    fn get(&mut self) -> Piece;
+    fn init(&mut self) -> Vec<Piece>;
+    fn next(&mut self) -> Piece;
 }
 
+/*pub enum PieceGeneratorType {
+    FullRandom, Bag7
+}
+
+pub struct PieceGeneratorFactory;
+impl PieceGeneratorFactory {
+    pub fn create(rng: Rc<RngManager>, generator_type: PieceGeneratorType) -> Box<dyn PieceGenerator> {
+        match generator_type {
+            PieceGeneratorType::FullRandom => Box::new(PieceGeneratorFullRandom::new(rng)),
+            PieceGeneratorType::Bag7 => Box::new(PieceGeneratorBag7::new(rng))
+        }
+    }
+}*/
+
 pub struct PieceGeneratorFullRandom {
-    rng: ThreadRng,
+    rng: Rc<RefCell<RngManager>>,
 }
 
 impl PieceGeneratorFullRandom {
 
-    pub fn new() -> Self {
+    pub fn new(rng: &Rc<RefCell<RngManager>>) -> Self {
         Self {
-            rng: thread_rng()
+            rng: Rc::clone(rng)
         }
     }
 
-    fn rng(&mut self) -> &PieceType {
-        AVAILABLE_PIECES.choose(&mut self.rng).unwrap()
-    }
-}
-
-impl Default for PieceGeneratorFullRandom {
-    fn default() -> Self {
-        PieceGeneratorFullRandom::new()
+    fn rng(&mut self) -> PieceType {
+        *AVAILABLE_PIECES.choose(&mut self.rng.borrow_mut().rng).unwrap()
     }
 }
 
 impl PieceGenerator for PieceGeneratorFullRandom {
-    fn init(&mut self) -> Vec<Box<Piece>> {
+    fn init(&mut self) -> Vec<Piece> {
         (0..self.get_queue_size())
-            .map(|_i| Box::new(Piece::new(*self.rng())))
+            .map(|_i| Piece::new(self.rng()))
             .collect()
     }
 
-    fn get(&mut self) -> Piece {
-        Piece::new(*self.rng())
+    fn next(&mut self) -> Piece {
+        Piece::new(self.rng())
     }
 }
 
 pub struct PieceGeneratorBag7 {
-    rng: ThreadRng,
+    rng: Rc<RefCell<RngManager>>,
     queue: VecDeque<Piece>
 }
 
 impl PieceGeneratorBag7 {
-    pub fn new() -> Self {
+    pub fn new(rng: &Rc<RefCell<RngManager>>) -> Self {
         Self {
-            rng: thread_rng(),
+            rng: Rc::clone(rng),
             queue: VecDeque::new()
         }
     }
 
     fn generate_bag(&mut self) -> Vec<PieceType> {
         let mut types = AVAILABLE_PIECES;
-        types.shuffle(&mut self.rng);
+        types.shuffle(&mut self.rng.borrow_mut().rng);
         types.to_vec()
     }
 
@@ -80,36 +92,26 @@ impl PieceGeneratorBag7 {
     }
 }
 
-impl Default for PieceGeneratorBag7 {
-    fn default() -> Self {
-        PieceGeneratorBag7::new()
-    }
-}
-
 impl PieceGenerator for PieceGeneratorBag7 {
-    fn init(&mut self) -> Vec<Box<Piece>> {
-        self.queue.clear();
-
-        let mut bag = self.generate_bag();
+    fn init(&mut self) -> Vec<Piece> {
+        let bag = self.generate_bag();
         let bag2 = self.generate_bag();
 
-        let result = bag.clone()
-            .into_iter()
-            .take(self.get_queue_size())
-            .map(|p| Box::new(Piece::new(p)))
-            .collect();
-
-        for i in self.get_queue_size()..7 {
-            let piece = bag.remove(i);
-            self.queue.push_back(Piece::new(piece));
-        }
+        self.queue = VecDeque::from(
+            (self.get_queue_size()..BAG_SIZE)
+            .map(|i| Piece::new(bag[i]))
+            .collect::<Vec<Piece>>()
+        );
 
         self.enqueue_range(&bag2);
 
-        result
+        bag.into_iter()
+            .take(self.get_queue_size())
+            .map(Piece::new)
+            .collect()
     }
 
-    fn get(&mut self) -> Piece {
+    fn next(&mut self) -> Piece {
         let p = self.queue.pop_back().expect("The queue must not be empty");
 
         if self.queue.len() <= self.get_queue_size() {
@@ -119,4 +121,9 @@ impl PieceGenerator for PieceGeneratorBag7 {
 
         p
     }
+}
+
+#[cfg(test)]
+mod tests {
+
 }

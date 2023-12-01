@@ -1,24 +1,65 @@
-﻿use std::cmp::max;
+﻿use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::ops::{Add, AddAssign};
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
-use crate::board_cell_holder::{BOARD_HEIGHT, BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardCellHolder, Row};
-use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams, WallKickCheckResult};
+use crate::board_cell_holder::{BoardCellHolder, Row};
+use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardSettings, GameSettings};
+use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
+use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::primitives::Point;
+use crate::rng_manager::RngManager;
 use crate::wall_kick_data::WallKickData;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum CellType {
     None,
-    I, O, T, L, J, S, Z,
+    I,
+    O,
+    T,
+    L,
+    J,
+    S,
+    Z,
     Garbage,
-    Solid,
-    Failing
+    Solid
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum GameState {
+
+}
+
+struct All {
+    game_settings: GameSettings,
+
+    // INNER LOGIC:
+    test_queue: VecDeque<Vec<Point>>,
+    cell_holder: BoardCellHolder,
+    current_piece: Piece,
+
+    // SCORING:
+    combo: u32,
+    b2b: u32,
+    //last_move: MoveType,
+    //replay: Replay,
+    attack_queue: VecDeque<u32>,
+    incoming_damage: Vec<u32>,
+    last_garbage_x: u32,
+
+    // UPDATABLE
+    cur_gravity: f32,
+    cur_lock: f32,
+    cur_garbage_cd: f32,
+    cur_tick: f64,
+    intermediate_y: f32,
+    y_needs_update: bool,
+    y_to_check: u32,
 }
 
 pub struct Board {
-    width: u32,
-    height: u32,
+    width: usize,
+    height: usize,
     cell_holder: Box<BoardCellHolder>,
     cur_piece: Option<Box<Piece>>,
     gravity: f32,
@@ -27,7 +68,10 @@ pub struct Board {
     y_needs_update: bool,
     y_to_check: u32,
     cells_on_board: usize,
-    wkd: Rc<WallKickData>
+    wkd: Rc<WallKickData>,
+    piece_gen: Box<dyn PieceGenerator>,
+    piece_queue: Vec<Piece>,
+    rng: Rc<RefCell<RngManager>>
 }
 
 pub fn adjust_positions<T: std::ops::AddAssign + Copy>(data: &mut [Point<T>], offset: Point<T>) {
@@ -38,7 +82,6 @@ pub fn adjust_positions<T: std::ops::AddAssign + Copy>(data: &mut [Point<T>], of
 }
 
 pub fn adjust_positions_clone<T: std::ops::Add + Copy>(data: &[Point<T>], offset: Point<T>) -> Vec<Point<T::Output>> {
-
     data.iter()
         .map(|p| Point {
             x: p.x + offset.x,
@@ -61,15 +104,20 @@ pub fn adjust_point_clone<T: Add<Output = T> + Copy>(point: &Point<T>, offset: P
 
 impl Default for Board {
     fn default() -> Self {
-        Board::new(BOARD_WIDTH as u32, BOARD_HEIGHT as u32)
+        Board::new(&BoardSettings::default())
     }
 }
 
 impl Board {
-    pub fn new(width: u32, height: u32) -> Self {
+    pub fn new(settings: &BoardSettings) -> Self {
+
+        let rng = Rc::new(RefCell::new(RngManager::new(12345)));
+        let mut piece_gen = PieceGeneratorBag7::new(&rng);
+        let pieces = piece_gen.init();
+
         Board {
-            width,
-            height,
+            width: settings.width,
+            height: settings.height,
             cell_holder: Box::<BoardCellHolder>::default(),
             cur_piece: None,
             gravity: 0.0,
@@ -78,8 +126,15 @@ impl Board {
             y_needs_update: true,
             y_to_check: 0,
             cells_on_board: 0,
-            wkd: Rc::new(WallKickData::new())
+            wkd: Rc::new(WallKickData::new()),
+            piece_gen: Box::new(piece_gen),
+            piece_queue: pieces,
+            rng
         }
+    }
+
+    pub fn get_queue(&self) -> &[Piece] {
+        &self.piece_queue
     }
 
     /*pub fn set_piece(&mut self, piece: &mut Piece) {
@@ -121,19 +176,19 @@ impl Board {
         }
     }
 
-    pub fn move_left(&mut self) {
+    pub fn move_left(&mut self, delta: i32) {
         if self.test_movement(-1, 0) {
             self.cur_piece.as_mut().expect("Piece must be set").move_left();
         }
     }
 
-    pub fn move_right(&mut self) {
+    pub fn move_right(&mut self, delta: i32) {
         if self.test_movement(1, 0) {
             self.cur_piece.as_mut().expect("Piece must be set").move_right();
         }
     }
 
-    pub fn rotate(&mut self, rotation: RotationDirection) {
+    pub fn rotate(&mut self, rotation: &RotationDirection) {
         let piece = self.cur_piece.as_ref().expect("Piece must be set");
         let rot_type = piece.get_rotation_type(&rotation);
         let wkd = &self.wkd;
@@ -190,7 +245,7 @@ impl Board {
             let points = piece.get_positions();
 
 
-            for i in piece.get_y()..=self.height {
+            for i in piece.get_y()..=(self.height as u32) {
                 let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
                 let new_points = adjust_positions_clone(points, offset);
                 if self.cell_holder.intersects_any(&new_points) {
@@ -227,7 +282,7 @@ impl Board {
         None
     }
 
-    pub fn get_layout(&self) -> &[Row; BOARD_HEIGHT] {
+    pub fn get_layout(&self) -> &[Row] {
         self.cell_holder.get_layout()
     }
 
@@ -235,7 +290,7 @@ impl Board {
         todo!();
     }
 
-    pub fn soft_drop(&mut self) {
+    pub fn soft_drop(&mut self, delta: u32) {
         if self.y_needs_update {
             self.y_to_check = self.find_nearest_y();
             self.y_needs_update = false;
@@ -289,6 +344,10 @@ impl Board {
 
     pub fn set_cell_at(&mut self, x: usize, y: usize, cell: CellType) {
         self.cell_holder.set_cell_at(x, y, cell);
+    }
+
+    pub fn send_garbage(&mut self, amount: u32, messiness: u32) {
+        todo!();
     }
 
     fn try_apply_piece(&mut self, y: u32) -> bool {

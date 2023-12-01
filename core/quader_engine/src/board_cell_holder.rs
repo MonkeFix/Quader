@@ -1,10 +1,7 @@
 ﻿use serde::{Deserialize, Serialize};
 use crate::board::CellType;
+use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::primitives::{Point, Rect, Color};
-
-pub const BOARD_WIDTH: usize = 10;
-pub const BOARD_HEIGHT: usize = 40;
-pub const BOARD_VISIBLE_HEIGHT: usize = BOARD_HEIGHT / 2;
 
 pub trait BoolArray {
     fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT];
@@ -14,8 +11,11 @@ pub trait BoolArray {
 pub struct Row([CellType; BOARD_WIDTH]);
 
 impl Row {
-    pub fn set(&mut self, x: usize, cell_type: CellType) {
+    pub fn set(&mut self, x: usize, cell_type: CellType) -> CellType {
+        let tmp = self.0[x];
         self.0[x] = cell_type;
+
+        tmp
     }
 
     pub fn get(&self, x: usize) -> CellType {
@@ -28,6 +28,10 @@ impl Row {
 
     pub fn is_empty(&self) -> bool {
         self.0.iter().all(|&b| b == CellType::None)
+    }
+
+    pub fn get_occupied_cell_count(&self) -> usize {
+        self.0.iter().filter(|c| increases_cells(**c)).count()
     }
 
     pub const EMPTY: &'static Self = &Row([CellType::None; BOARD_WIDTH]);
@@ -74,18 +78,24 @@ impl<'a> Iterator for RowIterator<'a> {
 }
 
 // TODO: Fix "Serialize, Deserialize" traits
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BoardCellHolder {
-    layout: [Row; BOARD_HEIGHT],
+    layout: Vec<Row>,
     width: usize,
-    height: usize
+    height: usize,
+    occupied_cells: usize
+}
+
+pub fn increases_cells(cell_type: CellType) -> bool {
+    cell_type != CellType::None && cell_type != CellType::Solid
 }
 
 impl Default for BoardCellHolder {
     fn default() -> Self {
         BoardCellHolder {
             width: BOARD_WIDTH, height: BOARD_HEIGHT,
-            layout: [*Row::EMPTY; BOARD_HEIGHT]
+            layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
+            occupied_cells: 0
         }
     }
 }
@@ -101,8 +111,7 @@ pub fn cell_to_color(cell: &CellType) -> Color {
         CellType::S => *Color::PIECE_S,
         CellType::Z => *Color::PIECE_Z,
         CellType::Garbage => *Color::PIECE_GARBAGE,
-        CellType::Solid => *Color::PIECE_GARBAGE,
-        CellType::Failing => *Color::WHITE,
+        CellType::Solid => *Color::PIECE_GARBAGE
     }
 }
 
@@ -117,7 +126,8 @@ impl BoardCellHolder {
     pub fn new(width: usize, height: usize) -> Self {
         BoardCellHolder {
             width, height,
-            layout: [*Row::EMPTY; BOARD_HEIGHT]
+            layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
+            occupied_cells: 0
         }
     }
 
@@ -125,6 +135,8 @@ impl BoardCellHolder {
         for row in self.layout.iter_mut() {
             *row = *Row::EMPTY;
         }
+
+        self.occupied_cells = 0;
     }
 
     pub fn check_row_clears(&self, bounds: Option<&Rect>) -> Vec<usize> {
@@ -148,7 +160,11 @@ impl BoardCellHolder {
     }
 
     pub fn set_cell_at(&mut self, x: usize, y: usize, cell: CellType) {
-        self.layout[y].set(x, cell);
+        let old = self.layout[y].set(x, cell);
+
+        if increases_cells(cell) && !increases_cells(old) {
+            self.occupied_cells += 1;
+        }
     }
 
     pub fn is_out_of_bounds(&self, x: i32, y: i32) -> bool {
@@ -168,7 +184,7 @@ impl BoardCellHolder {
             })
     }
 
-    pub fn move_up(&mut self) {
+    pub fn move_up(&mut self, update_cell_count: bool) {
         (1..self.height)
             .for_each(|y| {
                 let cur = self.layout[y];
@@ -176,9 +192,13 @@ impl BoardCellHolder {
                 self.layout[y] = *Row::EMPTY;
                 self.layout[y - 1] = cur;
             });
+
+        if update_cell_count {
+            self.occupied_cells += self.width;
+        }
     }
 
-    pub fn move_down(&mut self, from_y: usize) {
+    pub fn move_down(&mut self, from_y: usize, update_cell_count: bool) {
         (0..=(from_y - 1))
             .rev()
             .for_each(|y| {
@@ -187,12 +207,14 @@ impl BoardCellHolder {
                 self.layout[y] = *Row::EMPTY;
                 self.layout[y + 1] = cur;
             });
+        if update_cell_count {
+            self.occupied_cells -= self.width;
+        }
     }
 
     pub fn clear_rows(&mut self, ys: &[usize]) {
         for &y in ys {
-            println!("Clearing row with y: {}", y);
-            self.move_down(y);
+            self.move_down(y, true);
         }
     }
 
@@ -205,11 +227,25 @@ impl BoardCellHolder {
     }
 
     pub fn set_row(&mut self, y: usize, row: Row) {
+        let old_row = self.layout[y];
+
         self.layout[y] = row;
+
+        let c1 = old_row.get_occupied_cell_count();
+        let c2 = row.get_occupied_cell_count();
+
+        let min = std::cmp::min(c1, c2);
+        let max = std::cmp::max(c1, c2);
+
+        self.occupied_cells -= max - min;
     }
 
-    pub fn get_layout(&self) -> &[Row; BOARD_HEIGHT] {
+    pub fn get_layout(&self) -> &[Row] {
         &self.layout
+    }
+
+    pub fn get_occupied_cell_count(&self) -> usize {
+        self.occupied_cells
     }
 }
 
@@ -255,7 +291,7 @@ mod tests {
         let mut row = Row::default();
 
         for (i, c) in s.as_bytes().iter().enumerate() {
-            row.set(i, decode(c))
+            let _ = row.set(i, decode(c));
         }
 
         row
