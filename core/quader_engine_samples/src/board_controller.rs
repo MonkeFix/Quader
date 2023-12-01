@@ -1,11 +1,14 @@
-use std::ops::{Add, Mul};
-use std::ptr::hash;
+use std::sync::mpsc::Receiver;
 use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{adjust_point_clone, Board, CellType};
-use quader_engine::board_cell_holder::{BOARD_HEIGHT, BOARD_VISIBLE_HEIGHT, cell_to_color};
+use quader_engine::board_cell_holder::{cell_to_color};
+use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage};
+use quader_engine::board_command::BoardMoveDir::Left;
+use quader_engine::board_manager::BoardManager;
+use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings};
 use quader_engine::piece::{Piece, PieceType, RotationDirection};
 use quader_engine::primitives::Point;
 
@@ -19,26 +22,32 @@ pub struct BoardController {
     x: f32,
     y: f32,
     cell_size: f32,
-    render_offset: f32
-}
-
-impl Default for BoardController {
-    fn default() -> Self {
-        BoardController::new(0.0, 0.0)
-    }
+    render_offset: f32,
+    board_mgr: BoardManager,
+    receiver: Receiver<BoardMessage>,
+    uuid: String
 }
 
 impl BoardController {
     pub fn new(x: f32, y: f32) -> Self {
 
+        let board_settings = BoardSettings::default();
+
         let mut board = Box::<Board>::default();
         board.create_piece(PieceType::I);
+
+        let mut board_mgr = BoardManager::new(board_settings);
+
+        let rcv = board_mgr.add_board();
 
         BoardController {
             board,
             x, y,
             cell_size: DEFAULT_CELL_SIZE,
-            render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE
+            render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE,
+            board_mgr,
+            receiver: rcv.1,
+            uuid: rcv.0
         }
     }
 
@@ -171,6 +180,15 @@ impl Renderable for BoardController {
             if ui.button(None, "T") {
                 self.board.create_piece(PieceType::T);
             }
+
+            ui.label(None, "Piece Queue:");
+            let queue = self.board.get_queue();
+            for p in queue {
+                ui.label(None, &format!("{:?}", p.get_type()));
+                ui.same_line(0.0);
+            }
+            // skip the last same_line()
+            ui.label(None, "");
         });
     }
 }
@@ -182,27 +200,41 @@ impl Updatable for BoardController {
         }
 
         if is_key_pressed(KeyCode::Left) {
-            self.board.move_left();
+            self.board.move_left(1);
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::Move(Left, 1))
+            );
         }
         if is_key_pressed(KeyCode::Right) {
-            self.board.move_right();
+            self.board.move_right(1);
         }
         if is_key_pressed(KeyCode::Down) {
-            self.board.soft_drop();
+            self.board.soft_drop(1);
         }
         if is_key_pressed(KeyCode::Space) {
             self.board.hard_drop();
         }
         if is_key_pressed(KeyCode::Z) {
-            self.board.rotate(RotationDirection::CounterClockwise);
+            self.board.rotate(&RotationDirection::CounterClockwise);
         }
         if is_key_pressed(KeyCode::X) {
-            self.board.rotate(RotationDirection::Clockwise);
+            self.board.rotate(&RotationDirection::Clockwise);
         }
         if is_key_pressed(KeyCode::F) {
-            self.board.rotate(RotationDirection::Deg180);
+            self.board.rotate(&RotationDirection::Deg180);
         }
 
         self.board.update(dt);
+        self.board_mgr.update(dt);
+        if let Ok(msg) = self.receiver.try_recv() {
+            println!("msg: {:?}", msg);
+        }
+        /*for msg in self.receiver.iter() {
+             println!("msg: {:?}", msg);
+        }*/
+        /*while let Some(i) = self.receiver.recv() {
+            println!("got = {:?}", i);
+        }*/
     }
 }

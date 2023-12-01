@@ -28,7 +28,7 @@ impl GameRoot {
             if self.close_requested {
                 break 'main_loop;
             }
-    
+
             self.update(get_frame_time());
     
             clear_background(WHITE);
