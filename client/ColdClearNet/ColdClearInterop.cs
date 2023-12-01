@@ -8,10 +8,10 @@ internal static class ColdClearInterop
 
 
     [DllImport(DllName, EntryPoint = "cc_launch_async")]
-    public static extern IntPtr LaunchAsync(Options options, Weights weights, IntPtr book, Piece[] queue, uint count);
+    public static extern ColdClearHandle LaunchAsync(Options options, Weights weights, BookHandle book, Piece[] queue, uint count);
 
     [DllImport(DllName, EntryPoint = "cc_launch_with_board_async")]
-    public static extern IntPtr LaunchWithBoardAsync(Options options, Weights weights, IntPtr book,
+    public static extern ColdClearHandle LaunchWithBoardAsync(Options options, Weights weights, BookHandle book,
         byte[] field, uint bag_remain, ref Piece hold, [MarshalAs(UnmanagedType.U1)] bool b2b, uint combo, Piece[] queue,
         uint count);
     
@@ -19,19 +19,19 @@ internal static class ColdClearInterop
     public static extern void DestroyAsync(IntPtr bot);
 
     [DllImport(DllName, EntryPoint = "cc_reset_async")]
-    public static extern void ResetAsync(IntPtr bot, byte[] field, [MarshalAs(UnmanagedType.U1)] bool b2b, uint combo);
+    public static extern void ResetAsync(ColdClearHandle bot, byte[] field, [MarshalAs(UnmanagedType.U1)] bool b2b, uint combo);
 
     [DllImport(DllName, EntryPoint = "cc_add_next_piece_async")]
-    public static extern void AddNextPieceAsync(IntPtr bot, Piece piece);
+    public static extern void AddNextPieceAsync(ColdClearHandle bot, Piece piece);
 
     [DllImport(DllName, EntryPoint = "cc_request_next_move")]
-    public static extern void RequestNextMove(IntPtr bot, uint incoming);
+    public static extern void RequestNextMove(ColdClearHandle bot, uint incoming);
 
     [DllImport(DllName, EntryPoint = "cc_poll_next_move")]
-    public static extern BotPollStatus PollNextMove(IntPtr bot, out Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
+    public static extern BotPollStatus PollNextMove(ColdClearHandle bot, out Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
 
     [DllImport(DllName, EntryPoint = "cc_block_next_move")]
-    public static extern BotPollStatus BlockNextMove(IntPtr bot, out Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
+    public static extern BotPollStatus BlockNextMove(ColdClearHandle bot, out Move move, [In, Out] PlanPlacement[] plan, ref uint plan_length);
     
     [DllImport(DllName, EntryPoint = "cc_default_options")]
     public static extern void DefaultOptions(out Options options);
@@ -43,10 +43,10 @@ internal static class ColdClearInterop
     public static extern void FastWeights(out Weights weights);
 
     [DllImport(DllName, EntryPoint = "cc_load_book_from_file")]
-    public static extern IntPtr LoadBookFromFile([MarshalAs(UnmanagedType.LPStr)] string path);
+    public static extern BookHandle LoadBookFromFile([MarshalAs(UnmanagedType.LPStr)] string path);
 
     [DllImport(DllName, EntryPoint = "cc_load_book_from_memory")]
-    public static extern IntPtr LoadBookFromMemory(byte[] data, uint length);
+    public static extern BookHandle LoadBookFromMemory(byte[] data, uint length);
     
     [DllImport(DllName, EntryPoint = "cc_destroy_book")]
     public static extern void DestroyBook(IntPtr book);

@@ -2,9 +2,11 @@
 
 public sealed class Book : IDisposable
 {
-    internal IntPtr _book;
+    internal readonly BookHandle _book;
 
-    private Book(IntPtr book)
+    public static Book Empty => new Book(new BookHandle());
+
+    private Book(BookHandle book)
     {
         _book = book;
     }
@@ -20,7 +22,7 @@ public sealed class Book : IDisposable
     {
         var ptr = ColdClearInterop.LoadBookFromFile(path);
 
-        if (ptr == IntPtr.Zero)
+        if (ptr.IsInvalid || ptr.IsClosed)
             return null;
 
         return new Book(ptr);
@@ -37,30 +39,26 @@ public sealed class Book : IDisposable
     {
         var ptr = ColdClearInterop.LoadBookFromMemory(data, (uint) data.Length);
 
-        if (ptr == IntPtr.Zero)
+        if (ptr.IsInvalid || ptr.IsClosed)
             return null;
 
         return new Book(ptr);
     }
-
-
-    private void ReleaseUnmanagedResources()
-    {
-        if (_book == IntPtr.Zero)
-            return;
-
-        ColdClearInterop.DestroyBook(_book);
-        _book = IntPtr.Zero;
-    }
-
+    
     public void Dispose()
     {
-        ReleaseUnmanagedResources();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_book != null && !_book.IsInvalid)
+            _book.Dispose();
     }
 
     ~Book()
     {
-        ReleaseUnmanagedResources();
+        Dispose(false);
     }
 }

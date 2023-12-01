@@ -12,7 +12,7 @@ public struct BotMove
 
 public sealed class ColdClear : IDisposable
 {
-    private IntPtr _bot;
+    private ColdClearHandle _bot;
     private static Options? _defaultOptions;
     private static Weights? _defaultWeights;
     private static Weights? _fastWeights;
@@ -98,7 +98,7 @@ public sealed class ColdClear : IDisposable
         _bot = ColdClearInterop.LaunchAsync(
             options,
             weights,
-            book?._book ?? IntPtr.Zero,
+            book?._book ?? Book.Empty._book,
             queueArr == null ? Array.Empty<Piece>() : queueArr,
             queueArr == null ? 0U : (uint)queueArr.Length
         );
@@ -138,7 +138,7 @@ public sealed class ColdClear : IDisposable
         _bot = ColdClearInterop.LaunchWithBoardAsync(
             options,
             weights,
-            book?._book ?? IntPtr.Zero,
+            book?._book ?? Book.Empty._book,
             field.Select(b => b ? (byte)1 : (byte)0).ToArray(),
             (uint)bagRemain, 
             ref hold, 
@@ -243,12 +243,10 @@ public sealed class ColdClear : IDisposable
         if (_book != null)
             _book.Dispose();
 
-        if (_bot == IntPtr.Zero)
+        if (_bot == null || _bot.IsInvalid)
             return;
 
-        ColdClearInterop.DestroyAsync(_bot);
-
-        _bot = IntPtr.Zero;
+        _bot.Dispose();
     }
 
     public void Dispose()
