@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-"quader_engine" = { path = "../quader_engine" }
+quader_engine = { path = "../quader_engine" }
 macroquad = "0.4.4"
 serde = "1.0.188"
 macroquad-profiler = "0.2.0"
-"uuid" = { version = "1.6.1", features = ["serde", "v4"] }
+uuid = { version = "1.6.1", features = ["serde", "v4"] }
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
