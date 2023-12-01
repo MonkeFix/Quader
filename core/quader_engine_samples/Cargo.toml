@@ -10,6 +10,7 @@ edition = "2021"
 macroquad = "0.4.4"
 serde = "1.0.188"
 macroquad-profiler = "0.2.0"
+"uuid" = { version = "1.6.1", features = ["serde", "v4"] }
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
