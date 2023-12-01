@@ -8,6 +8,7 @@ use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardSettings, Gam
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::primitives::Point;
+use crate::replays::MoveInfo;
 use crate::rng_manager::RngManager;
 use crate::wall_kick_data::WallKickData;
 
@@ -41,7 +42,7 @@ struct All {
     // SCORING:
     combo: u32,
     b2b: u32,
-    //last_move: MoveType,
+    last_move: MoveInfo,
     //replay: Replay,
     attack_queue: VecDeque<u32>,
     incoming_damage: Vec<u32>,

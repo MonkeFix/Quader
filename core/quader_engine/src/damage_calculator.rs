@@ -1,75 +1,89 @@
+use crate::game_settings::{AttackSettings, BoardSettings};
 use crate::primitives::Point;
+use crate::replays::MoveInfo;
+use crate::scoring::{damage_mods, has_flag, thresholds, TSpinStatus};
 
-enum TSpinType {
-    None, Full, Mini
+
+pub struct DamageCalculator<'a> {
+    pub(crate) attack_settings: &'a AttackSettings,
+    pub(crate) board_settings: &'a BoardSettings
 }
 
-pub const COMBO_1_THRESHOLD: u32 = 1;
-pub const COMBO_2_THRESHOLD: u32 = 6;
-pub const COMBO_3_THRESHOLD: u32 = 10;
-pub const COMBO_4_THRESHOLD: u32 = 15;
-pub const COMBO_5_THRESHOLD: u32 = 18;
-
-
-pub const B2B_1_THRESHOLD: u32 = 0;
-pub const B2B_2_THRESHOLD: u32 = 5;
-pub const B2B_3_THRESHOLD: u32 = 10;
-pub const B2B_4_THRESHOLD: u32 = 30;
-pub const B2B_5_THRESHOLD: u32 = 60;
-
-pub mod damage_mods {
-    pub const NONE: u32 = 0;
-
-    pub const T_SPIN_MINI: u32 = 1 << 1;
-    pub const T_SPIN_FULL: u32 = 1 << 2;
-
-    pub const SINGLE: u32 = 1 << 3;
-    pub const DOUBLE: u32 = 1 << 4;
-    pub const TRIPLE: u32 = 1 << 5;
-    pub const QUAD: u32 = 1 << 6;
-
-    pub const ALL_CLEAR: u32 = 1 << 7;
-
-    pub const B2B_1: u32 = 1 << 8;
-    pub const B2B_2: u32 = 1 << 9;
-    pub const B2B_3: u32 = 1 << 10;
-    pub const B2B_4: u32 = 1 << 11;
-    pub const B2B_5: u32 = 1 << 12;
-
-    pub const COMBO_1: u32 = 1 << 13;
-    pub const COMBO_2: u32 = 1 << 14;
-    pub const COMBO_3: u32 = 1 << 15;
-    pub const COMBO_4: u32 = 1 << 16;
-    pub const COMBO_5: u32 = 1 << 17;
-}
-
-fn has_flag(value: u32, flag: u32) -> bool {
-    value & flag != 0
-}
-
-pub struct DamageCalculator {
-
-}
-
-impl DamageCalculator {
-    pub fn new() -> Self { Self {} }
-
-    pub fn calculate(&self) {
-
+impl<'a> DamageCalculator<'a> {
+    pub fn new(attack_settings: &'a AttackSettings, board_settings: &'a BoardSettings) -> Self {
+        Self {
+            attack_settings,
+            board_settings
+        }
     }
 
-    fn create_board_move<F>(
+    pub fn calculate(&self, mv: &MoveInfo) -> u32 {
+        let mut attack = self.attack_settings.lines_0;
+
+        if mv.lines_cleared == 0 {
+            return attack;
+        }
+
+        let mods = mv.mod_bits;
+
+        // COMBOS
+        if has_flag(mods, damage_mods::COMBO_1) { attack += self.attack_settings.combos[0]; }
+        if has_flag(mods, damage_mods::COMBO_2) { attack += self.attack_settings.combos[1]; }
+        if has_flag(mods, damage_mods::COMBO_3) { attack += self.attack_settings.combos[2]; }
+        if has_flag(mods, damage_mods::COMBO_4) { attack += self.attack_settings.combos[3]; }
+        if has_flag(mods, damage_mods::COMBO_5) { attack += self.attack_settings.combos[4]; }
+
+        if has_flag(mods, damage_mods::ALL_CLEAR) { attack += self.attack_settings.all_clear; }
+
+        // B2Bs
+        if has_flag(mods, damage_mods::B2B_1) { attack += self.attack_settings.b2bs[0]; }
+        if has_flag(mods, damage_mods::B2B_2) { attack += self.attack_settings.b2bs[1]; }
+        if has_flag(mods, damage_mods::B2B_3) { attack += self.attack_settings.b2bs[2]; }
+        if has_flag(mods, damage_mods::B2B_4) { attack += self.attack_settings.b2bs[3]; }
+        if has_flag(mods, damage_mods::B2B_5) { attack += self.attack_settings.b2bs[4]; }
+
+        // T-SPINS
+        if has_flag(mods, damage_mods::T_SPIN_FULL) {
+            // FULL
+            if has_flag(mods, damage_mods::SINGLE) {
+                attack += self.attack_settings.t_spin_single;
+            }
+            if has_flag(mods, damage_mods::DOUBLE) {
+                attack += self.attack_settings.t_spin_double;
+            }
+            if has_flag(mods, damage_mods::TRIPLE) {
+                attack += self.attack_settings.t_spin_triple;
+            }
+        } else if has_flag(mods, damage_mods::T_SPIN_MINI) {
+            // MINI
+            if has_flag(mods, damage_mods::SINGLE) {
+                attack += self.attack_settings.t_spin_single_mini;
+            }
+        } else {
+            // REGULAR ATTACKS
+            if has_flag(mods, damage_mods::SINGLE) {
+                attack += self.attack_settings.lines_1;
+            }
+            if has_flag(mods, damage_mods::DOUBLE) {
+                attack += self.attack_settings.lines_2;
+            }
+            if has_flag(mods, damage_mods::TRIPLE) {
+                attack += self.attack_settings.lines_3;
+            }
+            if has_flag(mods, damage_mods::QUAD) {
+                attack += self.attack_settings.lines_4;
+            }
+        }
+
+        attack
+    }
+
+    pub(crate) fn create_board_move_bits<F>(
         &self,
         total_cells: u32,
-        lines_cleared: u32,
-        b2b: &mut u32,
-        combo: &mut u32,
-        piece_x: i32,
-        piece_y: i32,
-        width: usize,
-        height: usize,
-        not_empty_func: F
-    ) -> u32 where F: Fn(i32, i32) -> bool {
+        mv: &mut MoveInfo,
+        t_spin_status: &TSpinStatus
+    ) -> u32 {
 
         let mut res = 0;
         let mut break_b2b = true;
@@ -78,82 +92,86 @@ impl DamageCalculator {
             res |= damage_mods::ALL_CLEAR;
         }
 
-        if lines_cleared == 1 {
+        if mv.lines_cleared == 1 {
             res |= damage_mods::SINGLE;
-        } else if lines_cleared == 2 {
+        } else if mv.lines_cleared == 2 {
             res |= damage_mods::DOUBLE;
-        } else if lines_cleared == 3 {
+        } else if mv.lines_cleared == 3 {
             res |= damage_mods::TRIPLE;
-        } else if lines_cleared >= 4 {
+        } else if mv.lines_cleared >= 4 {
             res |= damage_mods::QUAD;
-            *b2b += 1;
+            mv.b2b += 1;
             break_b2b = false;
         }
 
-        if *combo > COMBO_1_THRESHOLD {
+        if mv.combo > thresholds::COMBO_1_THRESHOLD {
             res |= damage_mods::COMBO_1;
-        } else if *combo >= COMBO_2_THRESHOLD {
+        } else if mv.combo >= thresholds::COMBO_2_THRESHOLD {
             res |= damage_mods::COMBO_2;
-        } else if *combo >= COMBO_3_THRESHOLD {
+        } else if mv.combo >= thresholds::COMBO_3_THRESHOLD {
             res |= damage_mods::COMBO_3;
-        } else if *combo >= COMBO_4_THRESHOLD {
+        } else if mv.combo >= thresholds::COMBO_4_THRESHOLD {
             res |= damage_mods::COMBO_4;
-        } else if *combo >= COMBO_5_THRESHOLD {
+        } else if mv.combo >= thresholds::COMBO_5_THRESHOLD {
             res |= damage_mods::COMBO_5;
         }
 
-        match self.check_t_overhang(piece_x, piece_y, width, height, not_empty_func) {
-            TSpinType::None => {},
-            TSpinType::Full => {
+        match t_spin_status {
+            TSpinStatus::None => {},
+            TSpinStatus::Full => {
                 res |= damage_mods::T_SPIN_FULL;
                 break_b2b = false;
-                *b2b += 1;
+                mv.b2b += 1;
             },
-            TSpinType::Mini => {
+            TSpinStatus::Mini => {
                 res |= damage_mods::T_SPIN_MINI;
                 break_b2b = false;
-                *b2b += 1;
+                mv.b2b += 1;
             }
         }
 
-        if lines_cleared > 0 && break_b2b {
-            *b2b = 0;
+        if mv.lines_cleared > 0 && break_b2b {
+            mv.b2b = 0;
         }
 
-        if *b2b > B2B_1_THRESHOLD {
+        if mv.b2b > thresholds::B2B_1_THRESHOLD {
             res |= damage_mods::B2B_1;
-        } else if *b2b >= B2B_2_THRESHOLD {
+        } else if mv.b2b >= thresholds::B2B_2_THRESHOLD {
             res |= damage_mods::B2B_2;
-        } else if *b2b >= B2B_3_THRESHOLD {
+        } else if mv.b2b >= thresholds::B2B_3_THRESHOLD {
             res |= damage_mods::B2B_3;
-        } else if *b2b >= B2B_4_THRESHOLD {
+        } else if mv.b2b >= thresholds::B2B_4_THRESHOLD {
             res |= damage_mods::B2B_4;
-        } else if *b2b >= B2B_5_THRESHOLD {
+        } else if mv.b2b >= thresholds::B2B_5_THRESHOLD {
             res |= damage_mods::B2B_5;
         }
 
-        if lines_cleared == 0 {
-            *combo = 0;
+        if mv.lines_cleared == 0 {
+            mv.combo = 0;
         }
 
         res
     }
 
-    fn check_t_overhang<F>(&self, piece_x: i32, piece_y: i32, width: usize, height: usize, not_empty_func: F) -> TSpinType
+    pub(crate) fn check_t_overhang<F>(&self, piece_x: i32, piece_y: i32, not_empty_func: F) -> TSpinStatus
         where F: Fn(i32, i32) -> bool {
 
-        let top_left = Point::new(piece_x - 1, piece_y - 1);
-        let top_right = Point::new(piece_x + 1, piece_y - 1);
-        let bottom_left = Point::new(piece_x - 1, piece_y + 1);
-        let bottom_right = Point::new(piece_x + 1, piece_y + 1);
-
-        let point_arr = [top_left, top_right, bottom_left, bottom_right];
+        let point_arr = [
+            // TOP LEFT
+            Point::new(piece_x - 1, piece_y - 1),
+            // TOP RIGHT
+            Point::new(piece_x + 1, piece_y - 1),
+            // BOTTOM LEFT
+            Point::new(piece_x - 1, piece_y + 1),
+            // BOTTOM RIGHT
+            Point::new(piece_x + 1, piece_y + 1)
+        ];
 
         let mut oob_overhangs = 0;
         let mut non_oob_overhangs = 0;
 
         for p in point_arr {
-            if self.is_oob(p, width, height) {
+            if self.is_oob(p, self.board_settings.width, self.board_settings.height) {
                 oob_overhangs += 1;
             } else if not_empty_func(p.x, p.y) {
                 non_oob_overhangs += 1;
@@ -161,18 +179,17 @@ impl DamageCalculator {
         }
 
         if oob_overhangs > 0 && non_oob_overhangs > 0 {
-            return TSpinType::Mini;
+            return TSpinStatus::Mini;
         }
 
         if oob_overhangs == 0 && non_oob_overhangs >= 3 {
-            return TSpinType::Full;
+            return TSpinStatus::Full;
         }
 
-        TSpinType::None
+        TSpinStatus::None
     }
 
     fn is_oob(&self, p: Point<i32>, width: usize, height: usize) -> bool {
         p.x < 0 || p.x >= width as i32 || p.y >= height as i32 || p.y < 0
     }
-
 }

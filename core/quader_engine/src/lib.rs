@@ -9,6 +9,8 @@ pub mod board_manager;
 pub mod board_command;
 pub mod damage_calculator;
 pub mod game_settings;
+pub mod replays;
+pub mod scoring;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
