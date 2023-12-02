@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 
 pub(crate) enum TSpinStatus {
     None, Full, Mini
@@ -46,4 +47,16 @@ pub mod damage_mods {
 
 pub fn has_flag(value: u32, flag: u32) -> bool {
     value & flag != 0
+}
+
+pub struct DamageMgr {
+    attack_queue: VecDeque<u32>,
+    incoming_damage: Vec<u32>,
+    last_garbage_x: u32,
+    cur_garbage_cd: f32
+}
+
+pub struct ScoringMgr {
+    combo: u32,
+    b2b: u32
 }

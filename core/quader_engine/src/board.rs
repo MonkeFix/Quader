@@ -40,22 +40,22 @@ struct All {
     current_piece: Piece,
 
     // SCORING:
-    combo: u32,
-    b2b: u32,
+    // ScoringMgr | combo: u32,
+    // ScoringMgr | b2b: u32,
     last_move: MoveInfo,
     //replay: Replay,
-    attack_queue: VecDeque<u32>,
-    incoming_damage: Vec<u32>,
-    last_garbage_x: u32,
+    // DamageMgr | attack_queue: VecDeque<u32>,
+    // DamageMgr | incoming_damage: Vec<u32>,
+    // DamageMgr | last_garbage_x: u32,
 
     // UPDATABLE
-    cur_gravity: f32,
-    cur_lock: f32,
-    cur_garbage_cd: f32,
-    cur_tick: f64,
-    intermediate_y: f32,
-    y_needs_update: bool,
-    y_to_check: u32,
+    // GravityMgr | cur_gravity: f32,
+    // GravityMgr | cur_lock: f32,
+    // GravityMgr | intermediate_y: f32,
+    // GravityMgr | y_needs_update: bool,
+    // GravityMgr | y_to_check: u32,
+    // DamageMgr | cur_garbage_cd: f32,
+    // TimeMgr | cur_tick: f64,
 }
 
 pub struct Board {

@@ -1,4 +1,5 @@
-﻿use serde::{Deserialize, Serialize};
+﻿use std::slice::Iter;
+use serde::{Deserialize, Serialize};
 use crate::board::CellType;
 use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::primitives::{Point, Rect, Color};
@@ -32,6 +33,10 @@ impl Row {
 
     pub fn get_occupied_cell_count(&self) -> usize {
         self.0.iter().filter(|c| increases_cells(**c)).count()
+    }
+
+    pub fn iter(&self) -> Iter<'_, CellType> {
+        self.0.iter()
     }
 
     pub const EMPTY: &'static Self = &Row([CellType::None; BOARD_WIDTH]);

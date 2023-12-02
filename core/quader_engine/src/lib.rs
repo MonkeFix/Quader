@@ -11,6 +11,8 @@ pub mod damage_calculator;
 pub mod game_settings;
 pub mod replays;
 pub mod scoring;
+mod gravity_mgr;
+mod time_mgr;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
