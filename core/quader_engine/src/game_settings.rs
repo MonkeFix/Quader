@@ -9,7 +9,8 @@ pub struct GravitySettings {
     pub grav_const: f32,
     pub grav_base: f32,
     pub grav_incr: f32,
-    pub lock_delay: f32
+    pub lock_delay: f32,
+    pub lock_prolong_amount: f32
 }
 
 impl Default for GravitySettings {
@@ -18,7 +19,8 @@ impl Default for GravitySettings {
             grav_const: 0.0,
             grav_base: 0.8,
             grav_incr: 0.007,
-            lock_delay: 1.0
+            lock_delay: 1.0,
+            lock_prolong_amount: 0.02
         }
     }
 }
