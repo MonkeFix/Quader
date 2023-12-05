@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::wall_kick_data::WallKickData;
 
 pub const BOARD_WIDTH: usize = 10;
 pub const BOARD_HEIGHT: usize = 40;
@@ -77,17 +78,19 @@ impl Default for BoardSettings {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct GameSettings {
     gravity: GravitySettings,
     board: BoardSettings,
-    attack: AttackSettings
+    attack: AttackSettings,
+    wall_kick_data: WallKickData
 }
 
 impl GameSettings {
     pub fn new(gravity_settings: Option<GravitySettings>,
                board_settings: Option<BoardSettings>,
-               attack_settings: Option<AttackSettings>)
+               attack_settings: Option<AttackSettings>,
+               wall_kick_data: Option<WallKickData>)
         -> Self {
 
         let gravity = if let Some(g) = gravity_settings {
@@ -108,12 +111,19 @@ impl GameSettings {
             AttackSettings::default()
         };
 
+        let wall_kick_data = if let Some(w) = wall_kick_data {
+            w
+        } else {
+            WallKickData::default()
+        };
+
         Self {
-            gravity, board, attack
+            gravity, board, attack, wall_kick_data
         }
     }
 
     pub fn get_gravity(&self) -> &GravitySettings { &self.gravity }
     pub fn get_board(&self) -> &BoardSettings { &self.board }
     pub fn get_attack(&self) -> &AttackSettings { &self.attack }
+    pub fn get_wall_kick_data(&self) -> &WallKickData { &self.wall_kick_data }
 }

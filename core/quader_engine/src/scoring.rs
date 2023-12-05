@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use crate::board::BoardComponent;
 
 pub(crate) enum TSpinStatus {
     None, Full, Mini
@@ -49,6 +50,7 @@ pub fn has_flag(value: u32, flag: u32) -> bool {
     value & flag != 0
 }
 
+#[derive(Default)]
 pub struct DamageMgr {
     attack_queue: VecDeque<u32>,
     incoming_damage: Vec<u32>,
@@ -56,7 +58,36 @@ pub struct DamageMgr {
     cur_garbage_cd: f32
 }
 
+impl DamageMgr {
+    pub fn new() -> Self {
+        Self {
+            attack_queue: VecDeque::new(),
+            incoming_damage: Vec::new(),
+            last_garbage_x: 0,
+            cur_garbage_cd: 0.0
+        }
+    }
+}
+
+#[derive(Default)]
 pub struct ScoringMgr {
-    combo: u32,
-    b2b: u32
+    pub combo: u32,
+    pub b2b: u32
+}
+
+impl ScoringMgr {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl BoardComponent for ScoringMgr {
+    fn get_name(&self) -> &'static str {
+        "scoring_mgr"
+    }
+
+    fn reset(&mut self) {
+        self.combo = 0;
+        self.b2b = 0;
+    }
 }

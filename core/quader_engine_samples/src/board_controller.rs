@@ -3,14 +3,15 @@ use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
-use quader_engine::board::{adjust_point_clone, Board, CellType};
-use quader_engine::board_cell_holder::{cell_to_color};
+use quader_engine::board::{BoardOld};
 use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage};
 use quader_engine::board_command::BoardMoveDir::Left;
 use quader_engine::board_manager::BoardManager;
+use quader_engine::cell_holder::CellType;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings};
 use quader_engine::piece::{Piece, PieceType, RotationDirection};
 use quader_engine::primitives::Point;
+use quader_engine::utils::{adjust_point_clone, cell_to_color};
 
 use crate::renderable::Renderable;
 use crate::updatable::Updatable;
@@ -18,7 +19,7 @@ use crate::updatable::Updatable;
 const DEFAULT_CELL_SIZE: f32 = 32.0;
 
 pub struct BoardController {
-    board: Box<Board>,
+    board: Box<BoardOld>,
     x: f32,
     y: f32,
     cell_size: f32,
@@ -33,7 +34,7 @@ impl BoardController {
 
         let board_settings = BoardSettings::default();
 
-        let mut board = Box::<Board>::default();
+        let mut board = Box::<BoardOld>::default();
         board.create_piece(PieceType::I);
 
         let mut board_mgr = BoardManager::new(board_settings);

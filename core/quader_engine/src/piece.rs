@@ -1,8 +1,9 @@
 use std::fmt::{Display, Formatter};
 use std::rc::{Rc, Weak};
 use serde::{Deserialize, Serialize};
+use crate::cell_holder::CellType;
 use crate::primitives::{Point, Rect, Color};
-use crate::board::{CellType};
+use crate::utils::calc_bounds;
 use crate::wall_kick_data::{WallKickData, WallKickType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -88,65 +89,6 @@ pub struct Piece {
     current_rotation: RotationState,
     wall_kick_type: WallKickType
 }
-
-pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
-    let mut min_x = i32::MAX;
-    let mut min_y = i32::MAX;
-    let mut max_x = i32::MIN;
-    let mut max_y = i32::MIN;
-
-    for &p in positions {
-        if p.x < min_x { min_x = p.x; }
-        else if p.x > max_x { max_x = p.x; }
-
-        if p.y < min_y { min_y = p.y; }
-        else if p.y > max_y { max_y = p.y; }
-    }
-
-    let w = 1 + (if min_x == max_x { 0 } else { min_x.abs() + max_x.abs() } );
-    let h = 1 + (if min_y == max_y { 0 } else { min_y.abs() + max_y.abs() } );
-
-    assert!(w > 0);
-    assert!(h > 0);
-
-    Rect {
-        x: x + min_x, y: y + min_y,
-        width: w as u32, height: h as u32
-    }
-}
-
-/// Rotates a 3x3 array counter-clockwise
-/*pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
-    let n = a.len();
-    let mut tmp: u8;
-
-    for i in 0..n/2 {
-        for j in i..n - i - 1 {
-            tmp = a[i][j];
-            a[i][j] = a[j][n - i - 1];
-            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
-            a[n - j - 1][i] = tmp;
-        }
-    }
-}
-
-pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
-    let n = a.len();
-    let mut tmp: T;
-
-    for i in 0..n/2 {
-        for j in i..n - i - 1 {
-            tmp = a[i][j];
-            a[i][j] = a[j][n - i - 1];
-            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
-            a[n - j - 1][i] = tmp;
-        }
-    }
-}*/
-
-
 
 impl Piece {
     pub fn new(piece_type: PieceType) -> Self {

@@ -1,31 +1,36 @@
+use crate::board::BoardComponent;
 use crate::game_settings::GravitySettings;
 use crate::piece::Piece;
 
-pub struct GravityMgr<'a, F> where F: FnOnce() -> u32 + Copy {
-    pub(crate) gravity_settings: &'a GravitySettings,
+pub struct GravityMgr<'a> {
     pub(crate) piece: Option<&'a Piece>,
     pub(crate) cur_gravity: f32,
     pub(crate) cur_lock: f32,
     pub(crate) intermediate_y: f32,
     pub(crate) y_needs_update: bool,
-    pub(crate) calc_y_func: F,
-    pub(crate) y_to_check: u32
+    pub(crate) y_to_check: u32,
+    grav_base: f32,
+    grav_incr: f32,
+    lock_prolong_amount: f32,
+    lock_delay: f32,
 }
 
-impl<'a, F> GravityMgr<'a, F> where F: FnOnce() -> u32 + Copy {
-    pub fn new(gravity_settings: &'a GravitySettings, calc_y_func: F) -> Self {
+impl<'a> GravityMgr<'a>{
+    pub fn new(gravity_settings: &GravitySettings) -> Self {
         let cur_gravity = gravity_settings.grav_base;
         let cur_lock = gravity_settings.lock_delay;
 
         Self {
-            gravity_settings,
             cur_gravity,
             cur_lock,
             piece: None,
             intermediate_y: 0.0,
             y_needs_update: true,
-            calc_y_func,
-            y_to_check: 0
+            y_to_check: 0,
+            grav_base: gravity_settings.grav_base,
+            grav_incr: gravity_settings.grav_incr,
+            lock_prolong_amount: gravity_settings.lock_prolong_amount,
+            lock_delay: gravity_settings.lock_delay
         }
     }
 
@@ -38,7 +43,7 @@ impl<'a, F> GravityMgr<'a, F> where F: FnOnce() -> u32 + Copy {
 
         if self.y_needs_update {
             // TODO: Maybe replace the F()
-            self.y_to_check = (self.calc_y_func)();
+            // self.y_to_check = (self.calc_y_func)();
             self.y_needs_update = false;
         }
 
@@ -62,11 +67,28 @@ impl<'a, F> GravityMgr<'a, F> where F: FnOnce() -> u32 + Copy {
             todo!("hard drop by gravity");
         }
 
-        self.cur_gravity += self.gravity_settings.grav_incr * (dt * 10.0);
+        self.cur_gravity += self.grav_incr * (dt * 10.0);
     }
 
     pub fn prolong_lock(&mut self) {
-        self.cur_lock = (self.cur_lock + self.gravity_settings.lock_prolong_amount)
-            .min(self.gravity_settings.lock_delay);
+        self.cur_lock = (self.cur_lock + self.lock_prolong_amount)
+            .min(self.lock_delay);
+    }
+}
+
+impl<'a> BoardComponent for GravityMgr<'a> {
+    fn get_name(&self) -> &'static str {
+        "gravity_mgr"
+    }
+
+    fn reset(&mut self) {
+        self.intermediate_y = 0.0;
+        self.y_needs_update = true;
+        self.y_to_check = 0;
+
+        self.piece = None;
+
+        self.cur_gravity = self.grav_base;
+        self.cur_lock = self.lock_delay;
     }
 }

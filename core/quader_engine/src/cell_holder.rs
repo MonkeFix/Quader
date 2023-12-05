@@ -1,8 +1,22 @@
 ﻿use std::slice::Iter;
 use serde::{Deserialize, Serialize};
-use crate::board::CellType;
-use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH};
+use crate::board::{BoardComponent};
+use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH, BoardSettings};
 use crate::primitives::{Point, Rect, Color};
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum CellType {
+    None,
+    I,
+    O,
+    T,
+    L,
+    J,
+    S,
+    Z,
+    Garbage,
+    Solid
+}
 
 pub trait BoolArray {
     fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT];
@@ -84,7 +98,7 @@ impl<'a> Iterator for RowIterator<'a> {
 
 // TODO: Fix "Serialize, Deserialize" traits
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BoardCellHolder {
+pub struct CellHolder {
     layout: Vec<Row>,
     width: usize,
     height: usize,
@@ -95,9 +109,9 @@ pub fn increases_cells(cell_type: CellType) -> bool {
     cell_type != CellType::None && cell_type != CellType::Solid
 }
 
-impl Default for BoardCellHolder {
+impl Default for CellHolder {
     fn default() -> Self {
-        BoardCellHolder {
+        CellHolder {
             width: BOARD_WIDTH, height: BOARD_HEIGHT,
             layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
             occupied_cells: 0
@@ -105,22 +119,16 @@ impl Default for BoardCellHolder {
     }
 }
 
-pub fn cell_to_color(cell: &CellType) -> Color {
-    match cell {
-        CellType::None => *Color::BLACK,
-        CellType::I => *Color::PIECE_I,
-        CellType::O => *Color::PIECE_O,
-        CellType::T => *Color::PIECE_T,
-        CellType::L => *Color::PIECE_L,
-        CellType::J => *Color::PIECE_J,
-        CellType::S => *Color::PIECE_S,
-        CellType::Z => *Color::PIECE_Z,
-        CellType::Garbage => *Color::PIECE_GARBAGE,
-        CellType::Solid => *Color::PIECE_GARBAGE
+impl BoardComponent for CellHolder {
+    fn get_name(&self) -> &'static str {
+        "cell_holder"
+    }
+    fn reset(&mut self) {
+        self.reset();
     }
 }
 
-impl BoardCellHolder {
+impl CellHolder {
     pub fn get_width(&self) -> usize {
         self.width
     }
@@ -128,9 +136,9 @@ impl BoardCellHolder {
         self.height
     }
 
-    pub fn new(width: usize, height: usize) -> Self {
-        BoardCellHolder {
-            width, height,
+    pub fn new(board_settings: &BoardSettings) -> Self {
+        CellHolder {
+            width: board_settings.width, height: board_settings.height,
             layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
             occupied_cells: 0
         }
@@ -254,7 +262,7 @@ impl BoardCellHolder {
     }
 }
 
-impl BoolArray for BoardCellHolder {
+impl BoolArray for CellHolder {
     fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT] {
         let mut result = [[false; BOARD_WIDTH]; BOARD_HEIGHT];
 
@@ -272,8 +280,8 @@ impl BoolArray for BoardCellHolder {
 mod tests {
     use super::*;
 
-    fn create_empty_holder() -> BoardCellHolder {
-        BoardCellHolder::new(BOARD_WIDTH, BOARD_HEIGHT)
+    fn create_empty_holder() -> CellHolder {
+        CellHolder::new(BOARD_WIDTH, BOARD_HEIGHT)
     }
 
     fn decode(ch: &u8) -> CellType {

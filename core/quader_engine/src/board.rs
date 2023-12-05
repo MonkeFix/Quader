@@ -1,30 +1,24 @@
-﻿use std::cell::RefCell;
-use std::collections::VecDeque;
+﻿use std::any::Any;
+use std::cell::RefCell;
+use std::collections::{HashMap, VecDeque};
+use std::marker::PhantomData;
 use std::ops::{Add, AddAssign};
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
-use crate::board_cell_holder::{BoardCellHolder, Row};
+use crate::cell_holder::{CellHolder, CellType, Row};
+use crate::damage_calculator::DamageCalculator;
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardSettings, GameSettings};
+use crate::gravity_mgr::GravityMgr;
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
+use crate::piece_mgr::PieceMgr;
 use crate::primitives::Point;
 use crate::replays::MoveInfo;
 use crate::rng_manager::RngManager;
+use crate::scoring::{DamageMgr, ScoringMgr};
+use crate::time_mgr::TimeMgr;
+use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum CellType {
-    None,
-    I,
-    O,
-    T,
-    L,
-    J,
-    S,
-    Z,
-    Garbage,
-    Solid
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum GameState {
@@ -36,7 +30,7 @@ struct All {
 
     // INNER LOGIC:
     test_queue: VecDeque<Vec<Point>>,
-    cell_holder: BoardCellHolder,
+    cell_holder: CellHolder,
     current_piece: Piece,
 
     // SCORING:
@@ -58,10 +52,122 @@ struct All {
     // TimeMgr | cur_tick: f64,
 }
 
-pub struct Board {
+pub struct Board<'a> {
+    game_settings: &'a GameSettings,
+    /*gravity_mgr: GravityMgr<'a, 'a>,
+    piece_mgr: PieceMgr<'a>,
+    scoring_mgr: ScoringMgr,
+    time_mgr: TimeMgr,
+    damage_mgr: DamageMgr,
+    cell_holder: CellHolder,
+    rng_mgr: RngManager,
+    damage_calculator: DamageCalculator<'a>,*/
+
+    components: Vec<Box<dyn Any>>,
+    is_enabled: bool
+}
+
+impl<'a> Board<'a> {
+    fn for_each<F: Fn(&Box<dyn BoardComponent>)>(&self, action: F) {
+        for c in self.components.iter() {
+            let c = c.downcast_ref::<Box<dyn BoardComponent>>().unwrap();
+            action(c);
+        }
+    }
+
+    fn for_each_mut<F: FnMut(&mut Box<dyn BoardComponent>)>(&mut self, action: &mut F) {
+        for c in self.components.iter_mut() {
+            let c = c.downcast_mut::<Box<dyn BoardComponent>>().unwrap();
+            action(c);
+        }
+    }
+}
+
+pub trait BoardStateful {
+    fn reset(&mut self);
+    fn enable(&mut self) { }
+    fn disable(&mut self) { }
+    fn is_enabled(&self) -> bool;
+}
+
+pub trait BoardEntity<'a> {
+    fn new<T>(game_settings: &'a GameSettings) -> Self where T: BoardComponent + Any;
+    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any;
+    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T>;
+}
+impl<'a> BoardEntity<'a> for Board<'a> {
+    fn new<T>(game_settings: &'a GameSettings) -> Self where T: BoardComponent + Any {
+        Self {
+            game_settings,
+            components: vec![
+                Box::new(PieceMgr::new(game_settings)),
+                Box::new(GravityMgr::new(game_settings.get_gravity())),
+                Box::new(ScoringMgr::new()),
+                Box::new(CellHolder::new(game_settings.get_board()))
+            ],
+            is_enabled: true
+        }
+    }
+
+    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any {
+        self.components.push(Box::new(component));
+    }
+
+    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T> {
+        if let Some(c) = self.components
+            .iter()
+            .find(|c| c.downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
+            return c.downcast_ref::<T>();
+        }
+        None
+    }
+}
+
+impl<'a> BoardStateful for Board<'a> {
+    fn reset(&mut self) {
+        /*for c in self.components.iter_mut() {
+            let c = c.downcast_mut::<Box<dyn BoardComponent>>();
+            c.unwrap().as_mut().reset();
+        }*/
+        self.for_each_mut(&mut |c| c.as_mut().reset());
+    }
+
+    fn enable(&mut self) {
+        if self.is_enabled {
+            return;
+        }
+
+        self.for_each_mut(&mut |c| c.as_mut().enable());
+
+        self.is_enabled = true;
+    }
+
+    fn disable(&mut self) {
+        if !self.is_enabled {
+            return;
+        }
+
+        self.for_each_mut(&mut |c| c.as_mut().disable());
+
+        self.is_enabled = false;
+    }
+
+    fn is_enabled(&self) -> bool {
+        self.is_enabled
+    }
+}
+
+pub trait BoardComponent {
+    fn get_name(&self) -> &'static str;
+    fn reset(&mut self);
+    fn enable(&mut self) { }
+    fn disable(&mut self) { }
+}
+
+pub struct BoardOld {
     width: usize,
     height: usize,
-    cell_holder: Box<BoardCellHolder>,
+    cell_holder: Box<CellHolder>,
     cur_piece: Option<Box<Piece>>,
     gravity: f32,
     lock: f32,
@@ -75,51 +181,24 @@ pub struct Board {
     rng: Rc<RefCell<RngManager>>
 }
 
-pub fn adjust_positions<T: std::ops::AddAssign + Copy>(data: &mut [Point<T>], offset: Point<T>) {
-    for p in &mut *data {
-        p.x += offset.x;
-        p.y += offset.y;
-    }
-}
 
-pub fn adjust_positions_clone<T: std::ops::Add + Copy>(data: &[Point<T>], offset: Point<T>) -> Vec<Point<T::Output>> {
-    data.iter()
-        .map(|p| Point {
-            x: p.x + offset.x,
-            y: p.y + offset.y
-        })
-        .collect()
-}
-
-pub fn adjust_point<T: AddAssign + Copy>(point: &mut Point<T>, offset: Point<T>) {
-    point.x += offset.x;
-    point.y += offset.y;
-}
-
-pub fn adjust_point_clone<T: Add<Output = T> + Copy>(point: &Point<T>, offset: Point<T>) -> Point<T> {
-    Point::new(
-        point.x + offset.x,
-        point.y + offset.y
-    )
-}
-
-impl Default for Board {
+impl Default for BoardOld {
     fn default() -> Self {
-        Board::new(&BoardSettings::default())
+        BoardOld::new(&BoardSettings::default())
     }
 }
 
-impl Board {
+impl BoardOld {
     pub fn new(settings: &BoardSettings) -> Self {
 
         let rng = Rc::new(RefCell::new(RngManager::new(12345)));
         let mut piece_gen = PieceGeneratorBag7::new(&rng);
         let pieces = piece_gen.init();
 
-        Board {
+        BoardOld {
             width: settings.width,
             height: settings.height,
-            cell_holder: Box::<BoardCellHolder>::default(),
+            cell_holder: Box::<CellHolder>::default(),
             cur_piece: None,
             gravity: 0.0,
             lock: 0.0,
@@ -132,6 +211,8 @@ impl Board {
             piece_queue: pieces,
             rng
         }
+
+
     }
 
     pub fn get_queue(&self) -> &[Piece] {
@@ -375,15 +456,3 @@ impl Board {
     }
 }
 
-fn piece_type_to_cell_type(piece_type: &PieceType) -> CellType {
-    match piece_type {
-        PieceType::I => CellType::I,
-        PieceType::O => CellType::O,
-        PieceType::T => CellType::T,
-        PieceType::L => CellType::L,
-        PieceType::J => CellType::J,
-        PieceType::S => CellType::S,
-        PieceType::Z => CellType::Z,
-        PieceType::Pixel => CellType::Garbage,
-    }
-}

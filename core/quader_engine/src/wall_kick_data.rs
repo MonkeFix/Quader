@@ -12,7 +12,7 @@ pub enum WallKickType {
     Default, PieceI, PieceO
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WallKickData {
     default: WK,
     piece_i: WK,
