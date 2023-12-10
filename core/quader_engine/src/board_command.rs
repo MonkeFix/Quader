@@ -16,7 +16,9 @@ pub enum BoardCommandType {
     // delta
     SoftDrop(u32),
     // amount, messiness
-    SendGarbage(u32, u32)
+    SendGarbage(u32, u32),
+    // delta
+    Update(f32)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

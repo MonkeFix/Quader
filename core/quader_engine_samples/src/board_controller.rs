@@ -263,7 +263,8 @@ impl Updatable for BoardController {
         }
 
         self.board.update(dt);
-        self.board_mgr.update(dt);
+        //self.board_mgr.update(dt);
+        self.board_mgr.send_command(&self.uuid, BoardCommand::new(BoardCommandType::Update(dt)));
 
         if let Ok(msg) = &self.receiver.try_recv() {
             match msg {

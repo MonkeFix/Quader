@@ -65,11 +65,14 @@ impl BoardManager {
         let mut binding = rw_board.board.borrow_mut();
         let (board, sender) = (binding.deref_mut(), rw_board.sender.clone());
 
-        self.parse_cmd(board, &cmd);
+        board.exec_cmd(&cmd);
+        // self.parse_cmd(board, &cmd);
 
-        sender
-            .send(BoardMessage::BoardUpdated)
-            .expect("TODO: panic message");
+        /*if cmd.get_type() != BoardCommandType::Update {
+            sender
+                .send(BoardMessage::BoardUpdated)
+                .expect("TODO: panic message");
+        }*/
 
         /*thread::spawn(move || {
             println!("sending");
@@ -92,7 +95,7 @@ impl BoardManager {
         });
     }*/
 
-    pub fn update(&self, dt: f32) {
+    /*pub fn update(&self, dt: f32) {
         /*self.for_each(|b: &mut Rc<Board>| {
             b.update(dt);
         });*/
@@ -101,7 +104,7 @@ impl BoardManager {
         for b in boards.iter() {
             b.1.board.borrow_mut().deref_mut().update(dt);
         }
-    }
+    }*/
 
     /*fn for_each<F>(&self, action: F)
         where F: Fn(&mut Rc<Board>) {
@@ -113,7 +116,7 @@ impl BoardManager {
         }
     }*/
 
-    fn parse_cmd(&self, board: &mut Board, cmd: &BoardCommand) {
+    /*fn parse_cmd(&self, board: &mut Board, cmd: &BoardCommand) {
         match cmd.get_type() {
             BoardCommandType::Move(dir, delta) => {
                 match dir {
@@ -126,5 +129,5 @@ impl BoardManager {
             BoardCommandType::SoftDrop(delta) => board.soft_drop(*delta),
             BoardCommandType::SendGarbage(amount, messiness) => board.send_garbage(*amount, *messiness),
         }
-    }
+    }*/
 }

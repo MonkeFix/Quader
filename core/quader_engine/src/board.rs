@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use std::ops::{Add, AddAssign};
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
+use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder, CellType, Row};
 use crate::damage_calculator::DamageCalculator;
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardSettings, GameSettings};
@@ -81,6 +82,22 @@ impl Board {
             if let Some(c) = c.downcast_mut::<Box<dyn BoardComponent>>() {
                 action(c);
             }
+        }
+    }
+
+    pub fn exec_cmd(&mut self, cmd: &BoardCommand) {
+        match cmd.get_type() {
+            BoardCommandType::Move(dir, delta) => {
+                match dir {
+                    BoardMoveDir::Left => self.move_left(*delta),
+                    BoardMoveDir::Right => self.move_right(*delta)
+                }
+            },
+            BoardCommandType::Rotate(dir) => self.rotate(&WallKickData::default(), dir),
+            BoardCommandType::HardDrop => self.hard_drop(),
+            BoardCommandType::SoftDrop(delta) => self.soft_drop(*delta),
+            BoardCommandType::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
+            BoardCommandType::Update(dt) => self.update(*dt)
         }
     }
 
