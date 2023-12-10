@@ -5,6 +5,11 @@ use once_cell::sync::Lazy;
 use crate::piece::RotationMove;
 use crate::primitives::Point;
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum WallKickDataMode {
+    Standard
+}
+
 type WK = HashMap<RotationMove, Vec<Point>>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -20,12 +25,12 @@ pub struct WallKickData {
 }
 
 pub static WALL_KICK_DATA: Lazy<Mutex<WallKickData>> = Lazy::new(|| {
-    let wkd = WallKickData::new();
+    let wkd = WallKickData::new(WallKickDataMode::Standard);
     Mutex::new(wkd)
 });
 
 impl WallKickData {
-    pub fn new() -> Self {
+    pub fn new(_mode: WallKickDataMode) -> Self {
 
         let default = HashMap::from([
             ( RotationMove::InitToRight,   vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, 1),  Point::new(0, -2), Point::new(-1, -2) ] ),
@@ -92,6 +97,6 @@ impl WallKickData {
 
 impl Default for WallKickData {
     fn default() -> Self {
-        WallKickData::new()
+        WallKickData::new(WallKickDataMode::Standard)
     }
 }

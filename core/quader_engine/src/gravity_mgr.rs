@@ -38,7 +38,29 @@ impl<'a> GravityMgr<'a>{
         self.piece = Some(piece);
     }
 
-    pub fn update(&mut self, dt: f32) {
+    pub fn prolong_lock(&mut self) {
+        self.cur_lock = (self.cur_lock + self.lock_prolong_amount)
+            .min(self.lock_delay);
+    }
+}
+
+impl<'a> BoardComponent for GravityMgr<'a> {
+    fn get_name(&self) -> &'static str {
+        "gravity_mgr"
+    }
+
+    fn reset(&mut self) {
+        self.intermediate_y = 0.0;
+        self.y_needs_update = true;
+        self.y_to_check = 0;
+
+        self.piece = None;
+
+        self.cur_gravity = self.grav_base;
+        self.cur_lock = self.lock_delay;
+    }
+
+    fn update(&mut self, dt: f32) {
         self.intermediate_y += self.cur_gravity * dt;
 
         if self.y_needs_update {
@@ -68,27 +90,5 @@ impl<'a> GravityMgr<'a>{
         }
 
         self.cur_gravity += self.grav_incr * (dt * 10.0);
-    }
-
-    pub fn prolong_lock(&mut self) {
-        self.cur_lock = (self.cur_lock + self.lock_prolong_amount)
-            .min(self.lock_delay);
-    }
-}
-
-impl<'a> BoardComponent for GravityMgr<'a> {
-    fn get_name(&self) -> &'static str {
-        "gravity_mgr"
-    }
-
-    fn reset(&mut self) {
-        self.intermediate_y = 0.0;
-        self.y_needs_update = true;
-        self.y_to_check = 0;
-
-        self.piece = None;
-
-        self.cur_gravity = self.grav_base;
-        self.cur_lock = self.lock_delay;
     }
 }

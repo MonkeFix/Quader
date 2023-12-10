@@ -4,11 +4,10 @@ use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{BoardOld};
-use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage};
-use quader_engine::board_command::BoardMoveDir::Left;
+use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
 use quader_engine::board_manager::BoardManager;
 use quader_engine::cell_holder::CellType;
-use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings};
+use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use quader_engine::piece::{Piece, PieceType, RotationDirection};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{adjust_point_clone, cell_to_color};
@@ -32,12 +31,12 @@ pub struct BoardController {
 impl BoardController {
     pub fn new(x: f32, y: f32) -> Self {
 
-        let board_settings = BoardSettings::default();
+        let game_settings = GameSettings::default();
 
         let mut board = Box::<BoardOld>::default();
         board.create_piece(PieceType::I);
 
-        let mut board_mgr = BoardManager::new(board_settings);
+        let mut board_mgr = BoardManager::new(game_settings);
 
         let rcv = board_mgr.add_board();
 
@@ -51,6 +50,12 @@ impl BoardController {
             uuid: rcv.0
         }
     }
+
+    /*pub fn init(&mut self) {
+        let rcv = self.board_mgr.add_board();
+        self.receiver = Some(rcv.1);
+        self.uuid = Some(rcv.0);
+    }*/
 
     fn point_to_coords(&self, point: &Point) -> (f32, f32) {
         self.usize_to_coords(point.x as usize, point.y as usize)
@@ -202,35 +207,76 @@ impl Updatable for BoardController {
 
         if is_key_pressed(KeyCode::Left) {
             self.board.move_left(1);
+
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::Move(Left, 1))
+                BoardCommand::new(BoardCommandType::Move(BoardMoveDir::Left, 1))
             );
         }
         if is_key_pressed(KeyCode::Right) {
             self.board.move_right(1);
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::Move(BoardMoveDir::Right, 1))
+            );
         }
         if is_key_pressed(KeyCode::Down) {
             self.board.soft_drop(1);
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::SoftDrop(1))
+            );
         }
         if is_key_pressed(KeyCode::Space) {
             self.board.hard_drop();
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::HardDrop)
+            );
         }
         if is_key_pressed(KeyCode::Z) {
             self.board.rotate(&RotationDirection::CounterClockwise);
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::CounterClockwise))
+            );
         }
         if is_key_pressed(KeyCode::X) {
             self.board.rotate(&RotationDirection::Clockwise);
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::Clockwise))
+            );
         }
         if is_key_pressed(KeyCode::F) {
             self.board.rotate(&RotationDirection::Deg180);
+
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::Deg180))
+            );
         }
 
         self.board.update(dt);
         self.board_mgr.update(dt);
-        if let Ok(msg) = self.receiver.try_recv() {
+
+        if let Ok(msg) = &self.receiver.try_recv() {
+            match msg {
+                BoardMessage::NewPieceInQueue(_) => {}
+                BoardMessage::PieceUpdated => {}
+                BoardMessage::GarbageReceived(_, _) => {}
+                BoardMessage::GameStateChanged(_) => {}
+                BoardMessage::PlayerRemoved => {}
+                BoardMessage::BoardUpdated => {}
+            }
             println!("msg: {:?}", msg);
         }
+
         /*for msg in self.receiver.iter() {
              println!("msg: {:?}", msg);
         }*/

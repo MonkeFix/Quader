@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::wall_kick_data::WallKickData;
+use crate::wall_kick_data::{WallKickDataMode};
 
 pub const BOARD_WIDTH: usize = 10;
 pub const BOARD_HEIGHT: usize = 40;
@@ -26,7 +26,7 @@ impl Default for GravitySettings {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AttackSettings {
     pub lines_0: u32,
     pub lines_1: u32,
@@ -38,8 +38,8 @@ pub struct AttackSettings {
     pub t_spin_triple: u32,
     pub t_spin_single_mini: u32,
     pub all_clear: u32,
-    pub b2bs: Vec<u32>,
-    pub combos: Vec<u32>,
+    pub b2bs: [u32; 5],
+    pub combos: [u32; 5],
     pub garbage_delay_ms: u32
 }
 
@@ -56,8 +56,8 @@ impl Default for AttackSettings {
             t_spin_triple: 2,
             t_spin_single_mini: 1,
             all_clear: 10,
-            b2bs: vec![1,2,3,4,5],
-            combos: vec![1,2,3,4,5],
+            b2bs: [1,2,3,4,5],
+            combos: [1,2,3,4,5],
             garbage_delay_ms: 500,
         }
     }
@@ -78,19 +78,19 @@ impl Default for BoardSettings {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct GameSettings {
     gravity: GravitySettings,
     board: BoardSettings,
     attack: AttackSettings,
-    wall_kick_data: WallKickData
+    wall_kick_data_mode: WallKickDataMode
 }
 
 impl GameSettings {
     pub fn new(gravity_settings: Option<GravitySettings>,
                board_settings: Option<BoardSettings>,
                attack_settings: Option<AttackSettings>,
-               wall_kick_data: Option<WallKickData>)
+               wall_kick_data_mode: Option<WallKickDataMode>)
         -> Self {
 
         let gravity = if let Some(g) = gravity_settings {
@@ -111,19 +111,25 @@ impl GameSettings {
             AttackSettings::default()
         };
 
-        let wall_kick_data = if let Some(w) = wall_kick_data {
+        let wall_kick_data_mode = if let Some(w) = wall_kick_data_mode {
             w
         } else {
-            WallKickData::default()
+            WallKickDataMode::Standard
         };
 
         Self {
-            gravity, board, attack, wall_kick_data
+            gravity, board, attack, wall_kick_data_mode
         }
     }
 
     pub fn get_gravity(&self) -> &GravitySettings { &self.gravity }
     pub fn get_board(&self) -> &BoardSettings { &self.board }
     pub fn get_attack(&self) -> &AttackSettings { &self.attack }
-    pub fn get_wall_kick_data(&self) -> &WallKickData { &self.wall_kick_data }
+    pub fn get_wall_kick_data_mode(&self) -> &WallKickDataMode { &self.wall_kick_data_mode }
+}
+
+impl Default for GameSettings {
+    fn default() -> Self {
+        GameSettings::new(None, None, None, None)
+    }
 }

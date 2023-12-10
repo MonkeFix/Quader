@@ -52,8 +52,8 @@ struct All {
     // TimeMgr | cur_tick: f64,
 }
 
-pub struct Board<'a> {
-    game_settings: &'a GameSettings,
+pub struct Board {
+    game_settings: GameSettings,
     /*gravity_mgr: GravityMgr<'a, 'a>,
     piece_mgr: PieceMgr<'a>,
     scoring_mgr: ScoringMgr,
@@ -67,19 +67,54 @@ pub struct Board<'a> {
     is_enabled: bool
 }
 
-impl<'a> Board<'a> {
+impl Board {
     fn for_each<F: Fn(&Box<dyn BoardComponent>)>(&self, action: F) {
         for c in self.components.iter() {
-            let c = c.downcast_ref::<Box<dyn BoardComponent>>().unwrap();
-            action(c);
+            if let Some(c) = c.downcast_ref::<Box<dyn BoardComponent>>() {
+                action(c);
+            }
         }
     }
 
     fn for_each_mut<F: FnMut(&mut Box<dyn BoardComponent>)>(&mut self, action: &mut F) {
         for c in self.components.iter_mut() {
-            let c = c.downcast_mut::<Box<dyn BoardComponent>>().unwrap();
-            action(c);
+            if let Some(c) = c.downcast_mut::<Box<dyn BoardComponent>>() {
+                action(c);
+            }
         }
+    }
+
+    pub fn move_left(&mut self, delta: i32) {
+        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
+
+        let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
+        //c.as_mut().unwrap().move_left(&cell_holder, delta);
+    }
+
+    pub fn move_right(&mut self, delta: i32) {
+        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
+
+        let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
+        //c.unwrap().move_right(&cell_holder, delta);
+    }
+
+    pub fn rotate(&mut self, wkd: &WallKickData, direction: &RotationDirection) {
+        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
+
+        let mut c = self.get_component::<PieceMgr>("piece_mgr");
+        //c.unwrap().rotate(&cell_holder, wkd, direction);
+    }
+
+    pub fn hard_drop(&mut self) {
+
+    }
+
+    pub fn soft_drop(&mut self, delta: u32) {
+
+    }
+
+    pub fn send_garbage(&mut self, amount: u32, messiness: u32) {
+
     }
 }
 
@@ -90,17 +125,19 @@ pub trait BoardStateful {
     fn is_enabled(&self) -> bool;
 }
 
-pub trait BoardEntity<'a> {
-    fn new<T>(game_settings: &'a GameSettings) -> Self where T: BoardComponent + Any;
+pub trait BoardEntity {
+    fn new(game_settings: GameSettings) -> Self;
     fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any;
     fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T>;
+    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T>;
+    fn update(&mut self, dt: f32);
 }
-impl<'a> BoardEntity<'a> for Board<'a> {
-    fn new<T>(game_settings: &'a GameSettings) -> Self where T: BoardComponent + Any {
+impl BoardEntity for Board {
+    fn new(game_settings: GameSettings) -> Self {
         Self {
             game_settings,
             components: vec![
-                Box::new(PieceMgr::new(game_settings)),
+                Box::new(PieceMgr::new(&game_settings)),
                 Box::new(GravityMgr::new(game_settings.get_gravity())),
                 Box::new(ScoringMgr::new()),
                 Box::new(CellHolder::new(game_settings.get_board()))
@@ -121,9 +158,22 @@ impl<'a> BoardEntity<'a> for Board<'a> {
         }
         None
     }
+
+    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T> {
+        if let Some(c) = self.components
+            .iter_mut()
+            .find(|c| c.downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
+            return c.downcast_mut::<T>();
+        }
+        None
+    }
+
+    fn update(&mut self, dt: f32) {
+        self.for_each_mut(&mut |c| c.as_mut().update(dt));
+    }
 }
 
-impl<'a> BoardStateful for Board<'a> {
+impl BoardStateful for Board {
     fn reset(&mut self) {
         /*for c in self.components.iter_mut() {
             let c = c.downcast_mut::<Box<dyn BoardComponent>>();
@@ -162,6 +212,8 @@ pub trait BoardComponent {
     fn reset(&mut self);
     fn enable(&mut self) { }
     fn disable(&mut self) { }
+    fn update(&mut self, dt: f32) { }
+    fn set_board(&mut self, board: &Board);
 }
 
 pub struct BoardOld {
@@ -206,7 +258,7 @@ impl BoardOld {
             y_needs_update: true,
             y_to_check: 0,
             cells_on_board: 0,
-            wkd: Rc::new(WallKickData::new()),
+            wkd: Rc::new(WallKickData::default()),
             piece_gen: Box::new(piece_gen),
             piece_queue: pieces,
             rng

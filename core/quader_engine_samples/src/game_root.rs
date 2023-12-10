@@ -20,6 +20,7 @@ impl GameRoot {
     }
 
     pub async fn run(&mut self) {
+
         'main_loop: loop {
             if is_key_pressed(KeyCode::Escape) {
                 self.close();
