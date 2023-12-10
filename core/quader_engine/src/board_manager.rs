@@ -1,16 +1,21 @@
+use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
+use std::ops::DerefMut;
+use std::rc::Rc;
 use std::sync::{Arc, mpsc, Mutex, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use uuid::Uuid;
 use crate::board::{Board, BoardEntity};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
+use crate::cell_holder::CellHolder;
 use crate::game_settings::{BoardSettings, GameSettings};
 use crate::piece::PieceType;
+use crate::piece_mgr::PieceMgr;
 use crate::wall_kick_data::WallKickData;
 
 struct RwBoard {
-    board: RwLock<Box<Board>>,
+    board: Rc<RefCell<Board>>,
     sender: Sender<BoardMessage>
 }
 
@@ -32,9 +37,14 @@ impl BoardManager {
     pub fn add_board(&mut self) -> (String, Receiver<BoardMessage>) {
         let uuid = Uuid::new_v4();
 
-        let mut board = Board::new(self.game_settings);
+        let board = RefCell::new(Board::new(self.game_settings));
+        let rw_board = Rc::new(board);
+
+        rw_board.borrow_mut().add_component(CellHolder::new(self.game_settings.get_board()));
+        rw_board.borrow_mut().add_component(PieceMgr::new(&self.game_settings, Rc::clone(&rw_board)));
+
         //board.create_piece(PieceType::J);
-        let rw_board = RwLock::new(Box::new(board));
+
         let (sender, receiver) = mpsc::channel();
 
         self.boards.lock().unwrap().insert(uuid, RwBoard {
@@ -50,9 +60,10 @@ impl BoardManager {
         let rw_board = boards.get(&uuid)
             .unwrap_or_else(|| panic!("Board with uuid '{}' doesn't exist", &uuid));
 
-        let mut mutex = rw_board.board.write();
+        //let mut mutex = rw_board.board.write();
 
-        let (board, sender) = (mutex.as_mut().unwrap(), rw_board.sender.clone());
+        let mut binding = rw_board.board.borrow_mut();
+        let (board, sender) = (binding.deref_mut(), rw_board.sender.clone());
 
         self.parse_cmd(board, &cmd);
 
@@ -75,28 +86,32 @@ impl BoardManager {
         self.boards.lock().unwrap().len()
     }
 
-    pub fn broadcast(&self, cmd: &BoardCommand) {
-        self.for_each(|b: &mut Board| {
+    /*pub fn broadcast(&self, cmd: &BoardCommand) {
+        self.for_each(|b: &mut Rc<Board>| {
             self.parse_cmd(b, cmd);
         });
-    }
+    }*/
 
     pub fn update(&self, dt: f32) {
-        self.for_each(|b: &mut Board| {
+        /*self.for_each(|b: &mut Rc<Board>| {
             b.update(dt);
-        });
+        });*/
+        let boards = self.boards.lock().unwrap();
+
+        for b in boards.iter() {
+            b.1.board.borrow_mut().deref_mut().update(dt);
+        }
     }
 
-    fn for_each<F>(&self, action: F)
-        where F: Fn(&mut Board) {
+    /*fn for_each<F>(&self, action: F)
+        where F: Fn(&mut Rc<Board>) {
         let boards = self.boards.lock().unwrap();
 
         for lock in boards.iter() {
-            let mut mutex = lock.1.board.write();
-            let board = mutex.as_mut().unwrap();
+            let mut board = lock.1.board.borrow_mut().deref_mut();
             action(board);
         }
-    }
+    }*/
 
     fn parse_cmd(&self, board: &mut Board, cmd: &BoardCommand) {
         match cmd.get_type() {

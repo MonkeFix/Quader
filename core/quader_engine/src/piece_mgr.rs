@@ -1,5 +1,6 @@
+use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Weak};
+use std::sync::{Arc, RwLock, Weak};
 use crate::board::{Board, BoardComponent, BoardEntity};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::{BoardSettings, GameSettings};
@@ -10,16 +11,16 @@ use crate::wall_kick_data::WallKickData;
 
 pub struct PieceMgr {
     curr_piece: Option<Piece>,
-    board: Arc<Board>,
+    board: Rc<RefCell<Board>>,
     board_width: usize,
     board_height: usize
 }
 
 impl PieceMgr {
-    pub fn new(game_settings: &GameSettings, board: &Arc<Board>) -> Self {
+    pub fn new(game_settings: &GameSettings, board: Rc<RefCell<Board>>) -> Self {
         Self {
             curr_piece: None,
-            board: Arc::clone(board),
+            board,
             board_width: game_settings.get_board().width,
             board_height: game_settings.get_board().height
         }
@@ -74,7 +75,8 @@ impl PieceMgr {
             let mut y = piece.get_y();
             let points = piece.get_positions();
 
-            let cell_holder = self.board.get_component::<CellHolder>("cell_holder").unwrap();
+            let board = self.board.borrow();
+            let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
 
             for i in piece.get_y()..=(self.board_height as u32) {
                 let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
@@ -94,7 +96,8 @@ impl PieceMgr {
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
 
-        let cell_holder = self.board.get_component::<CellHolder>("cell_holder").unwrap();
+        let board = self.board.borrow();
+        let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
 
         let piece = self.curr_piece.as_ref().unwrap();
         let b = piece.get_bounds();
@@ -120,7 +123,9 @@ impl PieceMgr {
         let tests = kick_params.tests;
         let expected_pos = kick_params.expected_pos;
         let piece = self.curr_piece.as_ref().unwrap();
-        let cell_holder = self.board.get_component::<CellHolder>("cell_holder").unwrap();
+
+        let board = self.board.borrow();
+        let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
 
         for t in tests {
             let test = Point::new(t.x, -t.y);

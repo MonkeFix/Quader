@@ -136,12 +136,7 @@ impl BoardEntity for Board {
     fn new(game_settings: GameSettings) -> Self {
         Self {
             game_settings,
-            components: vec![
-                Box::new(PieceMgr::new(&game_settings)),
-                Box::new(GravityMgr::new(game_settings.get_gravity())),
-                Box::new(ScoringMgr::new()),
-                Box::new(CellHolder::new(game_settings.get_board()))
-            ],
+            components: Vec::default(),
             is_enabled: true
         }
     }
@@ -213,7 +208,6 @@ pub trait BoardComponent {
     fn enable(&mut self) { }
     fn disable(&mut self) { }
     fn update(&mut self, dt: f32) { }
-    fn set_board(&mut self, board: &Board);
 }
 
 pub struct BoardOld {
