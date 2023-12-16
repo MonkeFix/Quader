@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::board::GameState;
 use crate::piece::{PieceType, RotationDirection};
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum BoardMoveDir {
     Left, Right
 }

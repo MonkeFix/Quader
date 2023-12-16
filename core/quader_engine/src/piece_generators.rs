@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
 use rand::prelude::*;
+use rand_chacha::ChaCha8Rng;
 use crate::piece::{Piece, PieceType};
 use crate::rng_manager::RngManager;
 
@@ -37,7 +38,7 @@ impl PieceGeneratorFactory {
     }
 }*/
 
-pub struct PieceGeneratorFullRandom {
+/*pub struct PieceGeneratorFullRandom {
     rng: Rc<RefCell<RngManager>>,
 }
 
@@ -64,24 +65,24 @@ impl PieceGenerator for PieceGeneratorFullRandom {
     fn next(&mut self) -> Piece {
         Piece::new(self.rng())
     }
-}
+}*/
 
 pub struct PieceGeneratorBag7 {
-    rng: Rc<RefCell<RngManager>>,
+    rng: ChaCha8Rng,
     queue: VecDeque<Piece>
 }
 
 impl PieceGeneratorBag7 {
-    pub fn new(rng: &Rc<RefCell<RngManager>>) -> Self {
+    pub fn new(seed: u64) -> Self {
         Self {
-            rng: Rc::clone(rng),
+            rng: SeedableRng::seed_from_u64(seed),
             queue: VecDeque::new()
         }
     }
 
     fn generate_bag(&mut self) -> Vec<PieceType> {
         let mut types = AVAILABLE_PIECES;
-        types.shuffle(&mut self.rng.borrow_mut().rng);
+        types.shuffle(&mut self.rng);
         types.to_vec()
     }
 

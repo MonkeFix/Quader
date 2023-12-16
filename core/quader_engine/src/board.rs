@@ -4,6 +4,7 @@ use std::collections::{HashMap, VecDeque};
 use std::marker::PhantomData;
 use std::ops::{Add, AddAssign};
 use std::rc::Rc;
+use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder, CellType, Row};
@@ -64,24 +65,30 @@ pub struct Board {
     rng_mgr: RngManager,
     damage_calculator: DamageCalculator<'a>,*/
 
-    components: Vec<Box<dyn Any>>,
-    is_enabled: bool
+    cell_holder: Rc<RefCell<CellHolder>>,
+    piece_mgr: Rc<RefCell<PieceMgr>>,
+    gravity_mgr: Rc<RefCell<GravityMgr>>,
+    is_enabled: bool,
+    seed: u64,
+    piece_generator: PieceGeneratorBag7
 }
 
 impl Board {
-    fn for_each<F: Fn(&Box<dyn BoardComponent>)>(&self, action: F) {
-        for c in self.components.iter() {
-            if let Some(c) = c.downcast_ref::<Box<dyn BoardComponent>>() {
-                action(c);
-            }
-        }
-    }
 
-    fn for_each_mut<F: FnMut(&mut Box<dyn BoardComponent>)>(&mut self, action: &mut F) {
-        for c in self.components.iter_mut() {
-            if let Some(c) = c.downcast_mut::<Box<dyn BoardComponent>>() {
-                action(c);
-            }
+    pub fn new(game_settings: GameSettings, seed: u64) -> Self {
+
+        let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
+        let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
+        let gravity_mgr = Rc::new(RefCell::new(GravityMgr::new(game_settings.get_gravity(), Rc::clone(&piece_mgr))));
+
+        Self {
+            game_settings,
+            cell_holder,
+            piece_mgr,
+            gravity_mgr,
+            is_enabled: true,
+            seed,
+            piece_generator: PieceGeneratorBag7::new(1)
         }
     }
 
@@ -101,25 +108,24 @@ impl Board {
         }
     }
 
-    pub fn move_left(&mut self, delta: i32) {
-        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
+    pub fn update(&mut self, dt: f32) {
+        self.gravity_mgr.borrow_mut().update(dt);
+        self.piece_mgr.borrow_mut().update(dt);
+    }
 
-        let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
-        //c.as_mut().unwrap().move_left(&cell_holder, delta);
+    pub fn move_left(&mut self, delta: i32) {
+        //let c = self.get_component_mut::<PieceMgr>("piece_mgr");
+        //c.unwrap().move_left(delta);
     }
 
     pub fn move_right(&mut self, delta: i32) {
-        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
-
-        let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
-        //c.unwrap().move_right(&cell_holder, delta);
+        //let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
+        //c.unwrap().move_right(delta);
     }
 
     pub fn rotate(&mut self, wkd: &WallKickData, direction: &RotationDirection) {
-        let cell_holder = self.get_component::<CellHolder>("cell_holder").unwrap();
-
-        let mut c = self.get_component::<PieceMgr>("piece_mgr");
-        //c.unwrap().rotate(&cell_holder, wkd, direction);
+        //let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
+        //c.unwrap().rotate(wkd, direction);
     }
 
     pub fn hard_drop(&mut self) {
@@ -142,9 +148,9 @@ pub trait BoardStateful {
     fn is_enabled(&self) -> bool;
 }
 
-pub trait BoardEntity {
+/*pub trait BoardEntity {
     fn new(game_settings: GameSettings) -> Self;
-    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any;
+    fn add_component<T>(&mut self, component: T) -> ComponentHolder<T> where T: BoardComponent + Any;
     fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T>;
     fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T>;
     fn update(&mut self, dt: f32);
@@ -158,15 +164,19 @@ impl BoardEntity for Board {
         }
     }
 
-    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any {
-        self.components.push(Box::new(component));
+    fn add_component<T>(&mut self, component: T) -> ComponentHolder<T> where T: BoardComponent + Any {
+        let comp = Rc::new(RefCell::new(component));
+        let ch = ComponentHolder::new(Rc::clone(&comp));
+        self.components.push(comp);
+        ch
     }
 
-    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T> {
+    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&RefCell<T>> {
         if let Some(c) = self.components
             .iter()
-            .find(|c| c.downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
-            return c.downcast_ref::<T>();
+            .find(|c| c.as_ref().borrow().downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
+            let b = c.as_ref();
+            return b.downcast_ref::<T>();
         }
         None
     }
@@ -174,16 +184,16 @@ impl BoardEntity for Board {
     fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T> {
         if let Some(c) = self.components
             .iter_mut()
-            .find(|c| c.downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
-            return c.downcast_mut::<T>();
+            .find(|c| c.as_ref().borrow().downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
+            return c.as_ref().borrow_mut().downcast_mut::<T>();
         }
         None
     }
 
     fn update(&mut self, dt: f32) {
-        self.for_each_mut(&mut |c| c.as_mut().update(dt));
+        self.for_each_mut(&mut |c| c.borrow_mut().update(dt));
     }
-}
+}*/
 
 impl BoardStateful for Board {
     fn reset(&mut self) {
@@ -191,7 +201,7 @@ impl BoardStateful for Board {
             let c = c.downcast_mut::<Box<dyn BoardComponent>>();
             c.unwrap().as_mut().reset();
         }*/
-        self.for_each_mut(&mut |c| c.as_mut().reset());
+        //self.for_each_mut(&mut |c| c.borrow_mut().reset());
     }
 
     fn enable(&mut self) {
@@ -199,7 +209,7 @@ impl BoardStateful for Board {
             return;
         }
 
-        self.for_each_mut(&mut |c| c.as_mut().enable());
+        //self.for_each_mut(&mut |c| c.borrow_mut().enable());
 
         self.is_enabled = true;
     }
@@ -209,7 +219,7 @@ impl BoardStateful for Board {
             return;
         }
 
-        self.for_each_mut(&mut |c| c.as_mut().disable());
+        //self.for_each_mut(&mut |c| c.borrow_mut().disable());
 
         self.is_enabled = false;
     }
@@ -225,6 +235,49 @@ pub trait BoardComponent {
     fn enable(&mut self) { }
     fn disable(&mut self) { }
     fn update(&mut self, dt: f32) { }
+}
+
+/*pub struct BoardHolder {
+    board: Arc<Board>
+}*/
+
+/*impl BoardHolder {
+    pub(crate) fn new(board: Board) -> Self {
+        Self {
+            board: Arc::new(board)
+        }
+    }
+
+    pub fn get_board(&self) -> &Board {
+        self.board.as_ref()
+    }
+}*/
+
+#[derive(Clone)]
+pub struct ComponentHolder<T: BoardComponent + Any> {
+    //board: Arc<Board>,
+    component: Rc<RefCell<T>>
+}
+
+impl<T: BoardComponent + Any> ComponentHolder<T> {
+    pub(crate) fn new(component: Rc<RefCell<T>>) -> Self {
+        Self {
+            //board,
+            component
+        }
+    }
+
+    //pub fn get_board(&self) -> &Board {
+    //    self.board.as_ref()
+    //}
+
+    pub fn get_component(&self) -> &RefCell<T> {
+        &self.component.as_ref()
+    }
+
+    pub fn copy(&self) -> ComponentHolder<T> {
+        ComponentHolder::new(Rc::clone(&self.component))
+    }
 }
 
 pub struct BoardOld {
@@ -255,7 +308,7 @@ impl BoardOld {
     pub fn new(settings: &BoardSettings) -> Self {
 
         let rng = Rc::new(RefCell::new(RngManager::new(12345)));
-        let mut piece_gen = PieceGeneratorBag7::new(&rng);
+        let mut piece_gen = PieceGeneratorBag7::new(1);
         let pieces = piece_gen.init();
 
         BoardOld {

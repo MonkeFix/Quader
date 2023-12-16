@@ -5,26 +5,26 @@ use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
 pub struct RngManager {
-    pub rng: ChaCha8Rng
-}
-
-impl Default for RngManager {
-    fn default() -> Self {
-        Self {
-            rng: SeedableRng::from_entropy()
-        }
-    }
+    rng: ChaCha8Rng,
+    seed: u64
 }
 
 impl RngManager {
     pub fn new(seed: u64) -> Self {
+        let rng = SeedableRng::seed_from_u64(seed);
         Self {
-            rng: SeedableRng::seed_from_u64(seed)
+            rng,
+            seed
         }
     }
 
     pub fn set_seed(&mut self, seed: u64) {
         self.rng = SeedableRng::seed_from_u64(seed);
+        self.seed = seed;
+    }
+
+    pub fn get_seed(&self) -> u64 {
+        self.seed
     }
 
     pub fn gen<T>(&mut self) -> T

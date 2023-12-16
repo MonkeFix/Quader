@@ -28,12 +28,12 @@ impl Display for PieceType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RotationState {
     Initial, Clockwise, CounterClockwise, Deg180
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RotationDirection {
     Clockwise, CounterClockwise, Deg180
 }

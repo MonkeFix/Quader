@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::board::{BoardComponent};
 use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH, BoardSettings};
 use crate::primitives::{Point, Rect, Color};
+use crate::utils::adjust_positions_clone;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum CellType {
@@ -259,6 +260,21 @@ impl CellHolder {
 
     pub fn get_occupied_cell_count(&self) -> usize {
         self.occupied_cells
+    }
+
+    pub fn calc_nearest_y(&self, cur_x: u32, cur_y: u32, points: &[Point]) -> u32 {
+        let mut y = cur_y;
+        
+        for i in cur_y..=(self.height as u32) {
+            let offset: Point<i32> = Point::new(cur_x as i32, cur_y as i32);
+            let new_points = adjust_positions_clone(points, offset);
+            if self.intersects_any(&new_points) {
+                break;
+            }
+            y = i;
+        }
+        
+        y
     }
 }
 

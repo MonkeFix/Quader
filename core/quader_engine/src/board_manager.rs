@@ -5,43 +5,53 @@ use std::rc::Rc;
 use std::sync::{Arc, mpsc, Mutex, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
+use rand::Rng;
 use uuid::Uuid;
-use crate::board::{Board, BoardEntity};
+use crate::board::{Board};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::{BoardSettings, GameSettings};
 use crate::piece::PieceType;
 use crate::piece_mgr::PieceMgr;
+use crate::rng_manager::RngManager;
+use crate::time_mgr::TimeMgr;
 use crate::wall_kick_data::WallKickData;
 
 struct RwBoard {
     board: Rc<RefCell<Board>>,
-    sender: Sender<BoardMessage>
+    sender: Sender<BoardMessage>,
 }
 
 type Boards = Arc<Mutex<HashMap<Uuid, RwBoard>>>;
 
 pub struct BoardManager {
     boards: Boards,
-    game_settings: GameSettings
+    game_settings: GameSettings,
+    rng_manager: RngManager,
+    time_mgr: TimeMgr
 }
 
 impl BoardManager {
     pub fn new(game_settings: GameSettings) -> Self {
+        let mut rng = rand::thread_rng();
+        let seed: u64 = rng.gen();
+
         Self {
             boards: Boards::default(),
-            game_settings
+            game_settings,
+            rng_manager: RngManager::new(seed),
+            time_mgr: TimeMgr::new()
         }
     }
 
     pub fn add_board(&mut self) -> (String, Receiver<BoardMessage>) {
         let uuid = Uuid::new_v4();
 
-        let board = RefCell::new(Board::new(self.game_settings));
+        let board = RefCell::new(Board::new(self.game_settings, self.rng_manager.get_seed()));
         let rw_board = Rc::new(board);
 
-        rw_board.borrow_mut().add_component(CellHolder::new(self.game_settings.get_board()));
-        rw_board.borrow_mut().add_component(PieceMgr::new(&self.game_settings, Rc::clone(&rw_board)));
+        //rw_board.borrow_mut().add_component(CellHolder::new(self.game_settings.get_board()));
+        //rw_board.borrow_mut().add_component(PieceMgr::new(&self.game_settings, Rc::clone(&rw_board)));
 
         //board.create_piece(PieceType::J);
 
@@ -54,7 +64,7 @@ impl BoardManager {
         (uuid.to_string(), receiver)
     }
 
-    pub fn send_command(&self, uuid: &str, cmd: BoardCommand) {
+    pub fn send_command(&mut self, uuid: &str, cmd: BoardCommand) {
         let boards = self.boards.lock().unwrap();
         let uuid = Uuid::parse_str(uuid).unwrap();
         let rw_board = boards.get(&uuid)
@@ -66,13 +76,15 @@ impl BoardManager {
         let (board, sender) = (binding.deref_mut(), rw_board.sender.clone());
 
         board.exec_cmd(&cmd);
-        // self.parse_cmd(board, &cmd);
 
-        /*if cmd.get_type() != BoardCommandType::Update {
-            sender
-                .send(BoardMessage::BoardUpdated)
-                .expect("TODO: panic message");
-        }*/
+        match cmd.get_type() {
+            BoardCommandType::Update(dt) => self.time_mgr.update(*dt),
+            _ => {
+                sender
+                    .send(BoardMessage::BoardUpdated)
+                    .expect("TODO: panic message");
+            }
+        };
 
         /*thread::spawn(move || {
             println!("sending");

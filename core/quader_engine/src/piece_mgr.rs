@@ -1,26 +1,26 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, RwLock, Weak};
-use crate::board::{Board, BoardComponent, BoardEntity};
-use crate::cell_holder::CellHolder;
-use crate::game_settings::{BoardSettings, GameSettings};
+use crate::board::{Board, BoardComponent};
+use crate::cell_holder::{CellHolder, CellType};
+use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::primitives::Point;
-use crate::utils::adjust_positions_clone;
+use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
 pub struct PieceMgr {
     curr_piece: Option<Piece>,
-    board: Rc<RefCell<Board>>,
+    cell_holder: Rc<RefCell<CellHolder>>,
     board_width: usize,
     board_height: usize
 }
 
 impl PieceMgr {
-    pub fn new(game_settings: &GameSettings, board: Rc<RefCell<Board>>) -> Self {
+    pub fn new(game_settings: &GameSettings, cell_holder: Rc<RefCell<CellHolder>>) -> Self {
         Self {
             curr_piece: None,
-            board,
+            cell_holder,
             board_width: game_settings.get_board().width,
             board_height: game_settings.get_board().height
         }
@@ -75,13 +75,10 @@ impl PieceMgr {
             let mut y = piece.get_y();
             let points = piece.get_positions();
 
-            let board = self.board.borrow();
-            let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
-
             for i in piece.get_y()..=(self.board_height as u32) {
                 let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
                 let new_points = adjust_positions_clone(points, offset);
-                if cell_holder.intersects_any(&new_points) {
+                if self.cell_holder.borrow().intersects_any(&new_points) {
                     break;
                 }
 
@@ -94,10 +91,34 @@ impl PieceMgr {
         0
     }
 
-    fn test_movement(&self, x: i32, y: i32) -> bool {
+    pub fn soft_drop(&mut self, dt: u32) {
+        if self.test_movement(0, 1) {
+            self.curr_piece.as_mut().unwrap().move_down();
+        }
+    }
 
-        let board = self.board.borrow();
-        let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
+    pub fn hard_drop(&mut self) {
+        let nearest_y = self.find_nearest_y();
+
+        if !self.try_apply_piece(nearest_y) {
+            return;
+        }
+
+        let lines_cleared = self.cell_holder.borrow().check_row_clears(None);
+
+        if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
+            return;
+        }
+
+        self.cell_holder.borrow_mut().clear_rows(&lines_cleared);
+        if !lines_cleared.is_empty() {
+            // self.cells_on_board -= lines_cleared.len() * self.width as usize;
+        }
+
+        self.reset();
+    }
+
+    fn test_movement(&self, x: i32, y: i32) -> bool {
 
         let piece = self.curr_piece.as_ref().unwrap();
         let b = piece.get_bounds();
@@ -116,16 +137,13 @@ impl PieceMgr {
         );
         let new_pos = adjust_positions_clone(pos, offset);
 
-        !cell_holder.intersects_any(&new_pos)
+        !self.cell_holder.borrow().intersects_any(&new_pos)
     }
 
     fn test_rotation(&self, kick_params: WallKickCheckParams) -> Option<Point> {
         let tests = kick_params.tests;
         let expected_pos = kick_params.expected_pos;
         let piece = self.curr_piece.as_ref().unwrap();
-
-        let board = self.board.borrow();
-        let cell_holder = board.get_component::<CellHolder>("cell_holder").unwrap();
 
         for t in tests {
             let test = Point::new(t.x, -t.y);
@@ -135,12 +153,33 @@ impl PieceMgr {
                 Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y)
             );
 
-            if !cell_holder.intersects_any(&adjusted) {
+            if !self.cell_holder.borrow().intersects_any(&adjusted) {
                 return Some(test);
             }
         }
 
         None
+    }
+
+    fn try_apply_piece(&mut self, y: u32) -> bool {
+        let piece = self.curr_piece.as_ref().unwrap();
+        let points = piece.get_current_pos();
+        let x = piece.get_x() as i32;
+        let adjusted = adjust_positions_clone(points, Point::new(x, y as i32));
+
+        let mut res = true;
+
+        for point in adjusted {
+            let cell = self.cell_holder.borrow().get_cell_at(point.x as usize, point.y as usize);
+            if cell != CellType::None {
+                res = false;
+            }
+
+            let cell_type = piece_type_to_cell_type(piece.get_type());
+            self.cell_holder.borrow_mut().set_cell_at(point.x as usize, point.y as usize, cell_type);
+        }
+
+        res
     }
 }
 
