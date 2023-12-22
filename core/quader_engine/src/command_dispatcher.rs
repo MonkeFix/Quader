@@ -11,7 +11,7 @@ impl CommandDispatcher {
         }
     }
 
-    pub fn send_command(&self, command: BoardCommand) {
+    pub fn send_command(&self, _command: BoardCommand) {
 
     }
 }

@@ -2,7 +2,7 @@
 use serde::{Deserialize, Serialize};
 use crate::board::{BoardComponent};
 use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH, BoardSettings};
-use crate::primitives::{Point, Rect, Color};
+use crate::primitives::{Point, Rect};
 use crate::utils::adjust_positions_clone;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

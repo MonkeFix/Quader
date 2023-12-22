@@ -1,10 +1,9 @@
 use std::fmt::{Display, Formatter};
-use std::rc::{Rc, Weak};
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellType;
 use crate::primitives::{Point, Rect, Color};
 use crate::utils::calc_bounds;
-use crate::wall_kick_data::{WallKickData, WallKickType};
+use crate::wall_kick_data::{WallKickType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum PieceType {

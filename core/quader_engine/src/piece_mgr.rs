@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, RwLock, Weak};
-use crate::board::{Board, BoardComponent};
+use crate::board::{BoardComponent};
 use crate::cell_holder::{CellHolder, CellType};
-use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings, GameSettings};
+use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::primitives::Point;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
@@ -40,7 +39,7 @@ impl PieceMgr {
         }
     }
 
-    pub fn move_left(&mut self, delta: i32) {
+    pub fn move_left(&mut self, _delta: i32) {
         //for _ in 0..=delta {
             if self.test_movement(-1, 0) {
                 self.curr_piece.as_mut().expect("Piece must be set").move_left();
@@ -48,7 +47,7 @@ impl PieceMgr {
         //}
     }
 
-    pub fn move_right(&mut self, delta: i32) {
+    pub fn move_right(&mut self, _delta: i32) {
         //for _ in 0..=delta {
             if self.test_movement(1, 0) {
                 self.curr_piece.as_mut().expect("Piece must be set").move_right();
@@ -95,7 +94,7 @@ impl PieceMgr {
         0
     }
 
-    pub fn soft_drop(&mut self, dt: u32) {
+    pub fn soft_drop(&mut self, _dt: u32) {
         //for _ in 0..=dt {
             if self.test_movement(0, 1) {
                 self.curr_piece.as_mut().unwrap().move_down();

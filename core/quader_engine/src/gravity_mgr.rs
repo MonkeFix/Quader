@@ -1,9 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::board::{Board, BoardComponent, ComponentHolder};
-use crate::cell_holder::CellHolder;
+use crate::board::{BoardComponent};
 use crate::game_settings::GravitySettings;
-use crate::piece::Piece;
 use crate::piece_mgr::PieceMgr;
 
 pub struct GravityMgr {
@@ -12,10 +10,8 @@ pub struct GravityMgr {
     pub(crate) intermediate_y: f32,
     pub(crate) y_needs_update: bool,
     pub(crate) y_to_check: u32,
-    grav_base: f32,
-    grav_incr: f32,
-    lock_prolong_amount: f32,
-    lock_delay: f32,
+
+    gravity_settings: GravitySettings,
     piece_mgr: Rc<RefCell<PieceMgr>>
 }
 
@@ -31,17 +27,14 @@ impl GravityMgr {
             intermediate_y: 0.0,
             y_needs_update: true,
             y_to_check: 0,
-            grav_base: gravity_settings.grav_base,
-            grav_incr: gravity_settings.grav_incr,
-            lock_prolong_amount: gravity_settings.lock_prolong_amount,
-            lock_delay: gravity_settings.lock_delay,
+            gravity_settings: *gravity_settings,
             piece_mgr
         }
     }
 
     pub fn prolong_lock(&mut self) {
-        self.cur_lock = (self.cur_lock + self.lock_prolong_amount)
-            .min(self.lock_delay);
+        self.cur_lock = (self.cur_lock + self.gravity_settings.lock_prolong_amount)
+            .min(self.gravity_settings.lock_delay);
     }
 }
 
@@ -55,8 +48,8 @@ impl BoardComponent for GravityMgr {
         self.y_needs_update = true;
         self.y_to_check = 0;
 
-        self.cur_gravity = self.grav_base;
-        self.cur_lock = self.lock_delay;
+        self.cur_gravity = self.gravity_settings.grav_base;
+        self.cur_lock = self.gravity_settings.lock_delay;
     }
 
     fn update(&mut self, dt: f32) {
@@ -86,11 +79,11 @@ impl BoardComponent for GravityMgr {
 
         if self.cur_lock <= 0.0 {
             piece_mgr.hard_drop();
-            self.cur_lock = self.lock_delay;
+            self.cur_lock = self.gravity_settings.lock_delay;
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
         }
 
-        self.cur_gravity += self.grav_incr * dt;
+        self.cur_gravity += self.gravity_settings.grav_incr * dt;
     }
 }
