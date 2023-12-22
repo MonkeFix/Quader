@@ -46,12 +46,7 @@ impl BoardManager {
         let board = RefCell::new(Board::new(self.game_settings, self.rng_manager.get_seed()));
         let rw_board = Rc::new(board);
 
-        //rw_board.borrow_mut().add_component(CellHolder::new(self.game_settings.get_board()));
-        //rw_board.borrow_mut().add_component(PieceMgr::new(&self.game_settings, Rc::clone(&rw_board)));
-
-        //board.create_piece(PieceType::J);
-
-        rw_board.borrow_mut().get_piece_mgr_mut().set_piece(PieceType::I);
+        // rw_board.borrow_mut().get_piece_mgr_mut().set_piece(PieceType::I);
 
         let (sender, receiver) = mpsc::channel();
 

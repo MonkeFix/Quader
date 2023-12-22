@@ -17,8 +17,8 @@ pub const BAG_SIZE: usize = AVAILABLE_PIECES.len();
 
 pub trait PieceGenerator {
     fn get_queue_size(&self) -> usize { 5 }
-    fn init(&mut self) -> Vec<Piece>;
-    fn next(&mut self) -> Piece;
+    fn init(&mut self) -> Vec<PieceType>;
+    fn next(&mut self) -> PieceType;
 }
 
 /*pub enum PieceGeneratorType {
@@ -66,7 +66,7 @@ impl PieceGenerator for PieceGeneratorFullRandom {
 
 pub struct PieceGeneratorBag7 {
     rng: ChaCha8Rng,
-    queue: VecDeque<Piece>
+    queue: VecDeque<PieceType>
 }
 
 impl PieceGeneratorBag7 {
@@ -85,31 +85,30 @@ impl PieceGeneratorBag7 {
 
     fn enqueue_range(&mut self, types: &[PieceType]) {
         for &t in types {
-            self.queue.push_back(Piece::new(t));
+            self.queue.push_back(t);
         }
     }
 }
 
 impl PieceGenerator for PieceGeneratorBag7 {
-    fn init(&mut self) -> Vec<Piece> {
+    fn init(&mut self) -> Vec<PieceType> {
         let bag = self.generate_bag();
         let bag2 = self.generate_bag();
 
         self.queue = VecDeque::from(
             (self.get_queue_size()..BAG_SIZE)
-            .map(|i| Piece::new(bag[i]))
-            .collect::<Vec<Piece>>()
+            .map(|i|bag[i])
+            .collect::<Vec<PieceType>>()
         );
 
         self.enqueue_range(&bag2);
 
         bag.into_iter()
             .take(self.get_queue_size())
-            .map(Piece::new)
             .collect()
     }
 
-    fn next(&mut self) -> Piece {
+    fn next(&mut self) -> PieceType {
         let p = self.queue.pop_back().expect("The queue must not be empty");
 
         if self.queue.len() <= self.get_queue_size() {

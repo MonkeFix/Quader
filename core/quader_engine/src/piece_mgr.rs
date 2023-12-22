@@ -25,9 +25,14 @@ impl PieceMgr {
         }
     }
 
-    pub fn set_piece(&mut self, piece_type: PieceType) {
+    pub fn create_piece(&mut self, piece_type: PieceType) {
         let piece = Piece::new(piece_type);
 
+        self.curr_piece = Some(piece);
+        self.reset();
+    }
+
+    pub fn set_piece(&mut self, piece: Piece) {
         self.curr_piece = Some(piece);
         self.reset();
     }

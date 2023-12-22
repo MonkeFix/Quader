@@ -8,7 +8,7 @@ use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{RotationDirection};
-use crate::piece_generators::{PieceGeneratorBag7};
+use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
 use crate::wall_kick_data::{WallKickData};
 
@@ -75,6 +75,11 @@ impl Board {
         let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
         let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
         let gravity_mgr = Rc::new(RefCell::new(GravityMgr::new(game_settings.get_gravity(), Rc::clone(&piece_mgr))));
+        let mut piece_gen = PieceGeneratorBag7::new(seed);
+        // TODO: Actually use the queue. Move it to separate struct
+        let queue = piece_gen.init();
+
+        piece_mgr.borrow_mut().create_piece(queue[0]);
 
         Self {
             game_settings,
@@ -83,7 +88,7 @@ impl Board {
             gravity_mgr,
             is_enabled: true,
             // seed,
-            piece_generator: PieceGeneratorBag7::new(seed),
+            piece_generator: piece_gen,
             components: vec![],
             last_garbage_x: -1,
             // used for generating garbage holes, so we can safely use entropy instead of seed
@@ -127,7 +132,12 @@ impl Board {
     }
 
     pub fn hard_drop(&mut self) {
-        self.piece_mgr.borrow_mut().hard_drop();
+        let mut piece_mgr = self.piece_mgr.borrow_mut();
+        piece_mgr.hard_drop();
+
+        let next_piece = self.piece_generator.next();
+
+        piece_mgr.create_piece(next_piece);
     }
 
     pub fn soft_drop(&mut self, delta: u32) {
