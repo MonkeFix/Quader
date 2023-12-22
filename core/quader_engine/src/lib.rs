@@ -7,7 +7,7 @@ pub mod piece_generators;
 pub mod rng_manager;
 pub mod board_manager;
 pub mod board_command;
-pub mod damage_calculator;
+pub mod damage_calculation;
 pub mod game_settings;
 pub mod replays;
 pub mod scoring;

@@ -85,6 +85,10 @@ pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
     }
 }
 
+pub fn is_oob<T: PartialOrd<i32> + PartialOrd<T>>(x: T, y: T, width: T, height: T) -> bool {
+    x < 0 || x >= width || y >= height || y < 0
+}
+
 // Rotates a 3x3 array counter-clockwise
 /*pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
     let n = a.len();

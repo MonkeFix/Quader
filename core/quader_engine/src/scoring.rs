@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use crate::board::BoardComponent;
 
-pub(crate) enum TSpinStatus {
+pub enum TSpinStatus {
     None, Full, Mini
 }
 
