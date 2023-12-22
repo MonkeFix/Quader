@@ -9,7 +9,7 @@ use quader_engine::board::{Board};
 use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
 use quader_engine::board_manager::BoardManager;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
-use quader_engine::piece::{Piece, PieceType, RotationDirection};
+use quader_engine::piece::{Piece, RotationDirection};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{adjust_point_clone, cell_to_color};
 
@@ -109,7 +109,7 @@ impl Renderable for BoardController {
 
         for (y, row) in layout.get_layout().iter().enumerate() {
             for (x, cell) in row.into_iter().enumerate() {
-                let color = cell_to_color(&cell);
+                let color = cell_to_color(cell);
                 let pos = self.usize_to_coords(x, y);
 
                 if y >= BOARD_VISIBLE_HEIGHT {

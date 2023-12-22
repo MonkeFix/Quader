@@ -55,7 +55,7 @@ impl PieceMgr {
         //}
     }
 
-    pub fn rotate(&mut self, wkd: &WallKickData, rotation: &RotationDirection) {
+    pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) {
         let piece = self.curr_piece.as_ref().expect("Piece must be set");
         let rot_type = piece.get_rotation_type(rotation);
         let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];

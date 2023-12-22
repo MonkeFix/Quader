@@ -31,7 +31,7 @@ pub fn adjust_point_clone<T: Add<Output = T> + Copy>(point: &Point<T>, offset: P
     )
 }
 
-pub fn piece_type_to_cell_type(piece_type: &PieceType) -> CellType {
+pub fn piece_type_to_cell_type(piece_type: PieceType) -> CellType {
     match piece_type {
         PieceType::I => CellType::I,
         PieceType::O => CellType::O,
@@ -44,7 +44,7 @@ pub fn piece_type_to_cell_type(piece_type: &PieceType) -> CellType {
     }
 }
 
-pub fn cell_to_color(cell: &CellType) -> Color {
+pub fn cell_to_color(cell: CellType) -> Color {
     match cell {
         CellType::None => *Color::BLACK,
         CellType::I => *Color::PIECE_I,

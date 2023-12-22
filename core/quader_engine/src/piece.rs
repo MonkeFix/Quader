@@ -196,9 +196,11 @@ impl Piece {
         }
     }
 
-    pub fn get_type(&self) -> &PieceType {
-        &self.piece_type
+    pub fn get_type(&self) -> PieceType {
+        self.piece_type
     }
+
+    pub fn get_cell_type(&self) -> CellType { self.board_cell_type }
 
     pub fn set_x(&mut self, x: u32) {
         self.x = x;
@@ -230,8 +232,8 @@ impl Piece {
         self.set_y(self.y + 1);
     }
 
-    pub fn get_offset_type(&self) -> &OffsetType {
-        &self.offset_type
+    pub fn get_offset_type(&self) -> OffsetType {
+        self.offset_type
     }
 
     pub fn get_current_pos(&self) -> &[Point] {
@@ -247,7 +249,7 @@ impl Piece {
         &self.wall_kick_type
     }
 
-    pub fn rotate(&mut self, rotation: &RotationDirection, x_offset: i32, y_offset: i32) {
+    pub fn rotate(&mut self, rotation: RotationDirection, x_offset: i32, y_offset: i32) {
         self.rotate_simple(rotation);
 
         let ix = self.x as i32 + x_offset;
@@ -259,8 +261,8 @@ impl Piece {
         self.bounds = self.calc_bounds();
     }
 
-    pub fn get_bounds(&self) -> &Rect {
-        &self.bounds
+    pub fn get_bounds(&self) -> Rect {
+        self.bounds
     }
 
     pub fn get_color(&self) -> Color {
@@ -280,7 +282,7 @@ impl Piece {
         calc_bounds(self.get_current_pos(), self.x as i32, self.y as i32)
     }
 
-    fn rotate_simple(&mut self, rotation: &RotationDirection) {
+    fn rotate_simple(&mut self, rotation: RotationDirection) {
         match rotation {
             RotationDirection::Clockwise => self.rotate_right(),
             RotationDirection::CounterClockwise => self.rotate_left(),
@@ -308,7 +310,7 @@ impl Piece {
         }
     }
 
-    pub fn get_rotation_type(&self, rotation: &RotationDirection) -> (RotationMove, &[Point]) {
+    pub fn get_rotation_type(&self, rotation: RotationDirection) -> (RotationMove, &[Point]) {
         match self.current_rotation {
             RotationState::Initial => match rotation {
                 RotationDirection::Clockwise => (RotationMove::InitToRight, &self.right_pos),

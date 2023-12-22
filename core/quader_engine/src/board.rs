@@ -120,8 +120,8 @@ impl Board {
         self.piece_mgr.borrow_mut().move_right(delta);
     }
 
-    pub fn rotate(&mut self, wkd: &WallKickData, direction: &RotationDirection) {
-        self.piece_mgr.borrow_mut().rotate(wkd, direction);
+    pub fn rotate(&mut self, direction: RotationDirection) {
+        self.piece_mgr.borrow_mut().rotate(&self.wkd, direction);
         self.gravity_mgr.borrow_mut().prolong_lock();
     }
 
