@@ -1,4 +1,4 @@
-use std::cell::{RefCell, RefMut};
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::ops::DerefMut;
 use std::rc::Rc;
@@ -44,7 +44,7 @@ impl BoardManager {
         }
     }
 
-    pub fn add_board(&mut self) -> (String, Receiver<BoardMessage>) {
+    pub fn add_board(&mut self) -> (String, Receiver<BoardMessage>, Rc<RefCell<Board>>) {
         let uuid = Uuid::new_v4();
 
         let board = RefCell::new(Board::new(self.game_settings, self.rng_manager.get_seed()));
@@ -55,13 +55,22 @@ impl BoardManager {
 
         //board.create_piece(PieceType::J);
 
+        rw_board.borrow_mut().get_piece_mgr_mut().set_piece(PieceType::I);
+
         let (sender, receiver) = mpsc::channel();
+
+        let res_board = Rc::clone(&rw_board);
 
         self.boards.lock().unwrap().insert(uuid, RwBoard {
             board: rw_board, sender
         });
 
-        (uuid.to_string(), receiver)
+        (uuid.to_string(), receiver, res_board)
+    }
+
+    pub fn get_board(&self, uuid: &str) -> Rc<RefCell<Board>> {
+        let uuid = Uuid::parse_str(uuid).unwrap();
+        Rc::clone(&self.boards.lock().unwrap().get(&uuid).unwrap().board)
     }
 
     pub fn send_command(&mut self, uuid: &str, cmd: BoardCommand) {

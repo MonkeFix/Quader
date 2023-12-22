@@ -69,10 +69,10 @@ impl BoardComponent for GravityMgr {
         }
 
         if self.intermediate_y > 1.0 {
-            let diff = (self.intermediate_y - 1.0).max(1.0) as u32;
-            for i in 0..diff {
+            //let diff = (self.intermediate_y - 1.0).max(1.0) as u32;
+            //for _ in 0..=diff {
                 piece_mgr.soft_drop(1);
-            }
+            //}
 
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
@@ -86,6 +86,9 @@ impl BoardComponent for GravityMgr {
 
         if self.cur_lock <= 0.0 {
             piece_mgr.hard_drop();
+            self.cur_lock = self.lock_delay;
+            self.y_needs_update = true;
+            self.intermediate_y = 0.0;
         }
 
         self.cur_gravity += self.grav_incr * (dt * 10.0);

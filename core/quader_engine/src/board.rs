@@ -1,5 +1,5 @@
 ﻿use std::any::Any;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::{HashMap, VecDeque};
 use std::marker::PhantomData;
 use std::ops::{Add, AddAssign};
@@ -114,30 +114,39 @@ impl Board {
     }
 
     pub fn move_left(&mut self, delta: i32) {
-        //let c = self.get_component_mut::<PieceMgr>("piece_mgr");
-        //c.unwrap().move_left(delta);
+        self.piece_mgr.borrow_mut().move_left(delta);
     }
 
     pub fn move_right(&mut self, delta: i32) {
-        //let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
-        //c.unwrap().move_right(delta);
+        self.piece_mgr.borrow_mut().move_right(delta);
     }
 
     pub fn rotate(&mut self, wkd: &WallKickData, direction: &RotationDirection) {
-        //let mut c = self.get_component_mut::<PieceMgr>("piece_mgr");
-        //c.unwrap().rotate(wkd, direction);
+        self.piece_mgr.borrow_mut().rotate(wkd, direction);
     }
 
     pub fn hard_drop(&mut self) {
-
+        self.piece_mgr.borrow_mut().hard_drop();
     }
 
     pub fn soft_drop(&mut self, delta: u32) {
-
+        self.piece_mgr.borrow_mut().soft_drop(delta);
     }
 
     pub fn send_garbage(&mut self, amount: u32, messiness: u32) {
 
+    }
+
+    pub fn get_cell_holder(&self) -> Ref<CellHolder> {
+        self.cell_holder.borrow()
+    }
+
+    pub fn get_piece_mgr(&self) -> Ref<PieceMgr> {
+        self.piece_mgr.borrow()
+    }
+
+    pub(crate) fn get_piece_mgr_mut(&self) -> RefMut<PieceMgr> {
+        self.piece_mgr.borrow_mut()
     }
 }
 
@@ -202,6 +211,9 @@ impl BoardStateful for Board {
             c.unwrap().as_mut().reset();
         }*/
         //self.for_each_mut(&mut |c| c.borrow_mut().reset());
+        self.piece_mgr.borrow_mut().reset();
+        self.gravity_mgr.borrow_mut().reset();
+        self.cell_holder.borrow_mut().reset();
     }
 
     fn enable(&mut self) {
@@ -209,7 +221,9 @@ impl BoardStateful for Board {
             return;
         }
 
-        //self.for_each_mut(&mut |c| c.borrow_mut().enable());
+        self.piece_mgr.borrow_mut().enable();
+        self.gravity_mgr.borrow_mut().enable();
+        self.cell_holder.borrow_mut().enable();
 
         self.is_enabled = true;
     }
@@ -219,7 +233,9 @@ impl BoardStateful for Board {
             return;
         }
 
-        //self.for_each_mut(&mut |c| c.borrow_mut().disable());
+        self.piece_mgr.borrow_mut().disable();
+        self.gravity_mgr.borrow_mut().disable();
+        self.cell_holder.borrow_mut().disable();
 
         self.is_enabled = false;
     }

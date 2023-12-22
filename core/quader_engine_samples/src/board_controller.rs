@@ -1,9 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::mpsc::Receiver;
 use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
-use quader_engine::board::{BoardOld};
+use quader_engine::board::{Board, BoardOld};
 use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
 use quader_engine::board_manager::BoardManager;
 use quader_engine::cell_holder::CellType;
@@ -18,14 +20,15 @@ use crate::updatable::Updatable;
 const DEFAULT_CELL_SIZE: f32 = 32.0;
 
 pub struct BoardController {
-    board: Box<BoardOld>,
+    //board: Box<BoardOld>,
     x: f32,
     y: f32,
     cell_size: f32,
     render_offset: f32,
     board_mgr: BoardManager,
     receiver: Receiver<BoardMessage>,
-    uuid: String
+    uuid: String,
+    board: Rc<RefCell<Board>>
 }
 
 impl BoardController {
@@ -41,7 +44,7 @@ impl BoardController {
         let rcv = board_mgr.add_board();
 
         BoardController {
-            board,
+            board: rcv.2,
             x, y,
             cell_size: DEFAULT_CELL_SIZE,
             render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE,
@@ -106,9 +109,10 @@ impl Renderable for BoardController {
 
     fn render(&self) {
         // render board layout
-        let layout = self.board.as_ref().get_layout();
+        let b = self.board.as_ref().borrow();
+        let layout = b.get_cell_holder();
 
-        for (y, row) in layout.iter().enumerate() {
+        for (y, row) in layout.get_layout().iter().enumerate() {
             for (x, cell) in row.into_iter().enumerate() {
                 let color = cell_to_color(&cell);
                 let pos = self.usize_to_coords(x, y);
@@ -120,7 +124,7 @@ impl Renderable for BoardController {
         }
 
         // render current piece
-        if let Some(piece) = self.board.get_piece() {
+        if let Some(piece) = self.board.as_ref().borrow().get_piece_mgr().get_piece() {
             let points = piece.get_current_pos();
             points
                 .iter()
@@ -134,7 +138,7 @@ impl Renderable for BoardController {
 
     fn debug_render(&mut self) {
         // render piece bounds
-        if let Some(piece) = self.board.get_piece() {
+        if let Some(piece) = self.board.as_ref().borrow().get_piece_mgr().get_piece() {
             let bounds = piece.get_bounds();
             let pos = self.i32_to_coords(bounds.x, bounds.y);
 
@@ -154,7 +158,7 @@ impl Renderable for BoardController {
         }
 
         // render debug ui
-        root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
+        /*root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
             let piece = self.board.get_piece().unwrap();
             ui.label(None, &format!("Piece position: {{{}, {}}}", piece.get_x(), piece.get_y()));
             ui.label(None, &format!("Nearest Y: {}", self.board.find_nearest_y()));
@@ -195,18 +199,18 @@ impl Renderable for BoardController {
             }
             // skip the last same_line()
             ui.label(None, "");
-        });
+        });*/
     }
 }
 
 impl Updatable for BoardController {
     fn update(&mut self, dt: f32) {
         if is_key_pressed(KeyCode::A) {
-            self.board.set_cell_at(0, 0, CellType::J);
+            //self.board.set_cell_at(0, 0, CellType::J);
         }
 
         if is_key_pressed(KeyCode::Left) {
-            self.board.move_left(1);
+            //self.board.move_left(1);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -214,7 +218,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::Right) {
-            self.board.move_right(1);
+            //self.board.move_right(1);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -222,7 +226,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::Down) {
-            self.board.soft_drop(1);
+            //self.board.soft_drop(1);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -230,7 +234,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::Space) {
-            self.board.hard_drop();
+            //self.board.hard_drop();
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -238,7 +242,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::Z) {
-            self.board.rotate(&RotationDirection::CounterClockwise);
+            //self.board.rotate(&RotationDirection::CounterClockwise);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -246,7 +250,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::X) {
-            self.board.rotate(&RotationDirection::Clockwise);
+            //self.board.rotate(&RotationDirection::Clockwise);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -254,7 +258,7 @@ impl Updatable for BoardController {
             );
         }
         if is_key_pressed(KeyCode::F) {
-            self.board.rotate(&RotationDirection::Deg180);
+            //self.board.rotate(&RotationDirection::Deg180);
 
             self.board_mgr.send_command(
                 &self.uuid,
@@ -262,7 +266,7 @@ impl Updatable for BoardController {
             );
         }
 
-        self.board.update(dt);
+        //self.board.update(dt);
         //self.board_mgr.update(dt);
         self.board_mgr.send_command(&self.uuid, BoardCommand::new(BoardCommandType::Update(dt)));
 

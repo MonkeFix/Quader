@@ -41,20 +41,24 @@ impl PieceMgr {
     }
 
     pub fn move_left(&mut self, delta: i32) {
-        if self.test_movement(-1, 0) {
-            self.curr_piece.as_mut().expect("Piece must be set").move_left();
-        }
+        //for _ in 0..=delta {
+            if self.test_movement(-1, 0) {
+                self.curr_piece.as_mut().expect("Piece must be set").move_left();
+            }
+        //}
     }
 
     pub fn move_right(&mut self, delta: i32) {
-        if self.test_movement(1, 0) {
-            self.curr_piece.as_mut().expect("Piece must be set").move_left();
-        }
+        //for _ in 0..=delta {
+            if self.test_movement(1, 0) {
+                self.curr_piece.as_mut().expect("Piece must be set").move_right();
+            }
+        //}
     }
 
     pub fn rotate(&mut self, wkd: &WallKickData, rotation: &RotationDirection) {
         let piece = self.curr_piece.as_ref().expect("Piece must be set");
-        let rot_type = piece.get_rotation_type(&rotation);
+        let rot_type = piece.get_rotation_type(rotation);
         let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];
 
         let test = self.test_rotation(WallKickCheckParams {
@@ -92,9 +96,11 @@ impl PieceMgr {
     }
 
     pub fn soft_drop(&mut self, dt: u32) {
-        if self.test_movement(0, 1) {
-            self.curr_piece.as_mut().unwrap().move_down();
-        }
+        //for _ in 0..=dt {
+            if self.test_movement(0, 1) {
+                self.curr_piece.as_mut().unwrap().move_down();
+            }
+        //}
     }
 
     pub fn hard_drop(&mut self) {
