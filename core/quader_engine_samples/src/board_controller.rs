@@ -10,7 +10,7 @@ use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage,
 use quader_engine::board_manager::BoardManager;
 use quader_engine::cell_holder::CellType;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
-use quader_engine::piece::{Piece, PieceType, RotationDirection};
+use quader_engine::piece::{OffsetType, Piece, PieceType, RotationDirection};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{adjust_point_clone, cell_to_color};
 
@@ -137,8 +137,11 @@ impl Renderable for BoardController {
     }
 
     fn debug_render(&mut self) {
+
+        let board = self.board.borrow();
+
         // render piece bounds
-        if let Some(piece) = self.board.as_ref().borrow().get_piece_mgr().get_piece() {
+        if let Some(piece) = board.get_piece_mgr().get_piece() {
             let bounds = piece.get_bounds();
             let pos = self.i32_to_coords(bounds.x, bounds.y);
 
@@ -154,16 +157,21 @@ impl Renderable for BoardController {
             let pos = self.u32_to_coords(piece.get_x(), piece.get_y());
             draw_rectangle(self.x + pos.0 * self.cell_size, self.y + pos.1 * self.cell_size, 3., 3., Color::from_rgba(255, 255, 255, 255));
 
-
+            /*match piece.get_offset_type() {
+                OffsetType::Cell => draw_circle(pos.0, pos.1, 8.0, Color::from_rgba(255, 0, 0, 255)),
+                OffsetType::BetweenCells => draw_circle(pos.0, pos.1 - 800.0, 8.0, Color::from_rgba(255, 0, 0, 255)),
+            }*/
         }
 
         // render debug ui
-        /*root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
-            let piece = self.board.get_piece().unwrap();
+        root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
+            let board = self.board.borrow();
+            let piece_mgr = board.get_piece_mgr();
+            let piece = piece_mgr.get_piece().unwrap();
             ui.label(None, &format!("Piece position: {{{}, {}}}", piece.get_x(), piece.get_y()));
-            ui.label(None, &format!("Nearest Y: {}", self.board.find_nearest_y()));
+            ui.label(None, &format!("Nearest Y: {}", board.find_nearest_y()));
 
-            if ui.button(None, "I") {
+            /*if ui.button(None, "I") {
                 self.board.create_piece(PieceType::I);
             }
             ui.same_line(0.0);
@@ -196,10 +204,10 @@ impl Renderable for BoardController {
             for p in queue {
                 ui.label(None, &format!("{:?}", p.get_type()));
                 ui.same_line(0.0);
-            }
+            }*/
             // skip the last same_line()
             ui.label(None, "");
-        });*/
+        });
     }
 }
 
@@ -268,7 +276,7 @@ impl Updatable for BoardController {
 
         if is_key_pressed(KeyCode::T) {
             let mut board = self.board.borrow_mut();
-            board.send_garbage(4, 0);
+            board.send_garbage(1, 0);
             println!("{}", board.get_cell_holder().get_occupied_cell_count())
         }
 
