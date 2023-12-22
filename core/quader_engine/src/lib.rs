@@ -14,7 +14,6 @@ pub mod scoring;
 mod gravity_mgr;
 mod time_mgr;
 mod piece_mgr;
-mod board_component;
 mod command_dispatcher;
 pub mod utils;
 
