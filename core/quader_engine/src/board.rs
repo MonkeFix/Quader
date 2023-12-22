@@ -1,5 +1,4 @@
 ﻿use std::cell::{Ref, RefCell, RefMut};
-use std::collections::{VecDeque};
 use std::rc::Rc;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -8,19 +7,17 @@ use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
-use crate::piece::{Piece, RotationDirection};
+use crate::piece::{RotationDirection};
 use crate::piece_generators::{PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
-use crate::primitives::Point;
-use crate::replays::MoveInfo;
-use crate::wall_kick_data::WallKickData;
+use crate::wall_kick_data::{WallKickData, WallKickDataMode, WallKickType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum GameState {
 
 }
 
-struct All {
+/*struct All {
     game_settings: GameSettings,
 
     // INNER LOGIC:
@@ -45,7 +42,7 @@ struct All {
     // GravityMgr | y_to_check: u32,
     // DamageMgr | cur_garbage_cd: f32,
     // TimeMgr | cur_tick: f64,
-}
+}*/
 
 pub struct Board {
     game_settings: GameSettings,
@@ -62,11 +59,12 @@ pub struct Board {
     piece_mgr: Rc<RefCell<PieceMgr>>,
     gravity_mgr: Rc<RefCell<GravityMgr>>,
     is_enabled: bool,
-    seed: u64,
+    // seed: u64,
     piece_generator: PieceGeneratorBag7,
     components: Vec<Rc<RefCell<dyn BoardComponent>>>,
     last_garbage_x: i32,
-    rng: ChaCha8Rng
+    rng: ChaCha8Rng,
+    wkd: WallKickData,
 }
 
 impl Board {
@@ -83,11 +81,12 @@ impl Board {
             piece_mgr,
             gravity_mgr,
             is_enabled: true,
-            seed,
-            piece_generator: PieceGeneratorBag7::new(1),
+            // seed,
+            piece_generator: PieceGeneratorBag7::new(seed),
             components: vec![],
             last_garbage_x: -1,
-            rng: SeedableRng::from_entropy()
+            rng: SeedableRng::from_entropy(),
+            wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode())
         }
     }
 
@@ -99,7 +98,7 @@ impl Board {
                     BoardMoveDir::Right => self.move_right(*delta)
                 }
             },
-            BoardCommandType::Rotate(dir) => self.rotate(&WallKickData::default(), dir),
+            BoardCommandType::Rotate(dir) => self.rotate(*dir),
             BoardCommandType::HardDrop => self.hard_drop(),
             BoardCommandType::SoftDrop(delta) => self.soft_drop(*delta),
             BoardCommandType::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
