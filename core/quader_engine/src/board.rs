@@ -126,6 +126,7 @@ impl Board {
 
     pub fn rotate(&mut self, wkd: &WallKickData, direction: &RotationDirection) {
         self.piece_mgr.borrow_mut().rotate(wkd, direction);
+        self.gravity_mgr.borrow_mut().prolong_lock();
     }
 
     pub fn hard_drop(&mut self) {
