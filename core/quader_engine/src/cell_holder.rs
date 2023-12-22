@@ -87,7 +87,6 @@ impl<'a> Iterator for RowIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.row.0.len() {
-            // TODO: Check if we need to set self.index to zero
             self.index = 0;
             return None;
         }
@@ -98,7 +97,6 @@ impl<'a> Iterator for RowIterator<'a> {
     }
 }
 
-// TODO: Fix "Serialize, Deserialize" traits
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CellHolder {
     layout: Vec<Row>,
@@ -139,6 +137,7 @@ impl CellHolder {
     }
 
     pub fn new(board_settings: &BoardSettings) -> Self {
+        // TODO: Add full height (height * 2)
         CellHolder {
             width: board_settings.width, height: board_settings.height,
             layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
