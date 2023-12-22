@@ -1,14 +1,13 @@
 ﻿use std::any::Any;
 use std::cell::{Ref, RefCell, RefMut};
-use std::collections::{HashMap, VecDeque};
-use std::marker::PhantomData;
-use std::ops::{Add, AddAssign};
+use std::collections::{VecDeque};
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder, CellType, Row};
-use crate::damage_calculator::DamageCalculator;
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BOARD_WIDTH, BoardSettings, GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
@@ -17,8 +16,6 @@ use crate::piece_mgr::PieceMgr;
 use crate::primitives::Point;
 use crate::replays::MoveInfo;
 use crate::rng_manager::RngManager;
-use crate::scoring::{DamageMgr, ScoringMgr};
-use crate::time_mgr::TimeMgr;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
@@ -70,7 +67,10 @@ pub struct Board {
     gravity_mgr: Rc<RefCell<GravityMgr>>,
     is_enabled: bool,
     seed: u64,
-    piece_generator: PieceGeneratorBag7
+    piece_generator: PieceGeneratorBag7,
+    components: Vec<Rc<RefCell<dyn BoardComponent>>>,
+    last_garbage_x: i32,
+    rng: ChaCha8Rng
 }
 
 impl Board {
@@ -88,7 +88,10 @@ impl Board {
             gravity_mgr,
             is_enabled: true,
             seed,
-            piece_generator: PieceGeneratorBag7::new(1)
+            piece_generator: PieceGeneratorBag7::new(1),
+            components: vec![],
+            last_garbage_x: -1,
+            rng: SeedableRng::from_entropy()
         }
     }
 
@@ -134,7 +137,20 @@ impl Board {
     }
 
     pub fn send_garbage(&mut self, amount: u32, messiness: u32) {
+        let mut ch = self.cell_holder.borrow_mut();
 
+        let width = self.game_settings.get_board().width as u32;
+
+        let garbage_hole_x: u32 = if self.last_garbage_x == -1 {
+            // TODO: Use messiness
+            self.rng.gen_range(0..width)
+        } else {
+            self.last_garbage_x as u32
+        };
+
+        for _ in 0..amount {
+            ch.push_garbage(garbage_hole_x);
+        }
     }
 
     pub fn get_cell_holder(&self) -> Ref<CellHolder> {
@@ -143,6 +159,10 @@ impl Board {
 
     pub fn get_piece_mgr(&self) -> Ref<PieceMgr> {
         self.piece_mgr.borrow()
+    }
+
+    pub fn find_nearest_y(&self) -> u32 {
+        self.get_piece_mgr().find_nearest_y()
     }
 
     pub(crate) fn get_piece_mgr_mut(&self) -> RefMut<PieceMgr> {
@@ -156,54 +176,64 @@ pub trait BoardStateful {
     fn disable(&mut self) { }
     fn is_enabled(&self) -> bool;
 }
-
-/*pub trait BoardEntity {
-    fn new(game_settings: GameSettings) -> Self;
-    fn add_component<T>(&mut self, component: T) -> ComponentHolder<T> where T: BoardComponent + Any;
-    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&T>;
-    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T>;
+/*
+pub trait BoardEntity {
+    //fn new(game_settings: GameSettings) -> Self;
+    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any;
+    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<Ref<T>>;
+    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<RefMut<T>>;
     fn update(&mut self, dt: f32);
 }
 impl BoardEntity for Board {
-    fn new(game_settings: GameSettings) -> Self {
+/*    fn new(game_settings: GameSettings) -> Self {
         Self {
             game_settings,
             components: Vec::default(),
             is_enabled: true
         }
-    }
+    }*/
 
-    fn add_component<T>(&mut self, component: T) -> ComponentHolder<T> where T: BoardComponent + Any {
+    fn add_component<T>(&mut self, component: T) where T: BoardComponent + Any {
         let comp = Rc::new(RefCell::new(component));
-        let ch = ComponentHolder::new(Rc::clone(&comp));
         self.components.push(comp);
-        ch
     }
 
-    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<&RefCell<T>> {
+    fn get_component<T: BoardComponent + Any>(&self, comp_name: &str) -> Option<Ref<T>> {
         if let Some(c) = self.components
             .iter()
-            .find(|c| c.as_ref().borrow().downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
-            let b = c.as_ref();
-            return b.downcast_ref::<T>();
+            .find(|c| c.borrow().downcast_ref::<Ref<T>>().map(|x| x.get_name()) == Some(comp_name)) {
+
+            let r = c.borrow();
+            return if let Some(res) = r.downcast_ref::<Ref<T>>() {
+                Some(Ref::clone(&res))
+            } else {
+                None
+            }
         }
         None
     }
 
-    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<&mut T> {
+    fn get_component_mut<T: BoardComponent + Any>(&mut self, comp_name: &str) -> Option<RefMut<T>> {
         if let Some(c) = self.components
             .iter_mut()
-            .find(|c| c.as_ref().borrow().downcast_ref::<T>().map(|x| x.get_name()) == Some(comp_name)) {
-            return c.as_ref().borrow_mut().downcast_mut::<T>();
+            .find(|c| c.as_ref().borrow().downcast_ref::<RefMut<T>>().map(|x| x.get_name()) == Some(comp_name)) {
+
+            let r = c.borrow_mut();
+            return r.downcast_ref::<RefMut<T>>();
+            /*return if let Some(res) = r.downcast_mut::<RefMut<T>>() {
+                Some(RefMut::from(res))
+            } else {
+                None
+            }*/
         }
         None
     }
 
     fn update(&mut self, dt: f32) {
-        self.for_each_mut(&mut |c| c.borrow_mut().update(dt));
+        // self.for_each_mut(&mut |c| c.borrow_mut().update(dt));
     }
-}*/
-
+}
+*/
 impl BoardStateful for Board {
     fn reset(&mut self) {
         /*for c in self.components.iter_mut() {

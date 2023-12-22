@@ -56,6 +56,7 @@ impl Row {
 
     pub const EMPTY: &'static Self = &Row([CellType::None; BOARD_WIDTH]);
     pub const SOLID: &'static Self = &Row([CellType::Solid; BOARD_WIDTH]);
+    pub const GARBAGE: &'static Self = &Row([CellType::Garbage; BOARD_WIDTH]);
 }
 
 impl Default for Row {
@@ -212,6 +213,20 @@ impl CellHolder {
         }
     }
 
+    pub fn push_garbage(&mut self, hole_x: u32) {
+        self.move_up(false);
+        self.set_row(self.height - 1, self.create_garbage_row(hole_x));
+
+        self.occupied_cells += self.width - 1;
+    }
+
+    pub fn create_garbage_row(&self, hole_x: u32) -> Row {
+        let mut res = *Row::GARBAGE;
+        res.set(hole_x as usize, CellType::None);
+
+        res
+    }
+
     pub fn move_down(&mut self, from_y: usize, update_cell_count: bool) {
         (0..=(from_y - 1))
             .rev()
@@ -242,16 +257,19 @@ impl CellHolder {
 
     pub fn set_row(&mut self, y: usize, row: Row) {
         let old_row = self.layout[y];
+        let update_occupied_cells = false;
 
         self.layout[y] = row;
 
-        let c1 = old_row.get_occupied_cell_count();
-        let c2 = row.get_occupied_cell_count();
+        if update_occupied_cells {
+            let c1 = old_row.get_occupied_cell_count();
+            let c2 = row.get_occupied_cell_count();
 
-        let min = std::cmp::min(c1, c2);
-        let max = std::cmp::max(c1, c2);
+            let min = std::cmp::min(c1, c2);
+            let max = std::cmp::max(c1, c2);
 
-        self.occupied_cells -= max - min;
+            self.occupied_cells -= max - min;
+        }
     }
 
     pub fn get_layout(&self) -> &[Row] {
