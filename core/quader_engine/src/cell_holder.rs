@@ -296,8 +296,13 @@ impl BoolArray for CellHolder {
 mod tests {
     use super::*;
 
+    const BOARD_SETTINGS: BoardSettings = BoardSettings {
+        width: BOARD_WIDTH,
+        height: BOARD_HEIGHT
+    };
+
     fn create_empty_holder() -> CellHolder {
-        CellHolder::new(BOARD_WIDTH, BOARD_HEIGHT)
+        CellHolder::new(&BOARD_SETTINGS)
     }
 
     fn decode(ch: &u8) -> CellType {
