@@ -29,20 +29,44 @@ pub static WALL_KICK_DATA: Lazy<Mutex<WallKickData>> = Lazy::new(|| {
     Mutex::new(wkd)
 });
 
+const WKD_TO_RIGHT: [Point; 5] = [
+    Point { x: 0, y: 0 },
+    Point { x: -1, y: 0 },
+    Point { x: -1, y: 1 },
+    Point { x: 0, y: -2 },
+    Point { x: -1, y: -2 },
+];
+
+const WKD_TO_LEFT: [Point; 5] = [
+    Point { x: 0, y: 0 },
+    Point { x: 1, y: 0 },
+    Point { x: 1, y: 1 },
+    Point { x: 0, y: -2 },
+    Point { x: 1, y: -2 },
+];
+
+const WKD_LEFT_TO_INIT_DEG180: [Point; 5] = [
+    Point { x: 0, y: 0 },
+    Point { x: -1, y: 0 },
+    Point { x: -1, y: -1 },
+    Point { x: 0, y: 2 },
+    Point { x: -1, y: 2 },
+];
+
 impl WallKickData {
     pub fn new(mode: WallKickDataMode) -> Self {
 
         match mode {
             WallKickDataMode::Standard => {
                 let default = HashMap::from([
-                    ( RotationMove::InitToRight,   vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, 1),  Point::new(0, -2), Point::new(-1, -2) ] ),
+                    ( RotationMove::InitToRight,   Vec::from(WKD_TO_RIGHT)),
                     ( RotationMove::RightToInit,   vec![Point::new(0, 0), Point::new(1 , 0), Point::new(1, -1),  Point::new(0, 2),  Point::new(1, 2)] ),
                     ( RotationMove::RightToDeg180, vec![Point::new(0, 0), Point::new(1 , 0), Point::new(1, -1),  Point::new(0, 1),  Point::new(0, 2)] ),
-                    ( RotationMove::Deg180ToRight, vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, 1),  Point::new(0, -2), Point::new(-1, -2)] ),
-                    ( RotationMove::Deg180ToLeft,  vec![Point::new(0, 0), Point::new(1 , 0), Point::new(1, 1),   Point::new(0, -2), Point::new(1, -2)] ),
-                    ( RotationMove::LeftToDeg180,  vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, -1), Point::new(0, 2),  Point::new(-1, 2)] ),
-                    ( RotationMove::LeftToInit,    vec![Point::new(0, 0), Point::new(-1, 0), Point::new(-1, -1), Point::new(0, 2),  Point::new(-1, 2)] ),
-                    ( RotationMove::InitToLeft,    vec![Point::new(0, 0), Point::new(1 , 0), Point::new(1, 1),   Point::new(0, -2), Point::new(1, -2)] ),
+                    ( RotationMove::Deg180ToRight, Vec::from(WKD_TO_RIGHT)),
+                    ( RotationMove::Deg180ToLeft,  Vec::from(WKD_TO_LEFT)),
+                    ( RotationMove::LeftToDeg180,  Vec::from(WKD_LEFT_TO_INIT_DEG180)),
+                    ( RotationMove::LeftToInit,    Vec::from(WKD_LEFT_TO_INIT_DEG180)),
+                    ( RotationMove::InitToLeft,    Vec::from(WKD_TO_LEFT)),
                     ( RotationMove::InitToDeg180,  vec![Point::new(0, 0), Point::new(0 , 1), Point::new(0, 2)] ),
                     ( RotationMove::Deg180ToInit,  vec![Point::new(0, 0), Point::new(0 ,-1), Point::new(0, -2)] ),
                 ]);
