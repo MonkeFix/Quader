@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellType;
+use crate::piece_points;
 use crate::primitives::{Point, Rect, Color};
 use crate::utils::calc_bounds;
 use crate::wall_kick_data::{WallKickType};
@@ -89,6 +90,7 @@ pub struct Piece {
     wall_kick_type: WallKickType
 }
 
+
 impl Piece {
     pub fn new(piece_type: PieceType) -> Self {
         let wall_kick_type = match piece_type {
@@ -111,52 +113,52 @@ impl Piece {
         match piece_type {
             PieceType::I => {
                 board_cell_type = CellType::I;
-                init_pos =   vec![ Point::new(-1, -1), Point::new(-2, -1), Point::new(1, -1), Point::new(0, -1) ];
-                right_pos =  vec![ Point::new(0, -1),  Point::new(0, 0),   Point::new(0, 1),  Point::new(0, -2) ];
-                deg180_pos = vec![ Point::new(-1, 0),  Point::new(0, 0),   Point::new(1, 0),  Point::new(-2, 0) ];
-                left_pos =   vec![ Point::new(-1, -1), Point::new(-1, -2), Point::new(-1, 1), Point::new(-1, 0) ];
+                init_pos =   Vec::from(piece_points::piece_i::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_i::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_i::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_i::LEFT_POS);
             },
             PieceType::O => {
                 board_cell_type = CellType::O;
-                init_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, -1), Point::new(-1, -1) ];
-                right_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, -1), Point::new(-1, -1) ];
-                deg180_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, -1), Point::new(-1, -1) ];
-                left_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, -1), Point::new(-1, -1) ];
+                init_pos =   Vec::from(piece_points::piece_o::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_o::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_o::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_o::LEFT_POS);
             },
             PieceType::T => {
                 board_cell_type = CellType::T;
-                init_pos = vec![Point::new(0, 0),Point::new(-1, 0),Point::new(1, 0),Point::new(0, -1)];
-                right_pos = vec![Point::new(0, 0),Point::new(1, 0),Point::new(0, -1),Point::new(0, 1)];
-                deg180_pos = vec![Point::new(0, 0),Point::new(-1, 0),Point::new(1, 0),Point::new(0, 1)];
-                left_pos = vec![Point::new(0, 0),Point::new(-1, 0),Point::new(0, -1),Point::new(0, 1)];
+                init_pos =   Vec::from(piece_points::piece_t::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_t::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_t::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_t::LEFT_POS);
             },
             PieceType::L => {
                 board_cell_type = CellType::L;
-                init_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(1, 0), Point::new(1, -1) ];
-                right_pos = vec![ Point::new(0, 0), Point::new(0, -1), Point::new(0, 1), Point::new(1, 1) ];
-                deg180_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(-1, 1), Point::new(1, 0) ];
-                left_pos = vec![ Point::new(0, 0), Point::new(0, -1), Point::new(-1, -1), Point::new(0, 1) ];
+                init_pos =   Vec::from(piece_points::piece_l::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_l::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_l::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_l::LEFT_POS);
             },
             PieceType::J => {
                 board_cell_type = CellType::J;
-                init_pos = vec![ Point::new(0, 0), Point::new(1, 0), Point::new(-1, 0), Point::new(-1, -1) ];
-                right_pos = vec![ Point::new(0, 0), Point::new(0, -1), Point::new(1, -1), Point::new(0, 1) ];
-                deg180_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(1, 0), Point::new(1, 1) ];
-                left_pos = vec![ Point::new(0, 0), Point::new(0, -1), Point::new(0, 1), Point::new(-1, 1) ];
+                init_pos =   Vec::from(piece_points::piece_j::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_j::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_j::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_j::LEFT_POS);
             },
             PieceType::S => {
                 board_cell_type = CellType::S;
-                init_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, -1), Point::new(1, -1) ];
-                right_pos = vec![ Point::new(0, 0), Point::new(0, -1), Point::new(1, 0), Point::new(1, 1) ];
-                deg180_pos = vec![ Point::new(0, 0), Point::new(1, 0), Point::new(0, 1), Point::new(-1, 1) ];
-                left_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(-1, -1), Point::new(0, 1) ];
+                init_pos =   Vec::from(piece_points::piece_s::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_s::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_s::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_s::LEFT_POS);
             },
             PieceType::Z => {
                 board_cell_type = CellType::Z;
-                init_pos = vec![ Point::new(0,0), Point::new(-1, -1), Point::new(0, -1), Point::new(1, 0)];
-                right_pos = vec![ Point::new(0, 0), Point::new(0, 1), Point::new(1, 0), Point::new(1, -1) ];
-                deg180_pos = vec![ Point::new(0, 0), Point::new(-1, 0), Point::new(0, 1), Point::new(1, 1) ];
-                left_pos = vec![ Point::new(0,0), Point::new(0, -1), Point::new(-1, 0), Point::new(-1, 1) ];
+                init_pos =   Vec::from(piece_points::piece_z::INIT_POS);
+                right_pos =  Vec::from(piece_points::piece_z::RIGHT_POS);
+                deg180_pos = Vec::from(piece_points::piece_z::DEG180_POS);
+                left_pos =   Vec::from(piece_points::piece_z::LEFT_POS);
             },
             PieceType::Pixel => {
                 board_cell_type = CellType::Garbage;

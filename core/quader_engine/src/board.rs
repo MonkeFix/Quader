@@ -10,7 +10,7 @@ use crate::gravity_mgr::GravityMgr;
 use crate::piece::{RotationDirection};
 use crate::piece_generators::{PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
-use crate::wall_kick_data::{WallKickData, WallKickDataMode, WallKickType};
+use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum GameState {
@@ -63,6 +63,7 @@ pub struct Board {
     piece_generator: PieceGeneratorBag7,
     components: Vec<Rc<RefCell<dyn BoardComponent>>>,
     last_garbage_x: i32,
+    // used for generating garbage holes
     rng: ChaCha8Rng,
     wkd: WallKickData,
 }
@@ -85,6 +86,7 @@ impl Board {
             piece_generator: PieceGeneratorBag7::new(seed),
             components: vec![],
             last_garbage_x: -1,
+            // used for generating garbage holes, so we can safely use entropy instead of seed
             rng: SeedableRng::from_entropy(),
             wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode())
         }
