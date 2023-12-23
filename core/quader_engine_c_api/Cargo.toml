@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "cold_clear"
+name = "quader_engine"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
