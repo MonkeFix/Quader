@@ -1,7 +1,6 @@
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::board::{BoardComponent, UpdateErrorReason};
-use crate::game_settings::GravitySettings;
+use crate::cell_holder::CellHolder;
+use crate::game_settings::{GameSettings, GravitySettings};
 use crate::piece_mgr::PieceMgr;
 
 pub struct GravityMgr {
@@ -13,12 +12,12 @@ pub struct GravityMgr {
     pub(crate) y_to_check: u32,
 
     gravity_settings: GravitySettings,
-    piece_mgr: Rc<RefCell<PieceMgr>>
+    pub piece_mgr: Box<PieceMgr>
 }
 
 impl GravityMgr {
-    pub fn new(gravity_settings: &GravitySettings,
-               piece_mgr: Rc<RefCell<PieceMgr>>) -> Self {
+    pub fn new(game_settings: &GameSettings) -> Self {
+        let gravity_settings = *game_settings.get_gravity();
         let cur_gravity = gravity_settings.grav_base;
         let cur_lock = gravity_settings.lock_delay;
 
@@ -28,8 +27,8 @@ impl GravityMgr {
             intermediate_y: 0.0,
             y_needs_update: true,
             y_to_check: 0,
-            gravity_settings: *gravity_settings,
-            piece_mgr
+            gravity_settings,
+            piece_mgr: Box::new(PieceMgr::new(game_settings))
         }
     }
 
@@ -58,30 +57,29 @@ impl BoardComponent for GravityMgr {
 
         self.intermediate_y += self.cur_gravity * dt;
 
-        let mut piece_mgr = self.piece_mgr.borrow_mut();
         if self.y_needs_update {
-            self.y_to_check = piece_mgr.find_nearest_y();
+            self.y_to_check = self.piece_mgr.find_nearest_y();
             self.y_needs_update = false;
         }
 
         if self.intermediate_y >= 1.0 {
             //let diff = (self.intermediate_y - 1.0).max(1.0) as u32;
             //for _ in 0..=diff {
-                piece_mgr.soft_drop(1);
+            self.piece_mgr.soft_drop(1);
             //}
 
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
         }
 
-        if let Some(p) = &piece_mgr.get_piece() {
+        if let Some(p) = &self.piece_mgr.get_piece() {
             if self.y_to_check == p.get_y() {
                 self.cur_lock -= 1.0 * dt;
             }
         }
 
         if self.cur_lock <= 0.0 {
-            res = Some(piece_mgr.hard_drop());
+            res = Some(self.piece_mgr.hard_drop());
             self.cur_lock = self.gravity_settings.lock_delay;
             self.y_needs_update = true;
             self.intermediate_y = 0.0;

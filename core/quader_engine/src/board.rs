@@ -20,9 +20,9 @@ pub enum GameState {
 pub struct Board {
     game_settings: GameSettings,
 
-    cell_holder: Rc<RefCell<CellHolder>>,
-    piece_mgr: Rc<RefCell<PieceMgr>>,
-    gravity_mgr: Rc<RefCell<GravityMgr>>,
+    //cell_holder: Rc<RefCell<CellHolder>>,
+    //piece_mgr: Rc<RefCell<PieceMgr>>,
+    gravity_mgr: Box<GravityMgr>,
     is_enabled: bool,
     // seed: u64,
     piece_generator: PieceGeneratorBag7,
@@ -40,19 +40,19 @@ impl Board {
 
     pub fn new(game_settings: GameSettings, seed: u64) -> Self {
 
-        let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
-        let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
-        let gravity_mgr = Rc::new(RefCell::new(GravityMgr::new(game_settings.get_gravity(), Rc::clone(&piece_mgr))));
+        //let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
+        //let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
+        let mut gravity_mgr = Box::new(GravityMgr::new(&game_settings));
         let mut piece_gen = PieceGeneratorBag7::new(seed);
         // TODO: Actually use the queue. Move it to separate struct
         let queue = piece_gen.init();
 
-        piece_mgr.borrow_mut().create_piece(queue[0]);
+        gravity_mgr.piece_mgr.create_piece(queue[0]);
 
         Self {
             game_settings,
-            cell_holder,
-            piece_mgr,
+            //cell_holder,
+            //piece_mgr,
             gravity_mgr,
             is_enabled: true,
             piece_generator: piece_gen,
@@ -81,42 +81,40 @@ impl Board {
     }
 
     pub fn update(&mut self, dt: f32) {
-        if let Some(_res) = self.gravity_mgr.borrow_mut().update(dt) {
+        if let Some(_res) = self.gravity_mgr.update(dt) {
 
         }
 
-        if let Some(_res) = self.piece_mgr.borrow_mut().update(dt) {
+        if let Some(_res) = self.gravity_mgr.piece_mgr.update(dt) {
 
         }
     }
 
     pub fn move_left(&mut self, delta: i32) {
-        self.piece_mgr.borrow_mut().move_left(delta);
+        self.gravity_mgr.piece_mgr.move_left(delta);
     }
 
     pub fn move_right(&mut self, delta: i32) {
-        self.piece_mgr.borrow_mut().move_right(delta);
+        self.gravity_mgr.piece_mgr.move_right(delta);
     }
 
     pub fn rotate(&mut self, direction: RotationDirection) {
-        self.piece_mgr.borrow_mut().rotate(&self.wkd, direction);
-        self.gravity_mgr.borrow_mut().prolong_lock();
+        self.gravity_mgr.piece_mgr.rotate(&self.wkd, direction);
+        self.gravity_mgr.prolong_lock();
     }
 
     pub fn hold_piece(&mut self) {
-        let mut piece_mgr = self.piece_mgr.borrow_mut();
-
-        if let Some(_p) = piece_mgr.hold_piece(|| self.piece_generator.next()) {
+        if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece(|| self.piece_generator.next()) {
             // TODO: Send a signal to client that the hold and current piece were updated
         }
     }
 
     pub fn get_hold_piece(&self) -> Option<PieceType> {
-        self.piece_mgr.borrow().get_hold_piece()
+        self.gravity_mgr.piece_mgr.get_hold_piece()
     }
 
     pub fn hard_drop(&mut self) {
-        let mut piece_mgr = self.piece_mgr.borrow_mut();
+        let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let _lines_cleared = piece_mgr.hard_drop().unwrap_or(0);
 
         let next_piece = self.piece_generator.next();
@@ -125,11 +123,11 @@ impl Board {
     }
 
     pub fn soft_drop(&mut self, delta: u32) {
-        self.piece_mgr.borrow_mut().soft_drop(delta);
+        self.gravity_mgr.piece_mgr.soft_drop(delta);
     }
 
     pub fn send_garbage(&mut self, amount: u32, _messiness: u32) {
-        let mut ch = self.cell_holder.borrow_mut();
+        let ch = &mut self.gravity_mgr.piece_mgr.cell_holder;
 
         let width = self.game_settings.get_board().width as u32;
 
@@ -145,20 +143,20 @@ impl Board {
         }
     }
 
-    pub fn get_cell_holder(&self) -> Ref<CellHolder> {
-        self.cell_holder.borrow()
+    pub fn get_cell_holder(&self) -> &CellHolder {
+        &self.gravity_mgr.piece_mgr.cell_holder
     }
 
-    pub fn get_piece_mgr(&self) -> Ref<PieceMgr> {
-        self.piece_mgr.borrow()
+    pub fn get_piece_mgr(&self) -> &PieceMgr {
+        &self.gravity_mgr.piece_mgr
     }
 
     pub fn find_nearest_y(&self) -> u32 {
         self.get_piece_mgr().find_nearest_y()
     }
 
-    pub(crate) fn get_piece_mgr_mut(&self) -> RefMut<PieceMgr> {
-        self.piece_mgr.borrow_mut()
+    pub(crate) fn get_piece_mgr_mut(&mut self) -> &mut PieceMgr {
+        &mut self.gravity_mgr.piece_mgr
     }
 }
 
@@ -170,9 +168,7 @@ pub trait BoardStateful {
 }
 impl BoardStateful for Board {
     fn reset(&mut self) {
-        self.piece_mgr.borrow_mut().reset();
-        self.gravity_mgr.borrow_mut().reset();
-        self.cell_holder.borrow_mut().reset();
+        self.gravity_mgr.reset();
     }
 
     fn enable(&mut self) {
@@ -180,9 +176,7 @@ impl BoardStateful for Board {
             return;
         }
 
-        self.piece_mgr.borrow_mut().enable();
-        self.gravity_mgr.borrow_mut().enable();
-        self.cell_holder.borrow_mut().enable();
+        self.gravity_mgr.enable();
 
         self.is_enabled = true;
     }
@@ -192,9 +186,7 @@ impl BoardStateful for Board {
             return;
         }
 
-        self.piece_mgr.borrow_mut().disable();
-        self.gravity_mgr.borrow_mut().disable();
-        self.cell_holder.borrow_mut().disable();
+        self.gravity_mgr.disable();
 
         self.is_enabled = false;
     }

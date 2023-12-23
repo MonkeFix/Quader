@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::cell_holder::{CellHolder, CellType};
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
@@ -8,20 +6,9 @@ use crate::primitives::Point;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
-/*#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub struct HardDropResult {
-    is_success: bool,
-    lines_cleared: u32
-}
-
-const HARD_DROP_FAIL: HardDropResult = HardDropResult {
-    is_success: false,
-    lines_cleared: 0
-};*/
-
 pub struct PieceMgr {
     curr_piece: Option<Piece>,
-    cell_holder: Rc<RefCell<CellHolder>>,
+    pub cell_holder: Box<CellHolder>,
     board_width: usize,
     board_height: usize,
     hold_piece: Option<PieceType>,
@@ -29,10 +16,10 @@ pub struct PieceMgr {
 }
 
 impl PieceMgr {
-    pub fn new(game_settings: &GameSettings, cell_holder: Rc<RefCell<CellHolder>>) -> Self {
+    pub fn new(game_settings: &GameSettings) -> Self {
         Self {
             curr_piece: None,
-            cell_holder,
+            cell_holder: Box::new(CellHolder::new(game_settings.get_board())),
             board_width: game_settings.get_board().width,
             board_height: game_settings.get_board().height,
             hold_piece: None,
@@ -141,7 +128,7 @@ impl PieceMgr {
             for i in piece.get_y()..=(self.board_height as u32) {
                 let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
                 let new_points = adjust_positions_clone(points, offset);
-                if self.cell_holder.borrow().intersects_any(&new_points) {
+                if self.cell_holder.intersects_any(&new_points) {
                     break;
                 }
 
@@ -174,13 +161,13 @@ impl PieceMgr {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
-        let lines_cleared = self.cell_holder.borrow().check_row_clears(None);
+        let lines_cleared = self.cell_holder.check_row_clears(None);
 
         if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
-        self.cell_holder.borrow_mut().clear_rows(&lines_cleared);
+        self.cell_holder.clear_rows(&lines_cleared);
 
         let lines_cleared = lines_cleared.len() as u32;
 
@@ -208,7 +195,7 @@ impl PieceMgr {
         );
         let new_pos = adjust_positions_clone(pos, offset);
 
-        !self.cell_holder.borrow().intersects_any(&new_pos)
+        !self.cell_holder.intersects_any(&new_pos)
     }
 
     fn test_rotation(&self, kick_params: WallKickCheckParams) -> Option<Point> {
@@ -224,7 +211,7 @@ impl PieceMgr {
                 Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y)
             );
 
-            if !self.cell_holder.borrow().intersects_any(&adjusted) {
+            if !self.cell_holder.intersects_any(&adjusted) {
                 return Some(test);
             }
         }
@@ -243,13 +230,13 @@ impl PieceMgr {
         let mut res = true;
 
         for point in adjusted {
-            let cell = self.cell_holder.borrow().get_cell_at(point.x as usize, point.y as usize);
+            let cell = self.cell_holder.get_cell_at(point.x as usize, point.y as usize);
             if cell != CellType::None {
                 res = false;
             }
 
             let cell_type = piece_type_to_cell_type(piece.get_type());
-            self.cell_holder.borrow_mut().set_cell_at(point.x as usize, point.y as usize, cell_type);
+            self.cell_holder.set_cell_at(point.x as usize, point.y as usize, cell_type);
         }
 
         res
