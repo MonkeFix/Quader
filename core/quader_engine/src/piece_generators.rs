@@ -17,7 +17,7 @@ pub const BAG_SIZE: usize = AVAILABLE_PIECES.len();
 
 pub trait PieceGenerator {
     fn get_queue_size(&self) -> usize { 5 }
-    fn init(&mut self) -> Vec<PieceType>;
+    fn init(&mut self) -> VecDeque<PieceType>;
     fn next(&mut self) -> PieceType;
 }
 
@@ -53,7 +53,7 @@ impl PieceGeneratorFullRandom {
 }
 
 impl PieceGenerator for PieceGeneratorFullRandom {
-    fn init(&mut self) -> Vec<PieceType> {
+    fn init(&mut self) -> VecDeque<PieceType> {
         (0..self.get_queue_size())
             .map(|_i| self.rng())
             .collect()
@@ -91,25 +91,25 @@ impl PieceGeneratorBag7 {
 }
 
 impl PieceGenerator for PieceGeneratorBag7 {
-    fn init(&mut self) -> Vec<PieceType> {
+    fn init(&mut self) -> VecDeque<PieceType> {
         let bag = self.generate_bag();
         let bag2 = self.generate_bag();
 
-        self.queue = VecDeque::from(
-            (self.get_queue_size()..BAG_SIZE)
+        self.queue = (self.get_queue_size()..BAG_SIZE)
             .map(|i|bag[i])
-            .collect::<Vec<PieceType>>()
-        );
+            .collect::<VecDeque<PieceType>>();
 
         self.enqueue_range(&bag2);
 
-        bag.into_iter()
+        let res = bag.into_iter()
             .take(self.get_queue_size())
-            .collect()
+            .collect();
+
+        res
     }
 
     fn next(&mut self) -> PieceType {
-        let p = self.queue.pop_back().expect("The queue must not be empty");
+        let p = self.queue.pop_front().expect("The queue must not be empty");
 
         if self.queue.len() <= self.get_queue_size() {
             let bag = self.generate_bag();
