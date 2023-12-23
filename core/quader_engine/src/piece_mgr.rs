@@ -76,19 +76,18 @@ impl PieceMgr {
 
         // if we have hold piece, then replace the current piece with the hold one
         // and put the new piece to hold
-        if let Some(piece) = self.hold_piece {
+        return if let Some(piece) = self.hold_piece {
             let curr_piece = self.get_piece().unwrap();
             self.hold_piece = Some(curr_piece.get_type());
 
-            return Some(self.create_piece(piece).unwrap());
-
+            Some(self.create_piece(piece).unwrap())
         } else {
             // otherwise put current piece to hold and set a new piece
             self.hold_piece = Some(self.get_piece().unwrap().get_type());
 
             let new_piece = get_piece_func();
 
-            return Some(self.create_piece(new_piece).unwrap());
+            Some(self.create_piece(new_piece).unwrap())
         }
     }
 
