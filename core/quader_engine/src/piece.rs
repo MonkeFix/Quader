@@ -30,7 +30,7 @@ impl Display for PieceType {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RotationState {
-    Initial, Clockwise, CounterClockwise, Deg180
+    Initial = 0, Clockwise = 1, Deg180 = 2, CounterClockwise = 3
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
@@ -62,6 +62,67 @@ pub enum OffsetType {
     BetweenCells
 }
 
+fn get_points_for_piece(piece_type: PieceType, state: RotationState) -> &'static [Point] {
+    match piece_type {
+        PieceType::I => {
+            match state {
+                RotationState::Initial => &piece_points::piece_i::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_i::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_i::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_i::DEG180_POS,
+            }
+        },
+        PieceType::O => {
+            match state {
+                RotationState::Initial => &piece_points::piece_o::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_o::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_o::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_o::DEG180_POS,
+            }
+        },
+        PieceType::T =>
+            match state {
+                RotationState::Initial => &piece_points::piece_t::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_t::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_t::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_t::DEG180_POS,
+            },
+        PieceType::L => {
+            match state {
+                RotationState::Initial => &piece_points::piece_l::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_l::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_l::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_l::DEG180_POS,
+            }
+        },
+        PieceType::J => {
+            match state {
+                RotationState::Initial => &piece_points::piece_j::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_j::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_j::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_j::DEG180_POS,
+            }
+        },
+        PieceType::S => {
+            match state {
+                RotationState::Initial => &piece_points::piece_s::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_s::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_s::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_s::DEG180_POS,
+            }
+        },
+        PieceType::Z => {
+            match state {
+                RotationState::Initial => &piece_points::piece_z::INIT_POS,
+                RotationState::Clockwise => &piece_points::piece_z::RIGHT_POS,
+                RotationState::CounterClockwise => &piece_points::piece_z::LEFT_POS,
+                RotationState::Deg180 => &piece_points::piece_z::DEG180_POS,
+            }
+        },
+        _ => panic!("invalid piece type")
+    }
+}
+
 #[derive(Debug)]
 pub struct WallKickCheckParams<'a> {
     pub tests: &'a [Point],
@@ -78,10 +139,6 @@ pub struct WallKickCheckResult {
 pub struct Piece {
     piece_type: PieceType,
     board_cell_type: CellType,
-    init_pos: Vec<Point>,
-    right_pos: Vec<Point>,
-    deg180_pos: Vec<Point>,
-    left_pos: Vec<Point>,
     offset_type: OffsetType,
     bounds: Rect,
     x: u32,
@@ -89,7 +146,6 @@ pub struct Piece {
     current_rotation: RotationState,
     wall_kick_type: WallKickType
 }
-
 
 impl Piece {
     pub fn new(piece_type: PieceType) -> Self {
@@ -104,78 +160,13 @@ impl Piece {
             _ => OffsetType::Cell
         };
 
-        let board_cell_type;
-        let init_pos;
-        let right_pos;
-        let deg180_pos;
-        let left_pos;
+        let board_cell_type = crate::utils::piece_type_to_cell_type(piece_type);
+        let init_pos = get_points_for_piece(piece_type, RotationState::Initial);
 
-        match piece_type {
-            PieceType::I => {
-                board_cell_type = CellType::I;
-                init_pos =   Vec::from(piece_points::piece_i::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_i::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_i::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_i::LEFT_POS);
-            },
-            PieceType::O => {
-                board_cell_type = CellType::O;
-                init_pos =   Vec::from(piece_points::piece_o::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_o::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_o::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_o::LEFT_POS);
-            },
-            PieceType::T => {
-                board_cell_type = CellType::T;
-                init_pos =   Vec::from(piece_points::piece_t::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_t::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_t::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_t::LEFT_POS);
-            },
-            PieceType::L => {
-                board_cell_type = CellType::L;
-                init_pos =   Vec::from(piece_points::piece_l::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_l::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_l::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_l::LEFT_POS);
-            },
-            PieceType::J => {
-                board_cell_type = CellType::J;
-                init_pos =   Vec::from(piece_points::piece_j::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_j::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_j::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_j::LEFT_POS);
-            },
-            PieceType::S => {
-                board_cell_type = CellType::S;
-                init_pos =   Vec::from(piece_points::piece_s::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_s::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_s::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_s::LEFT_POS);
-            },
-            PieceType::Z => {
-                board_cell_type = CellType::Z;
-                init_pos =   Vec::from(piece_points::piece_z::INIT_POS);
-                right_pos =  Vec::from(piece_points::piece_z::RIGHT_POS);
-                deg180_pos = Vec::from(piece_points::piece_z::DEG180_POS);
-                left_pos =   Vec::from(piece_points::piece_z::LEFT_POS);
-            },
-            PieceType::Pixel => {
-                board_cell_type = CellType::Garbage;
-                init_pos = vec![ Point::new(0, 0) ];
-                right_pos = vec![ Point::new(0, 0) ];
-                deg180_pos = vec![ Point::new(0, 0) ];
-                left_pos = vec![ Point::new(0, 0) ];
-            }
-        };
         Piece {
-            bounds: calc_bounds(&init_pos, 0, 0),
+            bounds: calc_bounds(init_pos, 0, 0),
             piece_type,
             board_cell_type,
-            init_pos,
-            right_pos,
-            deg180_pos,
-            left_pos,
             offset_type,
             x: 0,
             y: 0,
@@ -190,12 +181,7 @@ impl Piece {
     }
 
     pub fn get_positions(&self) -> &[Point] {
-        match self.current_rotation {
-            RotationState::Initial => &self.init_pos,
-            RotationState::Clockwise => &self.right_pos,
-            RotationState::CounterClockwise => &self.left_pos,
-            RotationState::Deg180 => &self.deg180_pos
-        }
+        get_points_for_piece(self.piece_type, self.current_rotation)
     }
 
     pub fn get_type(&self) -> PieceType {
@@ -239,12 +225,7 @@ impl Piece {
     }
 
     pub fn get_current_pos(&self) -> &[Point] {
-        match self.current_rotation {
-            RotationState::Initial => &self.init_pos,
-            RotationState::Clockwise => &self.right_pos,
-            RotationState::CounterClockwise => &self.left_pos,
-            RotationState::Deg180 => &self.deg180_pos
-        }
+        get_points_for_piece(self.piece_type, self.current_rotation)
     }
 
     pub fn get_wall_kick_type(&self) -> &WallKickType {
@@ -315,24 +296,24 @@ impl Piece {
     pub fn get_rotation_type(&self, rotation: RotationDirection) -> (RotationMove, &[Point]) {
         match self.current_rotation {
             RotationState::Initial => match rotation {
-                RotationDirection::Clockwise => (RotationMove::InitToRight, &self.right_pos),
-                RotationDirection::CounterClockwise => (RotationMove::InitToLeft, &self.left_pos),
-                RotationDirection::Deg180 => (RotationMove::InitToDeg180, &self.deg180_pos),
+                RotationDirection::Clockwise => (RotationMove::InitToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
+                RotationDirection::CounterClockwise => (RotationMove::InitToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
+                RotationDirection::Deg180 => (RotationMove::InitToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
             }
             RotationState::Clockwise => match rotation {
-                RotationDirection::Clockwise => (RotationMove::RightToDeg180, &self.deg180_pos),
-                RotationDirection::CounterClockwise => (RotationMove::RightToInit, &self.init_pos),
-                RotationDirection::Deg180 => (RotationMove::Deg180ToLeft, &self.left_pos),
+                RotationDirection::Clockwise => (RotationMove::RightToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
+                RotationDirection::CounterClockwise => (RotationMove::RightToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
+                RotationDirection::Deg180 => (RotationMove::Deg180ToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
             }
             RotationState::Deg180 => match rotation {
-                RotationDirection::Clockwise => (RotationMove::Deg180ToLeft, &self.left_pos),
-                RotationDirection::CounterClockwise => (RotationMove::Deg180ToRight, &self.right_pos),
-                RotationDirection::Deg180 => (RotationMove::Deg180ToInit, &self.init_pos),
+                RotationDirection::Clockwise => (RotationMove::Deg180ToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
+                RotationDirection::CounterClockwise => (RotationMove::Deg180ToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
+                RotationDirection::Deg180 => (RotationMove::Deg180ToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
             }
             RotationState::CounterClockwise => match rotation {
-                RotationDirection::Clockwise => (RotationMove::LeftToInit, &self.init_pos),
-                RotationDirection::CounterClockwise => (RotationMove::LeftToDeg180, &self.deg180_pos),
-                RotationDirection::Deg180 => (RotationMove::InitToRight, &self.right_pos),
+                RotationDirection::Clockwise => (RotationMove::LeftToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
+                RotationDirection::CounterClockwise => (RotationMove::LeftToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
+                RotationDirection::Deg180 => (RotationMove::InitToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
             }
         }
     }
