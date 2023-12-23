@@ -61,6 +61,10 @@ impl PieceMgr {
         }
     }
 
+    pub fn get_hold_piece(&self) -> Option<PieceType> {
+        self.hold_piece
+    }
+
     /// Holds current piece if possible. If success, returns `Some(&Piece)`, otherwise `None`.
     pub fn hold_piece<F: FnMut() -> PieceType>(&mut self, mut get_piece_func: F) -> Option<&Piece> {
         // we can hold piece once per turn

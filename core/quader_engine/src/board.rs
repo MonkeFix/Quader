@@ -7,7 +7,7 @@ use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
-use crate::piece::{RotationDirection};
+use crate::piece::{PieceType, RotationDirection};
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
 use crate::wall_kick_data::{WallKickData};
@@ -35,7 +35,6 @@ pub struct Board {
 impl Board {
 
     // TODO: Add PieceQueue
-    // TODO: Add HoldPiece
     // TODO: Use attacks and send garbage (DamageMgr)
     // TODO: Add replays
 
@@ -107,9 +106,13 @@ impl Board {
     pub fn hold_piece(&mut self) {
         let mut piece_mgr = self.piece_mgr.borrow_mut();
 
-        if let Some(p) = piece_mgr.hold_piece(|| self.piece_generator.next()) {
-
+        if let Some(_p) = piece_mgr.hold_piece(|| self.piece_generator.next()) {
+            // TODO: Send a signal to client that the hold and current piece were updated
         }
+    }
+
+    pub fn get_hold_piece(&self) -> Option<PieceType> {
+        self.piece_mgr.borrow().get_hold_piece()
     }
 
     pub fn hard_drop(&mut self) {
