@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
-use crate::piece::{Piece, PieceType};
+use crate::piece::{PieceType};
 
 pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::S,
@@ -35,34 +35,34 @@ impl PieceGeneratorFactory {
     }
 }*/
 
-/*pub struct PieceGeneratorFullRandom {
-    rng: Rc<RefCell<RngManager>>,
+pub struct PieceGeneratorFullRandom {
+    rng: ChaCha8Rng,
 }
 
 impl PieceGeneratorFullRandom {
 
-    pub fn new(rng: &Rc<RefCell<RngManager>>) -> Self {
+    pub fn new(seed: u64) -> Self {
         Self {
-            rng: Rc::clone(rng)
+            rng: SeedableRng::seed_from_u64(seed)
         }
     }
 
     fn rng(&mut self) -> PieceType {
-        *AVAILABLE_PIECES.choose(&mut self.rng.borrow_mut().rng).unwrap()
+        *AVAILABLE_PIECES.choose(&mut self.rng).unwrap()
     }
 }
 
 impl PieceGenerator for PieceGeneratorFullRandom {
-    fn init(&mut self) -> Vec<Piece> {
+    fn init(&mut self) -> Vec<PieceType> {
         (0..self.get_queue_size())
-            .map(|_i| Piece::new(self.rng()))
+            .map(|_i| self.rng())
             .collect()
     }
 
-    fn next(&mut self) -> Piece {
-        Piece::new(self.rng())
+    fn next(&mut self) -> PieceType {
+        self.rng()
     }
-}*/
+}
 
 pub struct PieceGeneratorBag7 {
     rng: ChaCha8Rng,
