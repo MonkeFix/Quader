@@ -16,7 +16,7 @@ pub struct GravityMgr {
 }
 
 impl GravityMgr {
-    pub fn new(game_settings: &GameSettings) -> Self {
+    pub fn new(game_settings: &GameSettings, seed: u64) -> Self {
         let gravity_settings = *game_settings.get_gravity();
         let cur_gravity = gravity_settings.grav_base;
         let cur_lock = gravity_settings.lock_delay;
@@ -28,7 +28,7 @@ impl GravityMgr {
             y_needs_update: true,
             y_to_check: 0,
             gravity_settings,
-            piece_mgr: Box::new(PieceMgr::new(game_settings))
+            piece_mgr: Box::new(PieceMgr::new(game_settings, seed))
         }
     }
 
@@ -72,10 +72,8 @@ impl BoardComponent for GravityMgr {
             self.intermediate_y = 0.0;
         }
 
-        if let Some(p) = &self.piece_mgr.get_piece() {
-            if self.y_to_check == p.get_y() {
-                self.cur_lock -= 1.0 * dt;
-            }
+        if self.y_to_check == self.piece_mgr.get_piece().get_y() {
+            self.cur_lock -= 1.0 * dt;
         }
 
         if self.cur_lock <= 0.0 {

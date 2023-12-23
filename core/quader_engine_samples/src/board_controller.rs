@@ -119,50 +119,49 @@ impl Renderable for BoardController {
         }
 
         // render current piece
-        if let Some(piece) = self.board.as_ref().borrow().get_piece_mgr().get_piece() {
-            let points = piece.get_current_pos();
-            points
-                .iter()
-                .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, piece.get_y() as i32)))
-                .for_each(|p| {
-                    let pos = self.point_to_coords(&p);
-                    self.render_piece(pos.0, pos.1 - self.render_offset, piece);
-                });
-        }
+        let piece = b.get_piece_mgr().get_piece();
+
+        let points = piece.get_current_pos();
+        points
+            .iter()
+            .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, piece.get_y() as i32)))
+            .for_each(|p| {
+                let pos = self.point_to_coords(&p);
+                self.render_piece(pos.0, pos.1 - self.render_offset, piece);
+            });
     }
 
     fn debug_render(&mut self) {
 
-        let board = self.board.borrow();
-
         // render piece bounds
-        if let Some(piece) = board.get_piece_mgr().get_piece() {
-            let bounds = piece.get_bounds();
-            let pos = self.i32_to_coords(bounds.x, bounds.y);
+        let board = self.board.as_ref().borrow();
+        let piece = board.get_piece_mgr().get_piece();
 
-            draw_rectangle_lines(
-                pos.0,
-                pos.1 - self.render_offset,
-                bounds.width as f32 * self.cell_size,
-                bounds.height as f32 * self.cell_size,
-                1.0,
-                Color::from_rgba(255, 0, 0, 255)
-            );
+        let bounds = piece.get_bounds();
+        let pos = self.i32_to_coords(bounds.x, bounds.y);
 
-            let pos = self.u32_to_coords(piece.get_x(), piece.get_y());
-            draw_rectangle(self.x + pos.0 * self.cell_size, self.y + pos.1 * self.cell_size, 3., 3., Color::from_rgba(255, 255, 255, 255));
+        draw_rectangle_lines(
+            pos.0,
+            pos.1 - self.render_offset,
+            bounds.width as f32 * self.cell_size,
+            bounds.height as f32 * self.cell_size,
+            1.0,
+            Color::from_rgba(255, 0, 0, 255)
+        );
 
-            /*match piece.get_offset_type() {
-                OffsetType::Cell => draw_circle(pos.0, pos.1, 8.0, Color::from_rgba(255, 0, 0, 255)),
-                OffsetType::BetweenCells => draw_circle(pos.0, pos.1 - 800.0, 8.0, Color::from_rgba(255, 0, 0, 255)),
-            }*/
-        }
+        let pos = self.u32_to_coords(piece.get_x(), piece.get_y());
+        draw_rectangle(self.x + pos.0 * self.cell_size, self.y + pos.1 * self.cell_size, 3., 3., Color::from_rgba(255, 255, 255, 255));
+
+        /*match piece.get_offset_type() {
+            OffsetType::Cell => draw_circle(pos.0, pos.1, 8.0, Color::from_rgba(255, 0, 0, 255)),
+            OffsetType::BetweenCells => draw_circle(pos.0, pos.1 - 800.0, 8.0, Color::from_rgba(255, 0, 0, 255)),
+        }*/
 
         // render debug ui
         root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
             let board = self.board.borrow();
             let piece_mgr = board.get_piece_mgr();
-            let piece = piece_mgr.get_piece().unwrap();
+            let piece = piece_mgr.get_piece();
             ui.label(None, &format!("Piece position: {{{}, {}}}", piece.get_x(), piece.get_y()));
             ui.label(None, &format!("Nearest Y: {}", board.find_nearest_y()));
 

@@ -1,6 +1,4 @@
-﻿use std::cell::{Ref, RefCell, RefMut};
-use std::rc::Rc;
-use rand::{Rng, SeedableRng};
+﻿use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
@@ -8,7 +6,6 @@ use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
-use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
 use crate::piece_queue::PieceQueue;
 use crate::wall_kick_data::{WallKickData};
@@ -25,7 +22,7 @@ pub struct Board {
     //piece_mgr: Rc<RefCell<PieceMgr>>,
     gravity_mgr: Box<GravityMgr>,
     is_enabled: bool,
-    piece_queue: PieceQueue,
+    //piece_queue: PieceQueue,
     // seed: u64,
 
     last_garbage_x: Option<u32>,
@@ -44,12 +41,12 @@ impl Board {
 
         //let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
         //let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
-        let mut gravity_mgr = Box::new(GravityMgr::new(&game_settings));
+        let gravity_mgr = Box::new(GravityMgr::new(&game_settings, seed));
 
-        let mut piece_queue = PieceQueue::new(seed);
-        let next_piece = piece_queue.next();
+        //let mut piece_queue = PieceQueue::new(seed);
+        //let next_piece = piece_queue.next();
 
-        gravity_mgr.piece_mgr.create_piece(next_piece);
+        //gravity_mgr.piece_mgr.create_piece(next_piece);
 
         Self {
             game_settings,
@@ -57,7 +54,7 @@ impl Board {
             //piece_mgr,
             gravity_mgr,
             is_enabled: true,
-            piece_queue,
+            //piece_queue,
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
@@ -106,7 +103,7 @@ impl Board {
     }
 
     pub fn hold_piece(&mut self) {
-        if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece(|| self.piece_queue.next()) {
+        if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece() {
             // TODO: Send a signal to client that the hold and current piece were updated
         }
     }
@@ -118,10 +115,6 @@ impl Board {
     pub fn hard_drop(&mut self) {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let _lines_cleared = piece_mgr.hard_drop().unwrap_or(0);
-
-        let next_piece = self.piece_queue.next();
-
-        piece_mgr.create_piece(next_piece);
     }
 
     pub fn soft_drop(&mut self, delta: u32) {

@@ -5,7 +5,7 @@ use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 pub struct PieceQueue {
     pub queue: VecDeque<PieceType>,
     piece_generator: Box<dyn PieceGenerator>,
-    pub next_piece: PieceType
+    next_piece: PieceType
 }
 
 impl PieceQueue {
