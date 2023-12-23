@@ -7,7 +7,6 @@ use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::PieceMgr;
-use crate::piece_queue::PieceQueue;
 use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -18,12 +17,8 @@ pub enum GameState {
 pub struct Board {
     game_settings: GameSettings,
 
-    //cell_holder: Rc<RefCell<CellHolder>>,
-    //piece_mgr: Rc<RefCell<PieceMgr>>,
     gravity_mgr: Box<GravityMgr>,
     is_enabled: bool,
-    //piece_queue: PieceQueue,
-    // seed: u64,
 
     last_garbage_x: Option<u32>,
     // used for generating garbage holes
@@ -33,28 +28,18 @@ pub struct Board {
 
 impl Board {
 
-    // TODO: Add PieceQueue
     // TODO: Use attacks and send garbage (DamageMgr)
     // TODO: Add replays
 
     pub fn new(game_settings: GameSettings, seed: u64) -> Self {
 
-        //let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
-        //let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
         let gravity_mgr = Box::new(GravityMgr::new(&game_settings, seed));
 
-        //let mut piece_queue = PieceQueue::new(seed);
-        //let next_piece = piece_queue.next();
-
-        //gravity_mgr.piece_mgr.create_piece(next_piece);
 
         Self {
             game_settings,
-            //cell_holder,
-            //piece_mgr,
             gravity_mgr,
             is_enabled: true,
-            //piece_queue,
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),

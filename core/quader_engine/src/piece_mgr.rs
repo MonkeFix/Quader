@@ -163,7 +163,7 @@ impl PieceMgr {
     pub fn soft_drop(&mut self, _dt: u32) {
         //for _ in 0..=dt {
             if self.test_movement(0, 1) {
-                &self.curr_piece.move_down();
+                self.curr_piece.move_down();
             }
         //}
     }
