@@ -17,43 +17,8 @@ pub enum GameState {
 
 }
 
-/*struct All {
-    game_settings: GameSettings,
-
-    // INNER LOGIC:
-    test_queue: VecDeque<Vec<Point>>,
-    cell_holder: CellHolder,
-    current_piece: Piece,
-
-    // SCORING:
-    // ScoringMgr | combo: u32,
-    // ScoringMgr | b2b: u32,
-    last_move: MoveInfo,
-    //replay: Replay,
-    // DamageMgr | attack_queue: VecDeque<u32>,
-    // DamageMgr | incoming_damage: Vec<u32>,
-    // DamageMgr | last_garbage_x: u32,
-
-    // UPDATABLE
-    // GravityMgr | cur_gravity: f32,
-    // GravityMgr | cur_lock: f32,
-    // GravityMgr | intermediate_y: f32,
-    // GravityMgr | y_needs_update: bool,
-    // GravityMgr | y_to_check: u32,
-    // DamageMgr | cur_garbage_cd: f32,
-    // TimeMgr | cur_tick: f64,
-}*/
-
 pub struct Board {
     game_settings: GameSettings,
-    /*gravity_mgr: GravityMgr<'a, 'a>,
-    piece_mgr: PieceMgr<'a>,
-    scoring_mgr: ScoringMgr,
-    time_mgr: TimeMgr,
-    damage_mgr: DamageMgr,
-    cell_holder: CellHolder,
-    rng_mgr: RngManager,
-    damage_calculator: DamageCalculator<'a>,*/
 
     cell_holder: Rc<RefCell<CellHolder>>,
     piece_mgr: Rc<RefCell<PieceMgr>>,
@@ -61,7 +26,6 @@ pub struct Board {
     is_enabled: bool,
     // seed: u64,
     piece_generator: PieceGeneratorBag7,
-    components: Vec<Rc<RefCell<dyn BoardComponent>>>,
     last_garbage_x: i32,
     // used for generating garbage holes
     rng: ChaCha8Rng,
@@ -69,6 +33,11 @@ pub struct Board {
 }
 
 impl Board {
+
+    // TODO: Add PieceQueue
+    // TODO: Add HoldPiece
+    // TODO: Use attacks and send garbage (DamageMgr)
+    // TODO: Add replays
 
     pub fn new(game_settings: GameSettings, seed: u64) -> Self {
 
@@ -89,7 +58,6 @@ impl Board {
             is_enabled: true,
             // seed,
             piece_generator: piece_gen,
-            components: vec![],
             last_garbage_x: -1,
             // used for generating garbage holes, so we can safely use entropy instead of seed
             rng: SeedableRng::from_entropy(),

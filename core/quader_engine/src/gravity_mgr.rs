@@ -78,6 +78,7 @@ impl BoardComponent for GravityMgr {
         }
 
         if self.cur_lock <= 0.0 {
+            // TODO: take the result
             piece_mgr.hard_drop();
             self.cur_lock = self.gravity_settings.lock_delay;
             self.y_needs_update = true;

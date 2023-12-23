@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+use serde::{Deserialize, Serialize};
 use crate::board::{BoardComponent};
 use crate::cell_holder::{CellHolder, CellType};
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
@@ -7,6 +8,17 @@ use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickChec
 use crate::primitives::Point;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct HardDropResult {
+    is_success: bool,
+    lines_cleared: u32
+}
+
+const HARD_DROP_FAIL: HardDropResult = HardDropResult {
+    is_success: false,
+    lines_cleared: 0
+};
 
 pub struct PieceMgr {
     curr_piece: Option<Piece>,
@@ -107,25 +119,29 @@ impl PieceMgr {
         //}
     }
 
-    pub fn hard_drop(&mut self) {
+    pub fn hard_drop(&mut self) -> HardDropResult {
         let nearest_y = self.find_nearest_y();
 
         if !self.try_apply_piece(nearest_y) {
-            return;
+            return HARD_DROP_FAIL;
         }
 
         let lines_cleared = self.cell_holder.borrow().check_row_clears(None);
 
         if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
-            return;
+            return HARD_DROP_FAIL;
         }
 
         self.cell_holder.borrow_mut().clear_rows(&lines_cleared);
-        if !lines_cleared.is_empty() {
-            // self.cells_on_board -= lines_cleared.len() * self.width as usize;
-        }
+
+        let lines_cleared = lines_cleared.len() as u32;
 
         self.reset();
+
+        HardDropResult {
+            is_success: true,
+            lines_cleared
+        }
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
