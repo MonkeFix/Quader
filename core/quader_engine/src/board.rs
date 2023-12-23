@@ -3,10 +3,13 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
+use crate::damage_calculation::{calculate_damage, check_t_overhang, create_board_move_bits};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::PieceMgr;
+use crate::replays::MoveInfo;
+use crate::scoring::ScoringMgr;
 use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -24,6 +27,7 @@ pub struct Board {
     // used for generating garbage holes
     rng: ChaCha8Rng,
     wkd: WallKickData,
+    scoring_mgr: ScoringMgr
 }
 
 impl Board {
@@ -43,7 +47,8 @@ impl Board {
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
-            wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode())
+            wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode()),
+            scoring_mgr: ScoringMgr::new()
         }
     }
 
@@ -56,7 +61,9 @@ impl Board {
                 }
             },
             BoardCommandType::Rotate(dir) => self.rotate(*dir),
-            BoardCommandType::HardDrop => self.hard_drop(),
+            BoardCommandType::HardDrop => {
+                self.hard_drop().unwrap_or_else(|_err| { MoveInfo::default() });
+            },
             BoardCommandType::SoftDrop(delta) => self.soft_drop(*delta),
             BoardCommandType::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
             BoardCommandType::Update(dt) => self.update(*dt),
@@ -65,11 +72,12 @@ impl Board {
     }
 
     pub fn update(&mut self, dt: f32) {
-        if let Some(_res) = self.gravity_mgr.update(dt) {
-
+        if self.gravity_mgr.update(dt) {
+            // hard drop requested
+            self.exec_cmd(&BoardCommand::new(BoardCommandType::HardDrop))
         }
 
-        if let Some(_res) = self.gravity_mgr.piece_mgr.update(dt) {
+        if self.gravity_mgr.piece_mgr.update(dt) {
 
         }
     }
@@ -97,9 +105,33 @@ impl Board {
         self.gravity_mgr.piece_mgr.get_hold_piece()
     }
 
-    pub fn hard_drop(&mut self) {
+    pub fn hard_drop(&mut self) -> Result<MoveInfo, UpdateErrorReason> {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
-        let _lines_cleared = piece_mgr.hard_drop().unwrap_or(0);
+        let mut result = piece_mgr.hard_drop()?;
+
+        let piece = piece_mgr.get_piece();
+        let t_spin_status = check_t_overhang(
+            self.game_settings.get_board(),
+            piece.get_x() as i32, piece.get_y() as i32,
+            |p| { self.get_cell_holder().intersects(&p) }
+        );
+        let bits = create_board_move_bits(
+            self.get_cell_holder().get_occupied_cell_count() as u32,
+            &mut result,
+            t_spin_status);
+
+        result.mod_bits = bits;
+
+        let dmg = calculate_damage(self.game_settings.get_attack(), &result);
+        result.attack = dmg;
+
+        println!("hard drop: {:?}", result);
+
+        // TODO: Move damage calculation and move creation to BoardManager.
+        // TODO: Attacks should be calculated in the server.
+        // TODO: Probably move gravity handling to the server.
+
+        Ok(result)
     }
 
     pub fn soft_drop(&mut self, delta: u32) {
@@ -182,8 +214,8 @@ pub trait BoardComponent {
     fn enable(&mut self) { }
     fn disable(&mut self) { }
     /// u32 in the Result is lines cleared
-    fn update(&mut self, _dt: f32) -> Option<Result<u32, UpdateErrorReason>> {
-        None
+    fn update(&mut self, _dt: f32) -> bool {
+        false
     }
 }
 

@@ -1,9 +1,11 @@
 use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::cell_holder::{CellHolder, CellType};
+use crate::damage_calculation::create_board_move_bits;
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_queue::PieceQueue;
 use crate::primitives::Point;
+use crate::replays::MoveInfo;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
@@ -41,6 +43,8 @@ impl PieceMgr {
         let next_piece = piece_queue.next();
         let mut piece = Piece::new(next_piece);
         reset_piece(&mut piece, game_settings.get_board().width, game_settings.get_board().height);
+
+        println!("cur piece: {:?}, queue: {:?}", piece.get_type(), piece_queue.queue);
 
         Self {
             curr_piece: piece,
@@ -123,6 +127,7 @@ impl PieceMgr {
         //}
     }
 
+    /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
     pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) {
         let piece = &self.curr_piece;
         let rot_type = piece.get_rotation_type(rotation);
@@ -170,16 +175,18 @@ impl PieceMgr {
 
     /// Tries to hard drop the current piece.
     /// The method checks if the piece could fit in the desired cells.
-    /// If it couldn't, returns Err, otherwise returns cleared lines count.
-    pub fn hard_drop(&mut self) -> Result<u32, UpdateErrorReason> {
+    /// If it fails, returns Err.
+    pub fn hard_drop(&mut self) -> Result<MoveInfo, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
 
+        // failed to apply piece as the cells are occupied
         if !self.try_apply_piece(nearest_y) {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
         let lines_cleared = self.cell_holder.check_row_clears(None);
 
+        // failed to apply piece as it is out of board's bounds
         if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
@@ -193,7 +200,15 @@ impl PieceMgr {
         let next_piece = self.piece_queue.next();
         self.create_piece(next_piece);
 
-        Ok(lines_cleared)
+        println!("cur piece: {:?}, queue: {:?}", next_piece, self.piece_queue.queue);
+
+        let result = MoveInfo {
+            lines_cleared,
+            is_success: true,
+            ..Default::default()
+        };
+
+        Ok(result)
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
@@ -209,6 +224,7 @@ impl PieceMgr {
         }
 
         let pos = piece.get_positions();
+        // casting to a signed integer here as a point could be to the left (-x) or to the top (-y)
         let offset: Point<i32> = Point::new(
             piece.get_x() as i32 + x,
             piece.get_y() as i32 + y

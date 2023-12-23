@@ -25,3 +25,17 @@ impl Display for MoveInfo {
         )
     }
 }
+
+impl Default for MoveInfo {
+    fn default() -> Self {
+        Self {
+            timestamp: 0.0,
+            lines_cleared: 0,
+            mod_bits: 0,
+            b2b: 0,
+            combo: 0,
+            is_success: false,
+            attack: 0
+        }
+    }
+}

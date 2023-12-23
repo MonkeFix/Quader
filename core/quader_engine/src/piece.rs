@@ -130,12 +130,6 @@ pub struct WallKickCheckParams<'a> {
 }
 
 #[derive(Debug)]
-pub struct WallKickCheckResult {
-    pub is_success: bool,
-    pub wall_kick_pos: Option<Point<i32>>
-}
-
-#[derive(Debug)]
 pub struct Piece {
     piece_type: PieceType,
     board_cell_type: CellType,

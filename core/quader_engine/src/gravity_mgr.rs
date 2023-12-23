@@ -52,8 +52,8 @@ impl BoardComponent for GravityMgr {
         self.cur_lock = self.gravity_settings.lock_delay;
     }
 
-    fn update(&mut self, dt: f32) -> Option<Result<u32, UpdateErrorReason>> {
-        let mut res = None;
+    fn update(&mut self, dt: f32) -> bool {
+        let mut res = false;
 
         self.intermediate_y += self.cur_gravity * dt;
 
@@ -77,7 +77,7 @@ impl BoardComponent for GravityMgr {
         }
 
         if self.cur_lock <= 0.0 {
-            res = Some(self.piece_mgr.hard_drop());
+            res = true;
             self.cur_lock = self.gravity_settings.lock_delay;
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
