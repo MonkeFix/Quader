@@ -4,8 +4,9 @@ members = [
     "quader_engine",
     "quader_engine_samples",
     "quader_server",
-    "quader_engine_c_api"
-]
+    "quader_engine_c_api",
+    "quader_skynet"
+, "quader_skynet"]
 
 [profile.release]
 lto = true
