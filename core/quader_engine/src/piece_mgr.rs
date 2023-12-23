@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use serde::{Deserialize, Serialize};
-use crate::board::{BoardComponent};
+use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::cell_holder::{CellHolder, CellType};
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
@@ -9,7 +9,7 @@ use crate::primitives::Point;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+/*#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct HardDropResult {
     is_success: bool,
     lines_cleared: u32
@@ -18,7 +18,7 @@ pub struct HardDropResult {
 const HARD_DROP_FAIL: HardDropResult = HardDropResult {
     is_success: false,
     lines_cleared: 0
-};
+};*/
 
 pub struct PieceMgr {
     curr_piece: Option<Piece>,
@@ -56,6 +56,9 @@ impl PieceMgr {
         }
     }
 
+    /// Tries to move the current piece one cell to the left `delta` times.
+    /// If it fails, nothing happens, as the piece collides with either board's bounds
+    /// or occupied cells.
     pub fn move_left(&mut self, _delta: i32) {
         //for _ in 0..=delta {
             if self.test_movement(-1, 0) {
@@ -64,6 +67,9 @@ impl PieceMgr {
         //}
     }
 
+    /// Tries to move the current piece one cell to the right `delta` times.
+    /// If it fails, nothing happens, as the piece collides with either board's bounds
+    /// or occupied cells.
     pub fn move_right(&mut self, _delta: i32) {
         //for _ in 0..=delta {
             if self.test_movement(1, 0) {
@@ -90,6 +96,8 @@ impl PieceMgr {
         }
     }
 
+    /// Returns nearest Y coordinate the piece fits at.
+    /// May be useful for rendering ghost piece.
     pub fn find_nearest_y(&self) -> u32 {
         if let Some(piece) = self.curr_piece.as_ref() {
             let mut y = piece.get_y();
@@ -111,6 +119,8 @@ impl PieceMgr {
         0
     }
 
+    /// Tries to move the current piece one cell down `dt` times.
+    /// If it fails, then nothing happens as the piece collides with other cells.
     pub fn soft_drop(&mut self, _dt: u32) {
         //for _ in 0..=dt {
             if self.test_movement(0, 1) {
@@ -119,17 +129,20 @@ impl PieceMgr {
         //}
     }
 
-    pub fn hard_drop(&mut self) -> HardDropResult {
+    /// Tries to hard drop the current piece.
+    /// The method checks if the piece could fit in the desired cells.
+    /// If it couldn't, returns Err, otherwise returns cleared lines count.
+    pub fn hard_drop(&mut self) -> Result<u32, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
 
         if !self.try_apply_piece(nearest_y) {
-            return HARD_DROP_FAIL;
+            return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
         let lines_cleared = self.cell_holder.borrow().check_row_clears(None);
 
         if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
-            return HARD_DROP_FAIL;
+            return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
         self.cell_holder.borrow_mut().clear_rows(&lines_cleared);
@@ -138,10 +151,7 @@ impl PieceMgr {
 
         self.reset();
 
-        HardDropResult {
-            is_success: true,
-            lines_cleared
-        }
+        Ok(lines_cleared)
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
@@ -187,6 +197,8 @@ impl PieceMgr {
         None
     }
 
+    /// Returns false if the piece couldn't be fit using its current points.
+    /// It usually means that the player just lost.
     fn try_apply_piece(&mut self, y: u32) -> bool {
         let piece = self.curr_piece.as_ref().unwrap();
         let points = piece.get_current_pos();
@@ -217,6 +229,7 @@ impl BoardComponent for PieceMgr {
     fn reset(&mut self) {
         let piece = self.curr_piece.as_mut().unwrap();
 
+        // Pieces O and I are fit between cells.
         match piece.get_offset_type() {
             OffsetType::Cell => piece
                 .set_x(self.board_width as u32 / 2 - 1),

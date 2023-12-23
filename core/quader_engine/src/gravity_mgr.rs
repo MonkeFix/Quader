@@ -1,12 +1,13 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::board::{BoardComponent};
+use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::game_settings::GravitySettings;
 use crate::piece_mgr::PieceMgr;
 
 pub struct GravityMgr {
     pub(crate) cur_gravity: f32,
     pub(crate) cur_lock: f32,
+    /// Used for handling subcell movement of the current piece.
     pub(crate) intermediate_y: f32,
     pub(crate) y_needs_update: bool,
     pub(crate) y_to_check: u32,
@@ -52,7 +53,9 @@ impl BoardComponent for GravityMgr {
         self.cur_lock = self.gravity_settings.lock_delay;
     }
 
-    fn update(&mut self, dt: f32) {
+    fn update(&mut self, dt: f32) -> Option<Result<u32, UpdateErrorReason>> {
+        let mut res = None;
+
         self.intermediate_y += self.cur_gravity * dt;
 
         let mut piece_mgr = self.piece_mgr.borrow_mut();
@@ -78,13 +81,14 @@ impl BoardComponent for GravityMgr {
         }
 
         if self.cur_lock <= 0.0 {
-            // TODO: take the result
-            piece_mgr.hard_drop();
+            res = Some(piece_mgr.hard_drop());
             self.cur_lock = self.gravity_settings.lock_delay;
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
         }
 
         self.cur_gravity += self.gravity_settings.grav_incr * dt;
+
+        res
     }
 }
