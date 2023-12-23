@@ -294,7 +294,7 @@ impl Updatable for BoardController {
                 BoardMessage::PlayerRemoved => {}
                 BoardMessage::BoardUpdated => {}
             }
-            println!("msg: {:?}", msg);
+            //println!("msg: {:?}", msg);
         }
 
         /*for msg in self.receiver.iter() {

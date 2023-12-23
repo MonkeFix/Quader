@@ -10,6 +10,7 @@ use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use crate::piece_mgr::PieceMgr;
+use crate::piece_queue::PieceQueue;
 use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -24,8 +25,9 @@ pub struct Board {
     //piece_mgr: Rc<RefCell<PieceMgr>>,
     gravity_mgr: Box<GravityMgr>,
     is_enabled: bool,
+    piece_queue: PieceQueue,
     // seed: u64,
-    piece_generator: PieceGeneratorBag7,
+
     last_garbage_x: Option<u32>,
     // used for generating garbage holes
     rng: ChaCha8Rng,
@@ -43,11 +45,11 @@ impl Board {
         //let cell_holder = Rc::new(RefCell::new(CellHolder::new(game_settings.get_board())));
         //let piece_mgr =  Rc::new(RefCell::new(PieceMgr::new(&game_settings, Rc::clone(&cell_holder))));
         let mut gravity_mgr = Box::new(GravityMgr::new(&game_settings));
-        let mut piece_gen = PieceGeneratorBag7::new(seed);
-        // TODO: Actually use the queue. Move it to separate struct
-        let queue = piece_gen.init();
 
-        gravity_mgr.piece_mgr.create_piece(queue[0]);
+        let mut piece_queue = PieceQueue::new(seed);
+        let next_piece = piece_queue.next();
+
+        gravity_mgr.piece_mgr.create_piece(next_piece);
 
         Self {
             game_settings,
@@ -55,7 +57,7 @@ impl Board {
             //piece_mgr,
             gravity_mgr,
             is_enabled: true,
-            piece_generator: piece_gen,
+            piece_queue,
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
@@ -104,7 +106,7 @@ impl Board {
     }
 
     pub fn hold_piece(&mut self) {
-        if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece(|| self.piece_generator.next()) {
+        if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece(|| self.piece_queue.next()) {
             // TODO: Send a signal to client that the hold and current piece were updated
         }
     }
@@ -117,7 +119,7 @@ impl Board {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let _lines_cleared = piece_mgr.hard_drop().unwrap_or(0);
 
-        let next_piece = self.piece_generator.next();
+        let next_piece = self.piece_queue.next();
 
         piece_mgr.create_piece(next_piece);
     }
@@ -153,10 +155,6 @@ impl Board {
 
     pub fn find_nearest_y(&self) -> u32 {
         self.get_piece_mgr().find_nearest_y()
-    }
-
-    pub(crate) fn get_piece_mgr_mut(&mut self) -> &mut PieceMgr {
-        &mut self.gravity_mgr.piece_mgr
     }
 }
 
