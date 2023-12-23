@@ -268,6 +268,12 @@ impl Updatable for BoardController {
                 BoardCommand::new(BoardCommandType::Rotate(RotationDirection::Deg180))
             );
         }
+        if is_key_pressed(KeyCode::C) {
+            self.board_mgr.send_command(
+                &self.uuid,
+                BoardCommand::new(BoardCommandType::HoldPiece)
+            )
+        }
 
         if is_key_pressed(KeyCode::T) {
             let mut board = self.board.borrow_mut();

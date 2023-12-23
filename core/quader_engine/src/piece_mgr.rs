@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::cell_holder::{CellHolder, CellType};
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
@@ -24,7 +23,9 @@ pub struct PieceMgr {
     curr_piece: Option<Piece>,
     cell_holder: Rc<RefCell<CellHolder>>,
     board_width: usize,
-    board_height: usize
+    board_height: usize,
+    hold_piece: Option<PieceType>,
+    is_hold_used: bool
 }
 
 impl PieceMgr {
@@ -33,26 +34,57 @@ impl PieceMgr {
             curr_piece: None,
             cell_holder,
             board_width: game_settings.get_board().width,
-            board_height: game_settings.get_board().height
+            board_height: game_settings.get_board().height,
+            hold_piece: None,
+            is_hold_used: false
         }
     }
 
-    pub fn create_piece(&mut self, piece_type: PieceType) {
+    pub fn create_piece(&mut self, piece_type: PieceType) -> Option<&Piece> {
         let piece = Piece::new(piece_type);
 
         self.curr_piece = Some(piece);
-        self.reset();
+        self.reset_piece();
+
+        self.get_piece()
     }
 
     pub fn set_piece(&mut self, piece: Piece) {
         self.curr_piece = Some(piece);
-        self.reset();
+        self.reset_piece();
     }
 
     pub fn get_piece(&self) -> Option<&Piece> {
         match &self.curr_piece {
             None => None,
             Some(piece) => Some(piece)
+        }
+    }
+
+    /// Holds current piece if possible. If success, returns `Some(&Piece)`, otherwise `None`.
+    pub fn hold_piece<F: FnMut() -> PieceType>(&mut self, mut get_piece_func: F) -> Option<&Piece> {
+        // we can hold piece once per turn
+        if self.is_hold_used {
+            return None;
+        }
+
+        self.is_hold_used = true;
+
+        // if we have hold piece, then replace the current piece with the hold one
+        // and put the new piece to hold
+        if let Some(piece) = self.hold_piece {
+            let curr_piece = self.get_piece().unwrap();
+            self.hold_piece = Some(curr_piece.get_type());
+
+            return Some(self.create_piece(piece).unwrap());
+
+        } else {
+            // otherwise put current piece to hold and set a new piece
+            self.hold_piece = Some(self.get_piece().unwrap().get_type());
+
+            let new_piece = get_piece_func();
+
+            return Some(self.create_piece(new_piece).unwrap());
         }
     }
 
@@ -219,14 +251,8 @@ impl PieceMgr {
 
         res
     }
-}
 
-impl BoardComponent for PieceMgr {
-    fn get_name(&self) -> &'static str {
-        "piece_mgr"
-    }
-
-    fn reset(&mut self) {
+    fn reset_piece(&mut self) {
         let piece = self.curr_piece.as_mut().unwrap();
 
         // Pieces O and I are fit between cells.
@@ -243,5 +269,17 @@ impl BoardComponent for PieceMgr {
         };
 
         piece.reset();
+    }
+}
+
+impl BoardComponent for PieceMgr {
+    fn get_name(&self) -> &'static str {
+        "piece_mgr"
+    }
+
+    fn reset(&mut self) {
+        self.is_hold_used = false;
+
+        self.reset_piece();
     }
 }

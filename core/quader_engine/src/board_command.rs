@@ -18,7 +18,8 @@ pub enum BoardCommandType {
     // amount, messiness
     SendGarbage(u32, u32),
     // delta
-    Update(f32)
+    Update(f32),
+    HoldPiece
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

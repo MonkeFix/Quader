@@ -56,10 +56,9 @@ impl Board {
             piece_mgr,
             gravity_mgr,
             is_enabled: true,
-            // seed,
             piece_generator: piece_gen,
             last_garbage_x: None,
-            // used for generating garbage holes, so we can safely use entropy instead of seed
+            // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
             wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode())
         }
@@ -77,7 +76,8 @@ impl Board {
             BoardCommandType::HardDrop => self.hard_drop(),
             BoardCommandType::SoftDrop(delta) => self.soft_drop(*delta),
             BoardCommandType::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
-            BoardCommandType::Update(dt) => self.update(*dt)
+            BoardCommandType::Update(dt) => self.update(*dt),
+            BoardCommandType::HoldPiece => self.hold_piece()
         }
     }
 
@@ -102,6 +102,14 @@ impl Board {
     pub fn rotate(&mut self, direction: RotationDirection) {
         self.piece_mgr.borrow_mut().rotate(&self.wkd, direction);
         self.gravity_mgr.borrow_mut().prolong_lock();
+    }
+
+    pub fn hold_piece(&mut self) {
+        let mut piece_mgr = self.piece_mgr.borrow_mut();
+
+        if let Some(p) = piece_mgr.hold_piece(|| self.piece_generator.next()) {
+
+        }
     }
 
     pub fn hard_drop(&mut self) {
