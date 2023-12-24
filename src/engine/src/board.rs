@@ -3,12 +3,11 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
-use crate::damage_calculation::{calculate_damage, check_t_overhang, create_board_move_bits};
 use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
-use crate::piece_mgr::PieceMgr;
-use crate::replays::MoveInfo;
+use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
+use crate::replays::{HardDropInfo};
 use crate::scoring::ScoringMgr;
 use crate::wall_kick_data::{WallKickData};
 
@@ -21,7 +20,7 @@ pub struct Board {
     game_settings: GameSettings,
 
     gravity_mgr: Box<GravityMgr>,
-    is_enabled: bool,
+    pub is_enabled: bool,
 
     last_garbage_x: Option<u32>,
     // used for generating garbage holes
@@ -39,7 +38,6 @@ impl Board {
 
         let gravity_mgr = Box::new(GravityMgr::new(&game_settings, seed));
 
-
         Self {
             game_settings,
             gravity_mgr,
@@ -52,6 +50,7 @@ impl Board {
         }
     }
 
+    /// Executes specified `BoardCommand`.
     pub fn exec_cmd(&mut self, cmd: &BoardCommand) {
         match cmd {
             BoardCommand::Move(dir, delta) => {
@@ -62,7 +61,10 @@ impl Board {
             },
             BoardCommand::Rotate(dir) => self.rotate(*dir),
             BoardCommand::HardDrop => {
-                self.hard_drop().unwrap_or_else(|_err| { MoveInfo::default() });
+                self.hard_drop().unwrap_or_else(|_err| {
+                    //println!("cannot apply piece!");
+                    HardDropInfo::default()
+                });
             },
             BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
             BoardCommand::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
@@ -72,45 +74,49 @@ impl Board {
         }
     }
 
+    /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
+    /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
     pub fn update(&mut self, dt: f32) {
         if self.gravity_mgr.update(dt) {
             // hard drop requested
             self.exec_cmd(&BoardCommand::HardDrop)
         }
-
-        if self.gravity_mgr.piece_mgr.update(dt) {
-
-        }
     }
 
+    /// Tries to move current piece to the left by amount `delta`.
     pub fn move_left(&mut self, delta: i32) {
         self.gravity_mgr.piece_mgr.move_left(delta);
     }
 
+    /// Tries to move current piece to the right by amount `delta`.
     pub fn move_right(&mut self, delta: i32) {
         self.gravity_mgr.piece_mgr.move_right(delta);
     }
 
+    /// Tries to rotate current piece to direction `RotationDirection`
     pub fn rotate(&mut self, direction: RotationDirection) {
         self.gravity_mgr.piece_mgr.rotate(&self.wkd, direction);
         self.gravity_mgr.prolong_lock();
     }
 
+    /// Tries to hold current piece. Doesn't do anything if it fails.
+    /// It may fail if the player has already held the piece during his turn.
     pub fn hold_piece(&mut self) {
         if let Some(_p) = self.gravity_mgr.piece_mgr.hold_piece() {
             // TODO: Send a signal to client that the hold and current piece were updated
         }
     }
 
+    /// Returns currently hold `PieceType`. If there's none, returns `None`.
     pub fn get_hold_piece(&self) -> Option<PieceType> {
         self.gravity_mgr.piece_mgr.get_hold_piece()
     }
 
-    pub fn hard_drop(&mut self) -> Result<MoveInfo, UpdateErrorReason> {
+    pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
-        let mut result = piece_mgr.hard_drop()?;
+        let result = piece_mgr.hard_drop()?;
 
-        let piece = piece_mgr.get_piece();
+        /*let piece = piece_mgr.get_piece();
         let t_spin_status = check_t_overhang(
             self.game_settings.get_board(),
             piece.get_x() as i32, piece.get_y() as i32,
@@ -126,7 +132,7 @@ impl Board {
         let dmg = calculate_damage(self.game_settings.get_attack(), &result);
         result.attack = dmg;
 
-        println!("hard drop: {:?}", result);
+        println!("hard drop: {:?}", result);*/
 
         // TODO: Move damage calculation and move creation to BoardManager.
         // TODO: Attacks should be calculated in the server.
@@ -135,10 +141,15 @@ impl Board {
         Ok(result)
     }
 
+    /// Soft drops current piece. That means moving it down by amount `delta`.
     pub fn soft_drop(&mut self, delta: u32) {
         self.gravity_mgr.piece_mgr.soft_drop(delta);
     }
 
+    /// Sends garbage onto current board with specified `amount` of garbage rows and `messiness`.
+    /// The higher the messiness, the more random the holes are.
+    /// Messiness = 0 means that the hole will be at the same x coordinate within
+    /// pending garbage rows.
     pub fn send_garbage(&mut self, amount: u32, _messiness: u32) {
         let ch = &mut self.gravity_mgr.piece_mgr.cell_holder;
 
@@ -164,60 +175,37 @@ impl Board {
         &self.gravity_mgr.piece_mgr
     }
 
+    /// Returns nearest Y coordinate which the piece fits at.
+    /// May be useful for rendering ghost piece.
     pub fn find_nearest_y(&self) -> u32 {
         self.get_piece_mgr().find_nearest_y()
     }
-}
 
-pub trait BoardStateful {
-    fn reset(&mut self);
-    fn enable(&mut self) { }
-    fn disable(&mut self) { }
-    fn is_enabled(&self) -> bool;
-}
-impl BoardStateful for Board {
-    fn reset(&mut self) {
+    /// Completely resets the state of the board.
+    pub fn reset(&mut self) {
         self.gravity_mgr.reset();
     }
 
-    fn enable(&mut self) {
+    /// Enables current board. All BoardCommands will execute normally.
+    pub fn enable(&mut self) {
         if self.is_enabled {
             return;
         }
 
-        self.gravity_mgr.enable();
-
         self.is_enabled = true;
+        self.gravity_mgr.enable();
     }
 
-    fn disable(&mut self) {
+    /// Disables current board. Most BoardCommands will stop execution.
+    pub fn disable(&mut self) {
         if !self.is_enabled {
             return;
         }
 
-        self.gravity_mgr.disable();
-
         self.is_enabled = false;
-    }
-
-    fn is_enabled(&self) -> bool {
-        self.is_enabled
+        self.gravity_mgr.disable();
     }
 }
 
-pub enum UpdateErrorReason {
-    CannotApplyPiece
-}
-
-pub trait BoardComponent {
-    fn get_name(&self) -> &'static str;
-    fn reset(&mut self);
-    fn enable(&mut self) { }
-    fn disable(&mut self) { }
-    /// u32 in the Result is lines cleared
-    fn update(&mut self, _dt: f32) -> bool {
-        false
-    }
-}
 
 

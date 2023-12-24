@@ -1,5 +1,3 @@
-use crate::board::{BoardComponent, UpdateErrorReason};
-use crate::cell_holder::CellHolder;
 use crate::game_settings::{GameSettings, GravitySettings};
 use crate::piece_mgr::PieceMgr;
 
@@ -12,7 +10,8 @@ pub struct GravityMgr {
     pub(crate) y_to_check: u32,
 
     gravity_settings: GravitySettings,
-    pub piece_mgr: Box<PieceMgr>
+    pub piece_mgr: Box<PieceMgr>,
+    pub is_enabled: bool
 }
 
 impl GravityMgr {
@@ -28,7 +27,8 @@ impl GravityMgr {
             y_needs_update: true,
             y_to_check: 0,
             gravity_settings,
-            piece_mgr: Box::new(PieceMgr::new(game_settings, seed))
+            piece_mgr: Box::new(PieceMgr::new(game_settings, seed)),
+            is_enabled: true
         }
     }
 
@@ -36,14 +36,8 @@ impl GravityMgr {
         self.cur_lock = (self.cur_lock + self.gravity_settings.lock_prolong_amount)
             .min(self.gravity_settings.lock_delay);
     }
-}
 
-impl BoardComponent for GravityMgr {
-    fn get_name(&self) -> &'static str {
-        "gravity_mgr"
-    }
-
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.intermediate_y = 0.0;
         self.y_needs_update = true;
         self.y_to_check = 0;
@@ -52,7 +46,7 @@ impl BoardComponent for GravityMgr {
         self.cur_lock = self.gravity_settings.lock_delay;
     }
 
-    fn update(&mut self, dt: f32) -> bool {
+    pub fn update(&mut self, dt: f32) -> bool {
         let mut res = false;
 
         self.intermediate_y += self.cur_gravity * dt;
@@ -86,5 +80,23 @@ impl BoardComponent for GravityMgr {
         self.cur_gravity += self.gravity_settings.grav_incr * dt;
 
         res
+    }
+
+    pub fn enable(&mut self) {
+        if self.is_enabled {
+            return;
+        }
+
+        self.is_enabled = true;
+        self.piece_mgr.enable();
+    }
+
+    pub fn disable(&mut self) {
+        if !self.is_enabled {
+            return;
+        }
+
+        self.is_enabled = false;
+        self.piece_mgr.disable();
     }
 }

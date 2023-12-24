@@ -1,6 +1,5 @@
 ﻿use std::slice::Iter;
 use serde::{Deserialize, Serialize};
-use crate::board::{BoardComponent};
 use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH, BoardSettings};
 use crate::primitives::{Point, Rect};
 use crate::utils::adjust_positions_clone;
@@ -116,15 +115,6 @@ impl Default for CellHolder {
             layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
             occupied_cells: 0
         }
-    }
-}
-
-impl BoardComponent for CellHolder {
-    fn get_name(&self) -> &'static str {
-        "cell_holder"
-    }
-    fn reset(&mut self) {
-        self.reset();
     }
 }
 

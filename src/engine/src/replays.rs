@@ -1,6 +1,22 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 
+/// Represents just a move done by a player.
+/// This includes lines cleared
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub struct HardDropInfo {
+    pub lines_cleared: u32
+}
+
+impl Default for HardDropInfo {
+    fn default() -> Self {
+        Self {
+            lines_cleared: 0
+        }
+    }
+}
+
+///
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct MoveInfo {
     pub timestamp: f64,

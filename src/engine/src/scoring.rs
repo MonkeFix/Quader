@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use crate::board::BoardComponent;
 
 pub enum TSpinStatus {
     None, Full, Mini
@@ -79,14 +78,8 @@ impl ScoringMgr {
     pub fn new() -> Self {
         Self::default()
     }
-}
 
-impl BoardComponent for ScoringMgr {
-    fn get_name(&self) -> &'static str {
-        "scoring_mgr"
-    }
-
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.combo = 0;
         self.b2b = 0;
     }

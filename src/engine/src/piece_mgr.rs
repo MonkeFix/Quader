@@ -1,13 +1,16 @@
-use crate::board::{BoardComponent, UpdateErrorReason};
 use crate::cell_holder::{CellHolder, CellType};
-use crate::damage_calculation::create_board_move_bits;
 use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_queue::PieceQueue;
 use crate::primitives::Point;
-use crate::replays::MoveInfo;
+use crate::replays::{HardDropInfo};
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
+
+pub enum UpdateErrorReason {
+    CannotApplyPiece
+}
+
 
 fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
     // Pieces O and I are fit between cells.
@@ -33,7 +36,8 @@ pub struct PieceMgr {
     board_height: usize,
     hold_piece: Option<PieceType>,
     is_hold_used: bool,
-    pub piece_queue: PieceQueue
+    pub piece_queue: PieceQueue,
+    pub is_enabled: bool
 }
 
 impl PieceMgr {
@@ -53,7 +57,8 @@ impl PieceMgr {
             board_height: game_settings.get_board().height,
             hold_piece: None,
             is_hold_used: false,
-            piece_queue
+            piece_queue,
+            is_enabled: true
         }
     }
 
@@ -179,7 +184,7 @@ impl PieceMgr {
     /// Tries to hard drop the current piece.
     /// The method checks if the piece could fit in the desired cells.
     /// If it fails, returns Err.
-    pub fn hard_drop(&mut self) -> Result<MoveInfo, UpdateErrorReason> {
+    pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
 
         // failed to apply piece as the cells are occupied
@@ -189,7 +194,6 @@ impl PieceMgr {
 
         let lines_cleared = self.cell_holder.check_row_clears(None);
 
-        // failed to apply piece as it is out of board's bounds
         if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
@@ -203,15 +207,19 @@ impl PieceMgr {
         let next_piece = self.piece_queue.next();
         self.create_piece(next_piece);
 
-        println!("cur piece: {:?}, queue: {:?}", next_piece, self.piece_queue.queue);
+        // println!("cur piece: {:?}, queue: {:?}", next_piece, self.piece_queue.queue);
 
-        let result = MoveInfo {
-            lines_cleared,
-            is_success: true,
-            ..Default::default()
+        let result = HardDropInfo {
+            lines_cleared
         };
 
         Ok(result)
+    }
+
+    pub fn reset(&mut self) {
+        self.is_hold_used = false;
+
+        self.reset_cur_piece();
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
@@ -284,16 +292,12 @@ impl PieceMgr {
     fn reset_cur_piece(&mut self) {
         reset_piece(&mut self.curr_piece, self.board_width, self.board_height);
     }
-}
 
-impl BoardComponent for PieceMgr {
-    fn get_name(&self) -> &'static str {
-        "piece_mgr"
+    pub fn enable(&mut self) {
+        self.is_enabled = true;
     }
 
-    fn reset(&mut self) {
-        self.is_hold_used = false;
-
-        self.reset_cur_piece();
+    pub fn disable(&mut self) {
+        self.is_enabled = false;
     }
 }
