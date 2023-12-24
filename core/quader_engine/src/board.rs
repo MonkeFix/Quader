@@ -1,7 +1,7 @@
 ﻿use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
-use crate::board_command::{BoardCommand, BoardCommandType, BoardMoveDir};
+use crate::board_command::{BoardCommand, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
 use crate::damage_calculation::{calculate_damage, check_t_overhang, create_board_move_bits};
 use crate::game_settings::{GameSettings};
@@ -53,28 +53,29 @@ impl Board {
     }
 
     pub fn exec_cmd(&mut self, cmd: &BoardCommand) {
-        match cmd.get_type() {
-            BoardCommandType::Move(dir, delta) => {
+        match cmd {
+            BoardCommand::Move(dir, delta) => {
                 match dir {
                     BoardMoveDir::Left => self.move_left(*delta),
                     BoardMoveDir::Right => self.move_right(*delta)
                 }
             },
-            BoardCommandType::Rotate(dir) => self.rotate(*dir),
-            BoardCommandType::HardDrop => {
+            BoardCommand::Rotate(dir) => self.rotate(*dir),
+            BoardCommand::HardDrop => {
                 self.hard_drop().unwrap_or_else(|_err| { MoveInfo::default() });
             },
-            BoardCommandType::SoftDrop(delta) => self.soft_drop(*delta),
-            BoardCommandType::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
-            BoardCommandType::Update(dt) => self.update(*dt),
-            BoardCommandType::HoldPiece => self.hold_piece()
+            BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
+            BoardCommand::SendGarbage(amount, messiness) => self.send_garbage(*amount, *messiness),
+            BoardCommand::Update(dt) => self.update(*dt),
+            BoardCommand::HoldPiece => self.hold_piece(),
+            BoardCommand::RequestBoardLayout => {}
         }
     }
 
     pub fn update(&mut self, dt: f32) {
         if self.gravity_mgr.update(dt) {
             // hard drop requested
-            self.exec_cmd(&BoardCommand::new(BoardCommandType::HardDrop))
+            self.exec_cmd(&BoardCommand::HardDrop)
         }
 
         if self.gravity_mgr.piece_mgr.update(dt) {

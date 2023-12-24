@@ -8,7 +8,7 @@ pub enum BoardMoveDir {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum BoardCommandType {
+pub enum BoardCommand {
     // move direction, delta
     Move(BoardMoveDir, i32),
     Rotate(RotationDirection),
@@ -19,7 +19,9 @@ pub enum BoardCommandType {
     SendGarbage(u32, u32),
     // delta
     Update(f32),
-    HoldPiece
+    HoldPiece,
+    RequestBoardLayout,
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -31,21 +33,4 @@ pub enum BoardMessage {
     GameStateChanged(GameState),
     PlayerRemoved,
     BoardUpdated
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub struct BoardCommand {
-    command_type: BoardCommandType
-}
-
-impl BoardCommand {
-    pub fn new(command_type: BoardCommandType) -> Self {
-        Self {
-            command_type
-        }
-    }
-
-    pub fn get_type(&self) -> &BoardCommandType {
-        &self.command_type
-    }
 }

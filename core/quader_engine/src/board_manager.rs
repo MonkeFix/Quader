@@ -7,9 +7,8 @@ use std::sync::mpsc::{Receiver, Sender};
 use rand::Rng;
 use uuid::Uuid;
 use crate::board::{Board};
-use crate::board_command::{BoardCommand, BoardCommandType, BoardMessage};
-use crate::game_settings::{GameSettings};
-use crate::piece::PieceType;
+use crate::board_command::{BoardCommand, BoardMessage};
+use crate::game_settings::GameSettings;
 use crate::rng_manager::RngManager;
 use crate::time_mgr::TimeMgr;
 
@@ -77,8 +76,8 @@ impl BoardManager {
 
         board.exec_cmd(&cmd);
 
-        match cmd.get_type() {
-            BoardCommandType::Update(dt) => self.time_mgr.update(*dt),
+        match cmd {
+            BoardCommand::Update(dt) => self.time_mgr.update(dt),
             _ => {
                 sender
                     .send(BoardMessage::BoardUpdated)

@@ -165,12 +165,15 @@ impl PieceMgr {
 
     /// Tries to move the current piece one cell down `dt` times.
     /// If it fails, then nothing happens as the piece collides with other cells.
-    pub fn soft_drop(&mut self, _dt: u32) {
-        //for _ in 0..=dt {
+    pub fn soft_drop(&mut self, dt: u32) {
+
+        let dt = std::cmp::min(dt, self.board_height as u32);
+
+        for _ in 0..dt {
             if self.test_movement(0, 1) {
                 self.curr_piece.move_down();
             }
-        //}
+        }
     }
 
     /// Tries to hard drop the current piece.

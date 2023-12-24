@@ -6,7 +6,7 @@ use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{Board};
-use quader_engine::board_command::{BoardCommand, BoardCommandType, BoardMessage, BoardMoveDir};
+use quader_engine::board_command::{BoardCommand, BoardMessage, BoardMoveDir};
 use quader_engine::board_manager::BoardManager;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use quader_engine::piece::{Piece, RotationDirection};
@@ -18,6 +18,25 @@ use crate::updatable::Updatable;
 
 const DEFAULT_CELL_SIZE: f32 = 32.0;
 
+struct PieceMover {
+    elapsed: f32,
+    arr: f32,
+    das: f32,
+    sdf: u32,
+    is_left_down: bool,
+    is_right_down: bool
+}
+
+impl PieceMover {
+    pub fn move_left(&self, uuid: &str, bm: &mut BoardManager) {
+        bm.send_command(uuid, BoardCommand::Move(BoardMoveDir::Left, 1));
+    }
+
+    pub fn move_right(&self, uuid: &str, bm: &mut BoardManager) {
+        bm.send_command(uuid, BoardCommand::Move(BoardMoveDir::Right, 1));
+    }
+}
+
 pub struct BoardController {
     x: f32,
     y: f32,
@@ -26,7 +45,8 @@ pub struct BoardController {
     board_mgr: BoardManager,
     receiver: Receiver<BoardMessage>,
     uuid: String,
-    board: Rc<RefCell<Board>>
+    board: Rc<RefCell<Board>>,
+    piece_mover: PieceMover
 }
 
 impl BoardController {
@@ -45,7 +65,15 @@ impl BoardController {
             render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE,
             board_mgr,
             receiver: rcv.1,
-            uuid: rcv.0
+            uuid: rcv.0,
+            piece_mover: PieceMover {
+                elapsed: 0.0,
+                arr: 0.0,
+                das: 128.0,
+                sdf: u32::MAX,
+                is_left_down: false,
+                is_right_down: false
+            }
         }
     }
 
@@ -208,69 +236,82 @@ impl Renderable for BoardController {
 impl Updatable for BoardController {
     fn update(&mut self, dt: f32) {
         if is_key_pressed(KeyCode::A) {
-            //self.board.set_cell_at(0, 0, CellType::J);
+
         }
+
+        let elapsed = dt * 1000.0; // convert to milliseconds
 
         if is_key_pressed(KeyCode::Left) {
-            //self.board.move_left(1);
-
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::new(BoardCommandType::Move(BoardMoveDir::Left, 1))
-            );
+            self.piece_mover.move_left(&self.uuid, &mut self.board_mgr);
         }
+        if is_key_down(KeyCode::Left) {
+            self.piece_mover.is_left_down = true;
+            self.piece_mover.elapsed += elapsed;
+        }
+        if is_key_released(KeyCode::Left) {
+            self.piece_mover.is_left_down = false;
+            self.piece_mover.elapsed = 0.0;
+        }
+
         if is_key_pressed(KeyCode::Right) {
-            //self.board.move_right(1);
-
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::new(BoardCommandType::Move(BoardMoveDir::Right, 1))
-            );
+            self.piece_mover.move_right(&self.uuid, &mut self.board_mgr);
         }
-        if is_key_pressed(KeyCode::Down) {
-            //self.board.soft_drop(1);
+        if is_key_down(KeyCode::Right) {
+            self.piece_mover.is_right_down = true;
+            self.piece_mover.elapsed += elapsed;
+        }
+        if is_key_released(KeyCode::Right) {
+            self.piece_mover.is_right_down = false;
+            self.piece_mover.elapsed = 0.0;
+        }
 
+        if self.piece_mover.elapsed >= self.piece_mover.das {
+            let moves = 10;
+
+            for _ in 0..moves {
+                if self.piece_mover.is_left_down {
+                    self.piece_mover.move_left(&self.uuid, &mut self.board_mgr);
+                }
+                if self.piece_mover.is_right_down {
+                    self.piece_mover.move_right(&self.uuid, &mut self.board_mgr);
+                }
+            }
+        }
+
+        if is_key_pressed(KeyCode::Down) {
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::SoftDrop(1))
+                BoardCommand::SoftDrop(self.piece_mover.sdf)
             );
         }
         if is_key_pressed(KeyCode::Space) {
-            //self.board.hard_drop();
-
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::HardDrop)
+                BoardCommand::HardDrop
             );
         }
         if is_key_pressed(KeyCode::Z) {
-            //self.board.rotate(&RotationDirection::CounterClockwise);
-
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::CounterClockwise))
+                BoardCommand::Rotate(RotationDirection::CounterClockwise)
             );
         }
         if is_key_pressed(KeyCode::X) {
-            //self.board.rotate(&RotationDirection::Clockwise);
-
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::Clockwise))
+                BoardCommand::Rotate(RotationDirection::Clockwise)
             );
         }
         if is_key_pressed(KeyCode::F) {
-            //self.board.rotate(&RotationDirection::Deg180);
-
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::Rotate(RotationDirection::Deg180))
+                BoardCommand::Rotate(RotationDirection::Deg180)
             );
         }
         if is_key_pressed(KeyCode::C) {
             self.board_mgr.send_command(
                 &self.uuid,
-                BoardCommand::new(BoardCommandType::HoldPiece)
+                BoardCommand::HoldPiece
             )
         }
 
@@ -280,9 +321,7 @@ impl Updatable for BoardController {
             println!("{}", board.get_cell_holder().get_occupied_cell_count())
         }
 
-        //self.board.update(dt);
-        //self.board_mgr.update(dt);
-        self.board_mgr.send_command(&self.uuid, BoardCommand::new(BoardCommandType::Update(dt)));
+        self.board_mgr.send_command(&self.uuid, BoardCommand::Update(dt));
 
         if let Ok(msg) = &self.receiver.try_recv() {
             match msg {
