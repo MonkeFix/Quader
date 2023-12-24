@@ -1,5 +1,18 @@
+use libtetris::Board;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
+}
+
+pub fn aa() {
+    let mut board = Board::new();
+    board.add_next_piece(libtetris::Piece::I);
+    let b = Box::new(cold_clear::Interface::launch(
+        board,
+        cold_clear::Options::default(),
+        cold_clear::evaluation::Standard::default(),
+        None
+    ));
 }
 
 #[cfg(test)]
