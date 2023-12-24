@@ -9,9 +9,9 @@ use quader_engine::board::{Board};
 use quader_engine::board_command::{BoardCommand, BoardMessage, BoardMoveDir};
 use quader_engine::board_manager::BoardManager;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
-use quader_engine::piece::{Piece, RotationDirection};
+use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
-use quader_engine::utils::{adjust_point_clone, cell_to_color};
+use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
 
 use crate::renderable::Renderable;
 use crate::updatable::Updatable;
@@ -117,7 +117,12 @@ impl BoardController {
     }
 
     fn render_piece(&self, x: f32, y: f32, piece: &Piece, alpha: u8) {
-        let color = piece.get_color();
+        self.render_piece_type(x, y, piece.get_type(), alpha);
+    }
+
+    fn render_piece_type(&self, x: f32, y: f32, piece_type: PieceType, alpha: u8) {
+        let color = piece_type_to_color(piece_type);
+
         draw_rectangle(
             x, y,
             self.cell_size, self.cell_size,
@@ -126,8 +131,6 @@ impl BoardController {
 
         draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 2.0, Color::from_rgba(255, 255, 255, alpha / 5));
     }
-
-
 }
 
 impl Renderable for BoardController {
@@ -160,6 +163,7 @@ impl Renderable for BoardController {
                 self.render_piece(pos.0, pos.1 - self.render_offset, piece, 255);
             });
 
+        // render ghost piece
         let ghost_y = self.board.borrow().find_nearest_y();
         points
             .iter()
@@ -168,6 +172,31 @@ impl Renderable for BoardController {
                 let pos = self.point_to_coords(&p);
                 self.render_piece(pos.0, pos.1 - self.render_offset, piece, 150);
             });
+
+        // render hold piece
+        if let Some(hold_piece) = b.get_hold_piece() {
+            let points = get_points_for_piece(hold_piece, RotationState::Initial);
+
+            points
+                .iter()
+                .map(|p| adjust_point_clone(p, Point::new(64 + p.x * self.cell_size as i32, 160 + p.y * self.cell_size as i32)))
+                .for_each(|p| {
+                    self.render_piece_type(p.x as f32, p.y as f32, hold_piece, 255);
+                });
+        }
+
+        // render queue
+        let queue = &b.get_piece_mgr().piece_queue.queue;
+        for (y, piece_type) in queue.iter().enumerate() {
+            let points = get_points_for_piece(*piece_type, RotationState::Initial);
+
+            points
+                .iter()
+                .map(|p| adjust_point_clone(p, Point::new(540 + p.x * self.cell_size as i32, 160 + (100 * y as i32) + p.y * self.cell_size as i32)))
+                .for_each(|p| {
+                    self.render_piece_type(p.x as f32, p.y as f32, *piece_type, 255)
+                });
+        }
     }
 
     fn debug_render(&mut self) {

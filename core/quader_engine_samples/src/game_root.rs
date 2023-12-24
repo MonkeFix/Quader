@@ -14,7 +14,7 @@ impl GameRoot {
 
         GameRoot {
             close_requested: false,
-            board: Box::new(BoardController::new(128., 128.)),
+            board: Box::new(BoardController::new(160., 128.)),
             debug_render_enabled: true
         }
     }
