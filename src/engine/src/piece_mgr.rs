@@ -138,7 +138,8 @@ impl PieceMgr {
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
-    pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) {
+    /// Returns `true` if rotation was successful.
+    pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) -> bool {
         let piece = &self.curr_piece;
         let rot_type = piece.get_rotation_type(rotation);
         let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];
@@ -151,7 +152,10 @@ impl PieceMgr {
         if let Some(point) = test {
             self.curr_piece.rotate(rotation, point.x, point.y);
             self.last_move_type = LastMoveType::Rotation;
+            return true;
         }
+        
+        false
     }
 
     /// Returns nearest Y coordinate the piece fits at.
@@ -176,16 +180,23 @@ impl PieceMgr {
 
     /// Tries to move the current piece one cell down `dt` times.
     /// If it fails, then nothing happens as the piece collides with other cells.
-    pub fn soft_drop(&mut self, dt: u32) {
+    /// Returns `true` if piece successfully moved down.
+    pub fn soft_drop(&mut self, dt: u32) -> bool {
 
         let dt = std::cmp::min(dt, self.board_settings.height as u32);
+        let mut res = false;
 
         for _ in 0..dt {
             if self.test_movement(0, 1) {
                 self.curr_piece.move_down();
                 self.last_move_type = LastMoveType::Movement;
+                res = true;
+            } else {
+                res = false;
             }
         }
+
+        res
     }
 
     /// Tries to hard drop the current piece.

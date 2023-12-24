@@ -95,8 +95,10 @@ impl Board {
 
     /// Tries to rotate current piece to direction `RotationDirection`
     pub fn rotate(&mut self, direction: RotationDirection) {
-        self.gravity_mgr.piece_mgr.rotate(&self.wkd, direction);
-        self.gravity_mgr.prolong_lock();
+        if self.gravity_mgr.piece_mgr.rotate(&self.wkd, direction) {
+            // prolong lock only if rotation was successful
+            self.gravity_mgr.prolong_lock();
+        }
     }
 
     /// Tries to hold current piece. Doesn't do anything if it fails.
@@ -169,7 +171,9 @@ impl Board {
 
     /// Soft drops current piece. That means moving it down by amount `delta`.
     pub fn soft_drop(&mut self, delta: u32) {
-        self.gravity_mgr.piece_mgr.soft_drop(delta);
+        if self.gravity_mgr.piece_mgr.soft_drop(delta) {
+            self.gravity_mgr.reset_lock();
+        }
     }
 
     /// Sends garbage onto current board with specified `amount` of garbage rows and `messiness`.

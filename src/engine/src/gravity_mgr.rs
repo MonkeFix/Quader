@@ -37,6 +37,10 @@ impl GravityMgr {
             .min(self.gravity_settings.lock_delay);
     }
 
+    pub fn reset_lock(&mut self) {
+        self.cur_lock = self.gravity_settings.lock_delay;
+    }
+
     pub fn reset(&mut self) {
         self.intermediate_y = 0.0;
         self.y_needs_update = true;
@@ -57,19 +61,22 @@ impl GravityMgr {
         }
 
         if self.intermediate_y >= 1.0 {
-            //let diff = (self.intermediate_y - 1.0).max(1.0) as u32;
-            //for _ in 0..=diff {
-            self.piece_mgr.soft_drop(1);
-            //}
+            // gravity may drop pieces faster than 1 cell per tick, so we're handling that here
+            let diff = (self.intermediate_y - 1.0).max(1.0) as u32;
+            for _ in 0..diff {
+                self.piece_mgr.soft_drop(1);
+            }
 
             self.y_needs_update = true;
             self.intermediate_y = 0.0;
         }
 
+        // If current piece "touches" any occupied cell, we decrease the lock
         if self.y_to_check == self.piece_mgr.get_piece().get_y() {
             self.cur_lock -= 1.0 * dt;
         }
 
+        // If lock is zero we force hard drop the piece
         if self.cur_lock <= 0.0 {
             res = true;
             self.cur_lock = self.gravity_settings.lock_delay;
