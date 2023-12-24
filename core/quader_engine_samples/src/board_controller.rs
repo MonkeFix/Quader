@@ -116,16 +116,18 @@ impl BoardController {
         draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 1.0, Color::from_rgba(255, 255, 255, 50));
     }
 
-    fn render_piece(&self, x: f32, y: f32, piece: &Piece) {
+    fn render_piece(&self, x: f32, y: f32, piece: &Piece, alpha: u8) {
         let color = piece.get_color();
         draw_rectangle(
             x, y,
             self.cell_size, self.cell_size,
-            Color::from_rgba(color.r, color.g, color.b, 255)
+            Color::from_rgba(color.r, color.g, color.b, alpha)
         );
 
-        draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 2.0, Color::from_rgba(255, 255, 255, 50));
+        draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 2.0, Color::from_rgba(255, 255, 255, alpha / 5));
     }
+
+
 }
 
 impl Renderable for BoardController {
@@ -155,7 +157,16 @@ impl Renderable for BoardController {
             .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, piece.get_y() as i32)))
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
-                self.render_piece(pos.0, pos.1 - self.render_offset, piece);
+                self.render_piece(pos.0, pos.1 - self.render_offset, piece, 255);
+            });
+
+        let ghost_y = self.board.borrow().find_nearest_y();
+        points
+            .iter()
+            .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, ghost_y as i32)))
+            .for_each(|p| {
+                let pos = self.point_to_coords(&p);
+                self.render_piece(pos.0, pos.1 - self.render_offset, piece, 150);
             });
     }
 
