@@ -7,4 +7,4 @@ riderModule.iml
 .idea
 .vs
 core/**/target
-src/target
+src/**/target
