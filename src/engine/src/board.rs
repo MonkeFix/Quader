@@ -7,7 +7,7 @@ use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
-use crate::replays::{HardDropInfo, LastMoveType};
+use crate::replays::{BoardStats, HardDropInfo, LastMoveType};
 use crate::scoring::{ScoringMgr, TSpinStatus};
 use crate::wall_kick_data::{WallKickData};
 
@@ -26,7 +26,8 @@ pub struct Board {
     // used for generating garbage holes
     rng: ChaCha8Rng,
     wkd: WallKickData,
-    pub(crate) scoring_mgr: ScoringMgr
+    pub(crate) scoring_mgr: ScoringMgr,
+    pub board_stats: BoardStats
 }
 
 impl Board {
@@ -46,7 +47,8 @@ impl Board {
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
             wkd: WallKickData::new(game_settings.wall_kick_data_mode),
-            scoring_mgr: ScoringMgr::new()
+            scoring_mgr: ScoringMgr::new(),
+            board_stats: BoardStats::default()
         }
     }
 
@@ -145,6 +147,8 @@ impl Board {
             self.scoring_mgr.combo = 0;
         }
 
+        self.board_stats.hard_drop(result, &self.scoring_mgr);
+
         /*let piece = piece_mgr.get_piece();
         let t_spin_status = check_t_overhang(
             self.game_settings.get_board(),
@@ -214,6 +218,9 @@ impl Board {
     /// Completely resets the state of the board.
     pub fn reset(&mut self) {
         self.gravity_mgr.reset();
+        self.scoring_mgr.combo = 0;
+        self.scoring_mgr.b2b = 0;
+        self.board_stats.reset();
     }
 
     /// Enables current board. All BoardCommands will execute normally.

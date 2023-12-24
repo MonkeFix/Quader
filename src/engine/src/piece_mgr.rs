@@ -51,8 +51,6 @@ impl PieceMgr {
         let mut piece = Piece::new(next_piece);
         reset_piece(&mut piece, board_settings.width, board_settings.height);
 
-        println!("cur piece: {:?}, queue: {:?}", piece.get_type(), piece_queue.queue);
-
         Self {
             curr_piece: piece,
             board_settings,
@@ -154,7 +152,7 @@ impl PieceMgr {
             self.last_move_type = LastMoveType::Rotation;
             return true;
         }
-        
+
         false
     }
 
@@ -234,7 +232,8 @@ impl PieceMgr {
         let result = HardDropInfo {
             lines_cleared,
             tspin_status,
-            last_move_type: self.last_move_type
+            last_move_type: self.last_move_type,
+            occupied_cells_left: self.cell_holder.get_occupied_cell_count() as u32
         };
 
         self.reset();
