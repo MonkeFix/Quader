@@ -67,12 +67,11 @@ pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveInfo) -> u32 
 
 pub fn create_board_move_bits(
     total_cells: u32,
-    mv: &mut MoveInfo,
+    mv: &MoveInfo,
     t_spin_status: TSpinStatus
 ) -> u32 {
 
     let mut res = 0;
-    let mut break_b2b = true;
 
     if total_cells == 0 {
         res |= damage_mods::ALL_CLEAR;
@@ -86,8 +85,6 @@ pub fn create_board_move_bits(
         res |= damage_mods::TRIPLE;
     } else if mv.lines_cleared >= 4 {
         res |= damage_mods::QUAD;
-        mv.b2b += 1;
-        break_b2b = false;
     }
 
     if mv.combo > thresholds::COMBO_1_THRESHOLD {
@@ -106,18 +103,10 @@ pub fn create_board_move_bits(
         TSpinStatus::None => {},
         TSpinStatus::Full => {
             res |= damage_mods::T_SPIN_FULL;
-            break_b2b = false;
-            mv.b2b += 1;
         },
         TSpinStatus::Mini => {
             res |= damage_mods::T_SPIN_MINI;
-            break_b2b = false;
-            mv.b2b += 1;
         }
-    }
-
-    if mv.lines_cleared > 0 && break_b2b {
-        mv.b2b = 0;
     }
 
     if mv.b2b > thresholds::B2B_1_THRESHOLD {
@@ -130,10 +119,6 @@ pub fn create_board_move_bits(
         res |= damage_mods::B2B_4;
     } else if mv.b2b >= thresholds::B2B_5_THRESHOLD {
         res |= damage_mods::B2B_5;
-    }
-
-    if mv.lines_cleared == 0 {
-        mv.combo = 0;
     }
 
     res

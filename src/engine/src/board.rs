@@ -7,7 +7,7 @@ use crate::game_settings::{GameSettings};
 use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
-use crate::replays::{HardDropInfo};
+use crate::replays::{HardDropInfo, LastMoveType};
 use crate::scoring::{ScoringMgr, TSpinStatus};
 use crate::wall_kick_data::{WallKickData};
 
@@ -115,16 +115,27 @@ impl Board {
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let result = piece_mgr.hard_drop()?;
-        
-        if result.lines_cleared == 4 || 
-            result.tspin_status == TSpinStatus::Mini || 
-            result.tspin_status == TSpinStatus::Full 
-        {
+
+        println!("{:?}", result);
+
+        // Do not break B2B if and only if the player:
+        //  - haven't cleared any lines,
+        //  - cleared exactly 4 lines,
+        //  - performed a T-Spin which must include a rotation of the piece.
+        // Otherwise break it.
+        if result.lines_cleared == 4 ||
+            result.last_move_type == LastMoveType::Rotation &&
+                (
+                    result.lines_cleared >= 1 ||
+                    result.tspin_status == TSpinStatus::Mini ||
+                    result.tspin_status == TSpinStatus::Full
+                ) {
             self.scoring_mgr.b2b += 1;
-        } else {
+
+        } else if result.lines_cleared != 0 {
             self.scoring_mgr.b2b = 0;
         }
-        
+
         if result.lines_cleared > 0 {
             self.scoring_mgr.combo += 1;
         } else {

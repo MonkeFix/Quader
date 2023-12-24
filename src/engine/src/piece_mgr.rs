@@ -4,14 +4,14 @@ use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_queue::PieceQueue;
 use crate::primitives::Point;
-use crate::replays::{HardDropInfo};
+use crate::replays::{HardDropInfo, LastMoveType};
+use crate::scoring::TSpinStatus;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
 pub enum UpdateErrorReason {
     CannotApplyPiece
 }
-
 
 fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
     // Pieces O and I are fit between cells.
@@ -37,7 +37,8 @@ pub struct PieceMgr {
     hold_piece: Option<PieceType>,
     is_hold_used: bool,
     pub piece_queue: PieceQueue,
-    pub is_enabled: bool
+    pub is_enabled: bool,
+    last_move_type: LastMoveType
 }
 
 impl PieceMgr {
@@ -59,7 +60,8 @@ impl PieceMgr {
             hold_piece: None,
             is_hold_used: false,
             piece_queue,
-            is_enabled: true
+            is_enabled: true,
+            last_move_type: LastMoveType::None
         }
     }
 
@@ -114,23 +116,25 @@ impl PieceMgr {
     /// Tries to move the current piece one cell to the left `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_left(&mut self, _delta: i32) {
-        //for _ in 0..=delta {
+    pub fn move_left(&mut self, delta: i32) {
+        for _ in 0..delta {
             if self.test_movement(-1, 0) {
                 self.curr_piece.move_left();
+                self.last_move_type = LastMoveType::Movement;
             }
-        //}
+        }
     }
 
     /// Tries to move the current piece one cell to the right `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_right(&mut self, _delta: i32) {
-        //for _ in 0..=delta {
+    pub fn move_right(&mut self, delta: i32) {
+        for _ in 0..delta {
             if self.test_movement(1, 0) {
                 self.curr_piece.move_right();
+                self.last_move_type = LastMoveType::Movement;
             }
-        //}
+        }
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
@@ -146,6 +150,7 @@ impl PieceMgr {
 
         if let Some(point) = test {
             self.curr_piece.rotate(rotation, point.x, point.y);
+            self.last_move_type = LastMoveType::Rotation;
         }
     }
 
@@ -178,6 +183,7 @@ impl PieceMgr {
         for _ in 0..dt {
             if self.test_movement(0, 1) {
                 self.curr_piece.move_down();
+                self.last_move_type = LastMoveType::Movement;
             }
         }
     }
@@ -187,6 +193,17 @@ impl PieceMgr {
     /// If it fails, returns `Err(UpdateErrorReason)`.
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
+
+        let tspin_status = if self.curr_piece.get_type() == PieceType::T {
+            check_t_overhang(
+                &self.board_settings,
+                self.curr_piece.get_x() as i32,
+                self.curr_piece.get_y() as i32,
+                |p| { self.cell_holder.intersects(&p) },
+            )
+        } else {
+            TSpinStatus::None
+        };
 
         // failed to apply piece as the cells are occupied
         if !self.try_apply_piece(nearest_y) {
@@ -203,21 +220,16 @@ impl PieceMgr {
 
         let lines_cleared = lines_cleared.len() as u32;
 
+        let result = HardDropInfo {
+            lines_cleared,
+            tspin_status,
+            last_move_type: self.last_move_type
+        };
+
         self.reset();
 
         let next_piece = self.piece_queue.next();
         self.create_piece(next_piece);
-
-        // println!("cur piece: {:?}, queue: {:?}", next_piece, self.piece_queue.queue);
-
-        let result = HardDropInfo {
-            lines_cleared,
-            tspin_status: check_t_overhang(
-                &self.board_settings,
-                self.curr_piece.get_x() as i32, 
-                self.curr_piece.get_y() as i32, 
-                |p| { self.cell_holder.intersects(&p) })
-        };
 
         Ok(result)
     }
@@ -296,6 +308,7 @@ impl PieceMgr {
     }
 
     fn reset_cur_piece(&mut self) {
+        self.last_move_type = LastMoveType::None;
         reset_piece(&mut self.curr_piece, self.board_settings.width, self.board_settings.height);
     }
 

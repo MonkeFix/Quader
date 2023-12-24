@@ -8,13 +8,20 @@ use crate::scoring::TSpinStatus;
 pub struct HardDropInfo {
     pub lines_cleared: u32,
     pub tspin_status: TSpinStatus,
+    pub last_move_type: LastMoveType
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub enum LastMoveType {
+    None, Rotation, Movement
 }
 
 impl Default for HardDropInfo {
     fn default() -> Self {
         Self {
             lines_cleared: 0,
-            tspin_status: TSpinStatus::None
+            tspin_status: TSpinStatus::None,
+            last_move_type: LastMoveType::None
         }
     }
 }
