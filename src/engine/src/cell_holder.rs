@@ -442,11 +442,11 @@ mod tests {
         assert_eq!(1, cleared_rows.len());
         assert_eq!(1, cleared_rows[0]);
 
-        holder.set_row(79, full_row);
+        holder.set_row(39, full_row);
 
         let cleared_rows = holder.check_row_clears(None);
         assert_eq!(2, cleared_rows.len());
         assert_eq!(1, cleared_rows[0]);
-        assert_eq!(79, cleared_rows[1]);
+        assert_eq!(39, cleared_rows[1]);
     }
 }
