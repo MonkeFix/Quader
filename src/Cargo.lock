@@ -1868,6 +1868,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "web_api"
+version = "0.1.0"
+
+[[package]]
 name = "webutil"
 version = "0.1.0"
 source = "git+https://github.com/MinusKelvin/webutil?rev=5a54126#5a54126f6c4931df016511f605bbf4aa43c422e5"
