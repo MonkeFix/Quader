@@ -1,6 +1,7 @@
 use crate::game_settings::{GameSettings, GravitySettings};
 use crate::piece_mgr::PieceMgr;
 
+#[derive(Debug)]
 pub struct GravityMgr {
     pub(crate) cur_gravity: f32,
     pub(crate) cur_lock: f32,

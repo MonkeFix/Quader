@@ -4,6 +4,7 @@ use rand::distributions::uniform::{SampleRange, SampleUniform};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
+#[derive(Debug, Clone)]
 pub struct RngManager {
     rng: ChaCha8Rng,
     seed: u64

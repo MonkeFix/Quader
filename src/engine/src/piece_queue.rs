@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use crate::piece::PieceType;
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 
+#[derive(Debug)]
 pub struct PieceQueue {
     pub queue: VecDeque<PieceType>,
     piece_generator: Box<dyn PieceGenerator>,

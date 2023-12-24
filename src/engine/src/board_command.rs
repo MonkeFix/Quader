@@ -1,10 +1,17 @@
 use serde::{Deserialize, Serialize};
-use crate::board::GameState;
 use crate::piece::{PieceType, RotationDirection};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum BoardMoveDir {
     Left, Right
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum GameState {
+    None,
+    Ongoing,
+    Paused,
+    Ended
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

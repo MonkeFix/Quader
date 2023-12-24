@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::fmt::{Debug, Formatter};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use crate::piece::{PieceType};
@@ -22,6 +23,12 @@ pub trait PieceGenerator {
     fn init(&mut self) -> VecDeque<PieceType>;
     /// Generates a new piece.
     fn next(&mut self) -> PieceType;
+}
+
+impl Debug for dyn PieceGenerator {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PieceGenerator{{queue_size: {}}}", self.get_queue_size())
+    }
 }
 
 /*pub enum PieceGeneratorType {

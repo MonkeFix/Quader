@@ -30,6 +30,7 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
     piece.reset();
 }
 
+#[derive(Debug)]
 pub struct PieceMgr {
     curr_piece: Piece,
     board_settings: BoardSettings,

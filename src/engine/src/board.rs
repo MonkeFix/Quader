@@ -11,11 +11,7 @@ use crate::replays::{BoardStats, HardDropInfo, LastMoveType};
 use crate::scoring::{ScoringMgr, TSpinStatus};
 use crate::wall_kick_data::{WallKickData};
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum GameState {
-
-}
-
+#[derive(Debug)]
 pub struct Board {
     game_settings: GameSettings,
 
