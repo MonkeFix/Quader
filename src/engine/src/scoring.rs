@@ -1,13 +1,13 @@
 use std::collections::VecDeque;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TSpinStatus {
     /// T-Spin wasn't performed.
-    None, 
+    None,
     /// Full T-Spin: at least 3 occupied cells around the corners of the T piece.
-    Full, 
-    /// Mini T-Spin: 2 occupied cells around the corners of the T piece. 
+    Full,
+    /// Mini T-Spin: 2 occupied cells around the corners of the T piece.
     Mini
 }
 
