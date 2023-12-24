@@ -44,7 +44,7 @@ pub struct PieceMgr {
 impl PieceMgr {
     pub fn new(game_settings: &GameSettings, seed: u64) -> Self {
 
-        let board_settings = *game_settings.get_board();
+        let board_settings = game_settings.board;
 
         let mut piece_queue = PieceQueue::new(seed);
         let next_piece = piece_queue.next();

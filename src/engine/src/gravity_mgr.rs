@@ -16,7 +16,7 @@ pub struct GravityMgr {
 
 impl GravityMgr {
     pub fn new(game_settings: &GameSettings, seed: u64) -> Self {
-        let gravity_settings = *game_settings.get_gravity();
+        let gravity_settings = game_settings.gravity;
         let cur_gravity = gravity_settings.grav_base;
         let cur_lock = gravity_settings.lock_delay;
 

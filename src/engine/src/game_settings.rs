@@ -80,10 +80,10 @@ impl Default for BoardSettings {
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct GameSettings {
-    gravity: GravitySettings,
-    board: BoardSettings,
-    attack: AttackSettings,
-    wall_kick_data_mode: WallKickDataMode
+    pub gravity: GravitySettings,
+    pub board: BoardSettings,
+    pub attack: AttackSettings,
+    pub wall_kick_data_mode: WallKickDataMode
 }
 
 impl GameSettings {
@@ -121,11 +121,6 @@ impl GameSettings {
             gravity, board, attack, wall_kick_data_mode
         }
     }
-
-    pub fn get_gravity(&self) -> &GravitySettings { &self.gravity }
-    pub fn get_board(&self) -> &BoardSettings { &self.board }
-    pub fn get_attack(&self) -> &AttackSettings { &self.attack }
-    pub fn get_wall_kick_data_mode(&self) -> &WallKickDataMode { &self.wall_kick_data_mode }
 }
 
 impl Default for GameSettings {

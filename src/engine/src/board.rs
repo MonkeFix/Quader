@@ -20,7 +20,7 @@ pub struct Board {
     game_settings: GameSettings,
 
     gravity_mgr: Box<GravityMgr>,
-    pub is_enabled: bool,
+    pub(crate) is_enabled: bool,
 
     last_garbage_x: Option<u32>,
     // used for generating garbage holes
@@ -45,7 +45,7 @@ impl Board {
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
-            wkd: WallKickData::new(*game_settings.get_wall_kick_data_mode()),
+            wkd: WallKickData::new(game_settings.wall_kick_data_mode),
             scoring_mgr: ScoringMgr::new()
         }
     }
@@ -116,8 +116,6 @@ impl Board {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let result = piece_mgr.hard_drop()?;
 
-        println!("{:?}", result);
-
         // Do not break B2B if and only if the player:
         //  - haven't cleared any lines,
         //  - cleared exactly 4 lines,
@@ -136,6 +134,9 @@ impl Board {
             self.scoring_mgr.b2b = 0;
         }
 
+        // Combos are much easier:
+        // if a player cleared 1 or more lines in a row, for each hard drop combo increases by one,
+        // otherwise if a player didn't clear any lines, combo resets back to 0.
         if result.lines_cleared > 0 {
             self.scoring_mgr.combo += 1;
         } else {
@@ -162,7 +163,6 @@ impl Board {
 
         // TODO: Move damage calculation and move creation to BoardManager.
         // TODO: Attacks should be calculated in the server.
-        // TODO: Probably move gravity handling to the server.
 
         Ok(result)
     }
@@ -179,7 +179,7 @@ impl Board {
     pub fn send_garbage(&mut self, amount: u32, _messiness: u32) {
         let ch = &mut self.gravity_mgr.piece_mgr.cell_holder;
 
-        let width = self.game_settings.get_board().width as u32;
+        let width = self.game_settings.board.width as u32;
 
         let garbage_hole_x: u32 = if let Some(gx) = self.last_garbage_x {
             // TODO: Use messiness

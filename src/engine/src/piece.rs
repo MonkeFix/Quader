@@ -129,7 +129,7 @@ pub struct WallKickCheckParams<'a> {
     pub expected_pos: &'a [Point]
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Piece {
     piece_type: PieceType,
     board_cell_type: CellType,
