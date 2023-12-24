@@ -11,6 +11,7 @@ use crate::board_command::{BoardCommand, BoardMessage};
 use crate::game_settings::GameSettings;
 use crate::rng_manager::RngManager;
 use crate::time_mgr::TimeMgr;
+use crate::wall_kick_data::WallKickData;
 
 struct RwBoard {
     board: Rc<RefCell<Board>>,
@@ -23,7 +24,8 @@ pub struct BoardManager {
     boards: Boards,
     game_settings: GameSettings,
     rng_manager: RngManager,
-    time_mgr: TimeMgr
+    time_mgr: TimeMgr,
+    wkd: Arc<WallKickData>
 }
 
 impl BoardManager {
@@ -35,14 +37,15 @@ impl BoardManager {
             boards: Boards::default(),
             game_settings,
             rng_manager: RngManager::new(seed),
-            time_mgr: TimeMgr::new()
+            time_mgr: TimeMgr::new(),
+            wkd: Arc::new(WallKickData::new(game_settings.wall_kick_data_mode))
         }
     }
 
     pub fn add_board(&mut self) -> (String, Receiver<BoardMessage>, Rc<RefCell<Board>>) {
         let uuid = Uuid::new_v4();
 
-        let board = RefCell::new(Board::new(self.game_settings, self.rng_manager.get_seed()));
+        let board = RefCell::new(Board::new(self.game_settings, &self.wkd, self.rng_manager.get_seed()));
         let rw_board = Rc::new(board);
 
         // rw_board.borrow_mut().get_piece_mgr_mut().set_piece(PieceType::I);

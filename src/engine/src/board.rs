@@ -1,6 +1,6 @@
-﻿use rand::{Rng, SeedableRng};
+﻿use std::sync::Arc;
+use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use serde::{Deserialize, Serialize};
 use crate::board_command::{BoardCommand, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
@@ -21,7 +21,7 @@ pub struct Board {
     last_garbage_x: Option<u32>,
     // used for generating garbage holes
     rng: ChaCha8Rng,
-    wkd: WallKickData,
+    wkd: Arc<WallKickData>,
     pub(crate) scoring_mgr: ScoringMgr,
     pub board_stats: BoardStats
 }
@@ -31,7 +31,7 @@ impl Board {
     // TODO: Use attacks and send garbage (DamageMgr)
     // TODO: Add replays
 
-    pub fn new(game_settings: GameSettings, seed: u64) -> Self {
+    pub fn new(game_settings: GameSettings, wkd: &Arc<WallKickData>, seed: u64) -> Self {
 
         let gravity_mgr = Box::new(GravityMgr::new(&game_settings, seed));
 
@@ -42,7 +42,7 @@ impl Board {
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
-            wkd: WallKickData::new(game_settings.wall_kick_data_mode),
+            wkd: Arc::clone(wkd),
             scoring_mgr: ScoringMgr::new(),
             board_stats: BoardStats::default()
         }
