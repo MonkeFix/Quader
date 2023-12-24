@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellType;
 use crate::piece_points;
 use crate::primitives::{Point, Rect, Color};
-use crate::utils::calc_bounds;
+use crate::utils::{calc_bounds, piece_type_to_color};
 use crate::wall_kick_data::{WallKickType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -62,7 +62,7 @@ pub enum OffsetType {
     BetweenCells
 }
 
-fn get_points_for_piece(piece_type: PieceType, state: RotationState) -> &'static [Point] {
+pub fn get_points_for_piece(piece_type: PieceType, state: RotationState) -> &'static [Point] {
     match piece_type {
         PieceType::I => {
             match state {
@@ -243,16 +243,7 @@ impl Piece {
     }
 
     pub fn get_color(&self) -> Color {
-        match self.piece_type {
-            PieceType::I => *Color::PIECE_I,
-            PieceType::O => *Color::PIECE_O,
-            PieceType::T => *Color::PIECE_T,
-            PieceType::L => *Color::PIECE_L,
-            PieceType::J => *Color::PIECE_J,
-            PieceType::S => *Color::PIECE_S,
-            PieceType::Z => *Color::PIECE_Z,
-            PieceType::Pixel => *Color::PIECE_GARBAGE,
-        }
+        piece_type_to_color(self.piece_type)
     }
 
     fn calc_bounds(&self) -> Rect {

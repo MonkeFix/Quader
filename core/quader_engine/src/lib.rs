@@ -16,7 +16,7 @@ mod time_mgr;
 mod piece_mgr;
 mod command_dispatcher;
 pub mod utils;
-mod piece_points;
+pub mod piece_points;
 mod piece_queue;
 
 pub fn add(left: usize, right: usize) -> usize {
