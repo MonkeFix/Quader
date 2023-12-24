@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+    "engine",
+    "client-prototype",
+    "server",
+    "engine-c-api",
+    "skynet"
+]
+
+[profile.release]
+lto = true

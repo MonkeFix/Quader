@@ -10,4 +10,4 @@ name = "quader_engine"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-quader_engine = { path = "../quader_engine" }
+quader_engine = { path = "../engine" }
