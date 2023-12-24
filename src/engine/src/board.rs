@@ -8,7 +8,7 @@ use crate::gravity_mgr::GravityMgr;
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
 use crate::replays::{HardDropInfo};
-use crate::scoring::ScoringMgr;
+use crate::scoring::{ScoringMgr, TSpinStatus};
 use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ pub struct Board {
     // used for generating garbage holes
     rng: ChaCha8Rng,
     wkd: WallKickData,
-    scoring_mgr: ScoringMgr
+    pub(crate) scoring_mgr: ScoringMgr
 }
 
 impl Board {
@@ -115,6 +115,21 @@ impl Board {
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let piece_mgr = &mut self.gravity_mgr.piece_mgr;
         let result = piece_mgr.hard_drop()?;
+        
+        if result.lines_cleared == 4 || 
+            result.tspin_status == TSpinStatus::Mini || 
+            result.tspin_status == TSpinStatus::Full 
+        {
+            self.scoring_mgr.b2b += 1;
+        } else {
+            self.scoring_mgr.b2b = 0;
+        }
+        
+        if result.lines_cleared > 0 {
+            self.scoring_mgr.combo += 1;
+        } else {
+            self.scoring_mgr.combo = 0;
+        }
 
         /*let piece = piece_mgr.get_piece();
         let t_spin_status = check_t_overhang(

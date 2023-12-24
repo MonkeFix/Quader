@@ -16,8 +16,11 @@ pub const AVAILABLE_PIECES: [PieceType; 7] = [
 pub const BAG_SIZE: usize = AVAILABLE_PIECES.len();
 
 pub trait PieceGenerator {
+    /// Returns queue size.
     fn get_queue_size(&self) -> usize { 5 }
+    /// Creates and returns initial piece queue.
     fn init(&mut self) -> VecDeque<PieceType>;
+    /// Generates a new piece.
     fn next(&mut self) -> PieceType;
 }
 

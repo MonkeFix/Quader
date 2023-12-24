@@ -1,17 +1,20 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
+use crate::scoring::TSpinStatus;
 
 /// Represents just a move done by a player.
 /// This includes lines cleared
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct HardDropInfo {
-    pub lines_cleared: u32
+    pub lines_cleared: u32,
+    pub tspin_status: TSpinStatus,
 }
 
 impl Default for HardDropInfo {
     fn default() -> Self {
         Self {
-            lines_cleared: 0
+            lines_cleared: 0,
+            tspin_status: TSpinStatus::None
         }
     }
 }
@@ -53,5 +56,20 @@ impl Default for MoveInfo {
             is_success: false,
             attack: 0
         }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Replay {
+    moves: Vec<MoveInfo>
+}
+
+impl Replay {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn push_move(&mut self, move_info: MoveInfo) {
+        self.moves.push(move_info);
     }
 }

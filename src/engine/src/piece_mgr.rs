@@ -1,5 +1,6 @@
 use crate::cell_holder::{CellHolder, CellType};
-use crate::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
+use crate::damage_calculation::check_t_overhang;
+use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_queue::PieceQueue;
 use crate::primitives::Point;
@@ -31,9 +32,8 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
 
 pub struct PieceMgr {
     curr_piece: Piece,
+    board_settings: BoardSettings,
     pub cell_holder: Box<CellHolder>,
-    board_width: usize,
-    board_height: usize,
     hold_piece: Option<PieceType>,
     is_hold_used: bool,
     pub piece_queue: PieceQueue,
@@ -43,18 +43,19 @@ pub struct PieceMgr {
 impl PieceMgr {
     pub fn new(game_settings: &GameSettings, seed: u64) -> Self {
 
+        let board_settings = *game_settings.get_board();
+
         let mut piece_queue = PieceQueue::new(seed);
         let next_piece = piece_queue.next();
         let mut piece = Piece::new(next_piece);
-        reset_piece(&mut piece, game_settings.get_board().width, game_settings.get_board().height);
+        reset_piece(&mut piece, board_settings.width, board_settings.height);
 
         println!("cur piece: {:?}, queue: {:?}", piece.get_type(), piece_queue.queue);
 
         Self {
             curr_piece: piece,
-            cell_holder: Box::new(CellHolder::new(game_settings.get_board())),
-            board_width: game_settings.get_board().width,
-            board_height: game_settings.get_board().height,
+            board_settings,
+            cell_holder: Box::new(CellHolder::new(&board_settings)),
             hold_piece: None,
             is_hold_used: false,
             piece_queue,
@@ -155,7 +156,7 @@ impl PieceMgr {
         let mut y = piece.get_y();
         let points = piece.get_positions();
 
-        for i in piece.get_y()..=(self.board_height as u32) {
+        for i in piece.get_y()..=(self.board_settings.height as u32) {
             let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
             let new_points = adjust_positions_clone(points, offset);
             if self.cell_holder.intersects_any(&new_points) {
@@ -172,7 +173,7 @@ impl PieceMgr {
     /// If it fails, then nothing happens as the piece collides with other cells.
     pub fn soft_drop(&mut self, dt: u32) {
 
-        let dt = std::cmp::min(dt, self.board_height as u32);
+        let dt = std::cmp::min(dt, self.board_settings.height as u32);
 
         for _ in 0..dt {
             if self.test_movement(0, 1) {
@@ -183,7 +184,7 @@ impl PieceMgr {
 
     /// Tries to hard drop the current piece.
     /// The method checks if the piece could fit in the desired cells.
-    /// If it fails, returns Err.
+    /// If it fails, returns `Err(UpdateErrorReason)`.
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
 
@@ -210,7 +211,12 @@ impl PieceMgr {
         // println!("cur piece: {:?}, queue: {:?}", next_piece, self.piece_queue.queue);
 
         let result = HardDropInfo {
-            lines_cleared
+            lines_cleared,
+            tspin_status: check_t_overhang(
+                &self.board_settings,
+                self.curr_piece.get_x() as i32, 
+                self.curr_piece.get_y() as i32, 
+                |p| { self.cell_holder.intersects(&p) })
         };
 
         Ok(result)
@@ -227,10 +233,10 @@ impl PieceMgr {
         let piece = &self.curr_piece;
         let b = piece.get_bounds();
 
-        if b.x + x < 0 || b.x + b.width as i32 + x > self.board_width as i32 {
+        if b.x + x < 0 || b.x + b.width as i32 + x > self.board_settings.width as i32 {
             return false;
         }
-        if b.y + b.height as i32 + y > self.board_height as i32 {
+        if b.y + b.height as i32 + y > self.board_settings.height as i32 {
             return false;
         }
 
@@ -290,7 +296,7 @@ impl PieceMgr {
     }
 
     fn reset_cur_piece(&mut self) {
-        reset_piece(&mut self.curr_piece, self.board_width, self.board_height);
+        reset_piece(&mut self.curr_piece, self.board_settings.width, self.board_settings.height);
     }
 
     pub fn enable(&mut self) {

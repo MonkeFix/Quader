@@ -1,7 +1,14 @@
 use std::collections::VecDeque;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TSpinStatus {
-    None, Full, Mini
+    /// T-Spin wasn't performed.
+    None, 
+    /// Full T-Spin: at least 3 occupied cells around the corners of the T piece.
+    Full, 
+    /// Mini T-Spin: 2 occupied cells around the corners of the T piece. 
+    Mini
 }
 
 pub mod thresholds {
@@ -49,7 +56,7 @@ pub fn has_flag(value: u32, flag: u32) -> bool {
     value & flag != 0
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct DamageMgr {
     attack_queue: VecDeque<u32>,
     incoming_damage: Vec<u32>,
@@ -68,7 +75,7 @@ impl DamageMgr {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct ScoringMgr {
     pub combo: u32,
     pub b2b: u32
