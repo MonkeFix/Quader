@@ -359,9 +359,10 @@ impl Updatable for BoardController {
         }
 
         if is_key_pressed(KeyCode::T) {
-            let mut board = self.board.borrow_mut();
-            board.push_garbage(1, 0);
-            println!("{}", board.get_cell_holder().get_occupied_cell_count())
+            //let mut board = self.board.borrow_mut();
+            //board.push_garbage(1, 0);
+            self.board_mgr.send_command(&self.uuid, BoardCommand::SendGarbage(2, 0));
+            //println!("{}", board.get_cell_holder().get_occupied_cell_count())
         }
 
         self.board_mgr.send_command(&self.uuid, BoardCommand::Update(dt));

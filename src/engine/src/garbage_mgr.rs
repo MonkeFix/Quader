@@ -84,7 +84,7 @@ impl GarbageMgr {
                     return damage_cancel.max(0);
                 }
 
-            } else if self.garbage_delay_ms <= 0 {
+            } else if self.garbage_delay_ms == 0 {
                 let dmg = self.queue.pop_front().unwrap() as u32;
                 self.push_garbage(dmg, 0, cell_holder);
                 self.garbage_delay_ms = self.attack_settings.garbage_delay_ms;
@@ -95,5 +95,9 @@ impl GarbageMgr {
         }
 
         result
+    }
+
+    pub fn update(&mut self, elapsed_ms: u32) {
+        self.garbage_delay_ms = self.garbage_delay_ms.saturating_sub(elapsed_ms);
     }
 }

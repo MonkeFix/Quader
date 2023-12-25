@@ -91,7 +91,7 @@ impl Board {
                 });
             },
             BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
-            BoardCommand::SendGarbage(amount, messiness) => self.push_garbage(*amount, *messiness),
+            BoardCommand::SendGarbage(amount, messiness) => self.attack(*amount as i32), //self.push_garbage(*amount, *messiness),
             BoardCommand::Update(dt) => { res = self.update(*dt).unwrap_or_default(); },
             BoardCommand::HoldPiece => self.hold_piece(),
             BoardCommand::RequestBoardLayout => {}
@@ -103,6 +103,7 @@ impl Board {
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
     pub fn update(&mut self, dt: f32) -> Option<HardDropInfo> {
+        self.garbage_mgr.update((dt * 1000.0) as u32);
         match self.gravity_mgr.update(&self.piece_mgr, dt) {
             GravityUpdateResult::None => None,
             GravityUpdateResult::SoftDrop(dt) => {
@@ -198,13 +199,19 @@ impl Board {
 
         let bits = create_board_move_bits(
             self.piece_mgr.cell_holder.get_occupied_cell_count() as u32,
-            &mut move_info,
+            &move_info,
             result.tspin_status
         );
+        move_info.mod_bits = bits;
 
         let dmg = calculate_damage(&self.game_settings.attack, &move_info);
 
-        self.garbage_mgr.hard_drop(&mut self.piece_mgr.cell_holder, &result, dmg as i32);
+        let dmg = self.garbage_mgr.hard_drop(&mut self.piece_mgr.cell_holder, &result, dmg as i32);
+        move_info.attack = dmg as u32;
+        move_info.is_success = true;
+        move_info.b2b = self.scoring_mgr.b2b;
+        move_info.combo = self.scoring_mgr.combo;
+        move_info.lines_cleared = result.lines_cleared;
 
         /*let piece = piece_mgr.get_piece();
         let t_spin_status = check_t_overhang(
