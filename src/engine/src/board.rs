@@ -196,6 +196,10 @@ impl Board {
         self.board_stats.hard_drop(result, &self.scoring_mgr);
 
         let mut move_info = MoveInfo::default();
+        move_info.is_success = true;
+        move_info.b2b = self.scoring_mgr.b2b;
+        move_info.combo = self.scoring_mgr.combo;
+        move_info.lines_cleared = result.lines_cleared;
 
         let bits = create_board_move_bits(
             self.piece_mgr.cell_holder.get_occupied_cell_count() as u32,
@@ -208,10 +212,6 @@ impl Board {
 
         let dmg = self.garbage_mgr.hard_drop(&mut self.piece_mgr.cell_holder, &result, dmg as i32);
         move_info.attack = dmg as u32;
-        move_info.is_success = true;
-        move_info.b2b = self.scoring_mgr.b2b;
-        move_info.combo = self.scoring_mgr.combo;
-        move_info.lines_cleared = result.lines_cleared;
 
         /*let piece = piece_mgr.get_piece();
         let t_spin_status = check_t_overhang(
