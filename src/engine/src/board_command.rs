@@ -17,7 +17,7 @@ pub enum GameState {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum BoardCommand {
     // move direction, delta
-    Move(BoardMoveDir, i32),
+    Move(BoardMoveDir, u32),
     Rotate(RotationDirection),
     HardDrop,
     // delta

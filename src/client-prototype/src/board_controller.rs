@@ -11,6 +11,7 @@ use quader_engine::board_manager::BoardManager;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
+use quader_engine::replays::HardDropInfo;
 use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
 
 use crate::renderable::Renderable;
@@ -57,6 +58,8 @@ impl BoardController {
         let mut board_mgr = BoardManager::new(game_settings);
 
         let rcv = board_mgr.add_board();
+
+        //dbg!(&rcv.2);
 
         BoardController {
             board: rcv.2,
@@ -362,6 +365,12 @@ impl Updatable for BoardController {
         }
 
         self.board_mgr.send_command(&self.uuid, BoardCommand::Update(dt));
+
+        if let Ok(msg) = self.board_mgr.bi.poll_recv_hard_drop() {
+            if msg.lines_cleared > 0 {
+                dbg!(&msg);
+            }
+        }
 
         if let Ok(msg) = &self.receiver.try_recv() {
             match msg {

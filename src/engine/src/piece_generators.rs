@@ -31,6 +31,7 @@ impl Debug for dyn PieceGenerator {
     }
 }
 
+
 /*pub enum PieceGeneratorType {
     FullRandom, Bag7
 }
@@ -74,6 +75,7 @@ impl PieceGenerator for PieceGeneratorFullRandom {
     }
 }
 
+#[derive(Debug)]
 pub struct PieceGeneratorBag7 {
     rng: ChaCha8Rng,
     queue: VecDeque<PieceType>

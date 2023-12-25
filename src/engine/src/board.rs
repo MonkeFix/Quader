@@ -23,7 +23,8 @@ pub struct Board {
     rng: ChaCha8Rng,
     wkd: Arc<WallKickData>,
     pub(crate) scoring_mgr: ScoringMgr,
-    pub board_stats: BoardStats
+    pub board_stats: BoardStats,
+    pub is_dead: bool
 }
 
 impl Board {
@@ -31,7 +32,7 @@ impl Board {
     // TODO: Use attacks and send garbage (DamageMgr)
     // TODO: Add replays
 
-    pub fn new(game_settings: GameSettings, wkd: &Arc<WallKickData>, seed: u64) -> Self {
+    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64) -> Self {
 
         let gravity_mgr = Box::new(GravityMgr::new(&game_settings, seed));
 
@@ -42,14 +43,17 @@ impl Board {
             last_garbage_x: None,
             // used for generating garbage holes, so we can safely use entropy here instead of set seed
             rng: SeedableRng::from_entropy(),
-            wkd: Arc::clone(wkd),
+            wkd: Arc::clone(&wkd),
             scoring_mgr: ScoringMgr::new(),
-            board_stats: BoardStats::default()
+            board_stats: BoardStats::default(),
+            is_dead: false
         }
     }
 
     /// Executes specified `BoardCommand`.
-    pub fn exec_cmd(&mut self, cmd: &BoardCommand) {
+    pub fn exec_cmd(&mut self, cmd: &BoardCommand) -> Option<HardDropInfo> {
+        let mut res = HardDropInfo::default();
+
         match cmd {
             BoardCommand::Move(dir, delta) => {
                 match dir {
@@ -59,7 +63,7 @@ impl Board {
             },
             BoardCommand::Rotate(dir) => self.rotate(*dir),
             BoardCommand::HardDrop => {
-                self.hard_drop().unwrap_or_else(|_err| {
+                res = self.hard_drop().unwrap_or_else(|_err| {
                     //println!("cannot apply piece!");
                     HardDropInfo::default()
                 });
@@ -70,6 +74,8 @@ impl Board {
             BoardCommand::HoldPiece => self.hold_piece(),
             BoardCommand::RequestBoardLayout => {}
         }
+
+        Some(res)
     }
 
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
@@ -77,17 +83,17 @@ impl Board {
     pub fn update(&mut self, dt: f32) {
         if self.gravity_mgr.update(dt) {
             // hard drop requested
-            self.exec_cmd(&BoardCommand::HardDrop)
+            self.exec_cmd(&BoardCommand::HardDrop);
         }
     }
 
     /// Tries to move current piece to the left by amount `delta`.
-    pub fn move_left(&mut self, delta: i32) {
+    pub fn move_left(&mut self, delta: u32) {
         self.gravity_mgr.piece_mgr.move_left(delta);
     }
 
     /// Tries to move current piece to the right by amount `delta`.
-    pub fn move_right(&mut self, delta: i32) {
+    pub fn move_right(&mut self, delta: u32) {
         self.gravity_mgr.piece_mgr.move_right(delta);
     }
 
@@ -162,9 +168,6 @@ impl Board {
         result.attack = dmg;
 
         println!("hard drop: {:?}", result);*/
-
-        // TODO: Move damage calculation and move creation to BoardManager.
-        // TODO: Attacks should be calculated in the server.
 
         Ok(result)
     }

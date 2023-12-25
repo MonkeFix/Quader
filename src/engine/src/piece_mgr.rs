@@ -115,7 +115,7 @@ impl PieceMgr {
     /// Tries to move the current piece one cell to the left `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_left(&mut self, delta: i32) {
+    pub fn move_left(&mut self, delta: u32) {
         for _ in 0..delta {
             if self.test_movement(-1, 0) {
                 self.curr_piece.move_left();
@@ -127,7 +127,7 @@ impl PieceMgr {
     /// Tries to move the current piece one cell to the right `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_right(&mut self, delta: i32) {
+    pub fn move_right(&mut self, delta: u32) {
         for _ in 0..delta {
             if self.test_movement(1, 0) {
                 self.curr_piece.move_right();
