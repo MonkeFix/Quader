@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use serde::{Deserialize, Serialize};
+use crate::replays::{HardDropInfo, LastMoveType, MoveInfo};
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TSpinStatus {
@@ -84,6 +85,35 @@ pub struct ScoringMgr {
 impl ScoringMgr {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn hard_drop(&mut self, hard_drop_info: &HardDropInfo) {
+        // Do not break B2B if and only if the player:
+        //  - haven't cleared any lines,
+        //  - cleared exactly 4 lines,
+        //  - performed a T-Spin which must include a rotation of the piece.
+        // Otherwise break it.
+        if hard_drop_info.lines_cleared == 4 ||
+            hard_drop_info.last_move_type == LastMoveType::Rotation &&
+                (
+                    hard_drop_info.lines_cleared >= 1 ||
+                        hard_drop_info.tspin_status == TSpinStatus::Mini ||
+                        hard_drop_info.tspin_status == TSpinStatus::Full
+                ) {
+            self.b2b += 1;
+
+        } else if hard_drop_info.lines_cleared != 0 {
+            self.b2b = 0;
+        }
+
+        // Combos are much easier:
+        // if a player cleared 1 or more lines in a row, for each hard drop combo increases by one,
+        // otherwise if a player didn't clear any lines, combo resets back to 0.
+        if hard_drop_info.lines_cleared > 0 {
+            self.combo += 1;
+        } else {
+            self.combo = 0;
+        }
     }
 
     pub fn reset(&mut self) {

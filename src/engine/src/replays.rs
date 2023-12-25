@@ -1,5 +1,9 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
+use crate::cell_holder::CellHolder;
+use crate::damage_calculation::{calculate_damage, create_board_move_bits};
+use crate::game_settings::AttackSettings;
+use crate::garbage_mgr::GarbageMgr;
 use crate::scoring::{ScoringMgr, TSpinStatus};
 
 /// Represents just a move done by a player.
@@ -68,6 +72,38 @@ impl Default for MoveInfo {
     }
 }
 
+impl MoveInfo {
+    pub fn new(
+        scoring_mgr: &ScoringMgr,
+        hard_drop_info: &HardDropInfo,
+        attack_settings: &AttackSettings,
+        garbage_mgr: &mut GarbageMgr,
+        cell_holder: &mut CellHolder
+    ) -> MoveInfo {
+        let mut result = MoveInfo {
+            is_success: true,
+            b2b: scoring_mgr.b2b,
+            combo: scoring_mgr.combo,
+            lines_cleared: hard_drop_info.lines_cleared,
+            ..Default::default()
+        };
+
+        let bits = create_board_move_bits(
+            cell_holder.get_occupied_cell_count() as u32,
+            &result,
+            hard_drop_info.tspin_status
+        );
+        result.mod_bits = bits;
+
+        let dmg = calculate_damage(attack_settings, &result);
+
+        let dmg = garbage_mgr.hard_drop(cell_holder, hard_drop_info, dmg as i32);
+        result.attack = dmg as u32;
+
+        result
+    }
+}
+
 #[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct BoardStats {
     /// Total time spent in current game in seconds
@@ -104,7 +140,7 @@ impl BoardStats {
     }
 
     /// Updates all current stats using data from `HardDropInfo` and `ScoringMgr`.
-    pub fn hard_drop(&mut self, hard_drop_info: HardDropInfo, scoring_mgr: &ScoringMgr) {
+    pub fn hard_drop(&mut self, hard_drop_info: &HardDropInfo, scoring_mgr: &ScoringMgr) {
         self.total_pieces += 1;
         self.pps = self.total_pieces as f32 / self.elapsed_seconds;
         self.apm = self.total_pieces as f32 / (self.elapsed_seconds / 60.0);

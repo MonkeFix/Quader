@@ -1,17 +1,14 @@
 ﻿use std::collections::VecDeque;
 use std::sync::Arc;
-use rand::{Rng, SeedableRng};
-use rand_chacha::ChaCha8Rng;
 use crate::board_command::{BoardCommand, BoardMoveDir};
 use crate::cell_holder::{CellHolder};
-use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;
 use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
 use crate::piece::{PieceType, RotationDirection};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
-use crate::replays::{BoardStats, HardDropInfo, LastMoveType, MoveInfo};
-use crate::scoring::{ScoringMgr, TSpinStatus};
+use crate::replays::{BoardStats, HardDropInfo, MoveInfo};
+use crate::scoring::{ScoringMgr};
 use crate::wall_kick_data::{WallKickData};
 
 #[derive(Debug, Copy, Clone)]
@@ -91,7 +88,7 @@ impl Board {
                 });
             },
             BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
-            BoardCommand::SendGarbage(amount, messiness) => self.attack(*amount as i32), //self.push_garbage(*amount, *messiness),
+            BoardCommand::SendGarbage(amount, _messiness) => self.attack(*amount as i32), //self.push_garbage(*amount, *messiness),
             BoardCommand::Update(dt) => { res = self.update(*dt).unwrap_or_default(); },
             BoardCommand::HoldPiece => self.hold_piece(),
             BoardCommand::RequestBoardLayout => {}
@@ -166,70 +163,19 @@ impl Board {
         let piece_mgr = &mut self.piece_mgr;
         let result = piece_mgr.hard_drop()?;
 
-        // Do not break B2B if and only if the player:
-        //  - haven't cleared any lines,
-        //  - cleared exactly 4 lines,
-        //  - performed a T-Spin which must include a rotation of the piece.
-        // Otherwise break it.
-        if result.lines_cleared == 4 ||
-            result.last_move_type == LastMoveType::Rotation &&
-                (
-                    result.lines_cleared >= 1 ||
-                    result.tspin_status == TSpinStatus::Mini ||
-                    result.tspin_status == TSpinStatus::Full
-                ) {
-            self.scoring_mgr.b2b += 1;
+        self.scoring_mgr.hard_drop(&result);
 
-        } else if result.lines_cleared != 0 {
-            self.scoring_mgr.b2b = 0;
-        }
+        self.board_stats.hard_drop(&result, &self.scoring_mgr);
 
-        // Combos are much easier:
-        // if a player cleared 1 or more lines in a row, for each hard drop combo increases by one,
-        // otherwise if a player didn't clear any lines, combo resets back to 0.
-        if result.lines_cleared > 0 {
-            self.scoring_mgr.combo += 1;
-        } else {
-            self.scoring_mgr.combo = 0;
-        }
-
-        self.board_stats.hard_drop(result, &self.scoring_mgr);
-
-        let mut move_info = MoveInfo::default();
-        move_info.is_success = true;
-        move_info.b2b = self.scoring_mgr.b2b;
-        move_info.combo = self.scoring_mgr.combo;
-        move_info.lines_cleared = result.lines_cleared;
-
-        let bits = create_board_move_bits(
-            self.piece_mgr.cell_holder.get_occupied_cell_count() as u32,
-            &move_info,
-            result.tspin_status
+        let move_info = MoveInfo::new(
+            &self.scoring_mgr,
+            &result,
+            &self.game_settings.attack,
+            &mut self.garbage_mgr,
+            &mut self.piece_mgr.cell_holder
         );
-        move_info.mod_bits = bits;
 
-        let dmg = calculate_damage(&self.game_settings.attack, &move_info);
-
-        let dmg = self.garbage_mgr.hard_drop(&mut self.piece_mgr.cell_holder, &result, dmg as i32);
-        move_info.attack = dmg as u32;
-
-        /*let piece = piece_mgr.get_piece();
-        let t_spin_status = check_t_overhang(
-            self.game_settings.get_board(),
-            piece.get_x() as i32, piece.get_y() as i32,
-            |p| { self.get_cell_holder().intersects(&p) }
-        );
-        let bits = create_board_move_bits(
-            self.get_cell_holder().get_occupied_cell_count() as u32,
-            &mut result,
-            t_spin_status);
-
-        result.mod_bits = bits;
-
-        let dmg = calculate_damage(self.game_settings.get_attack(), &result);
-        result.attack = dmg;
-
-        println!("hard drop: {:?}", result);*/
+        dbg!(move_info);
 
         self.move_queue.push_back(MoveAction::HardDrop);
 
