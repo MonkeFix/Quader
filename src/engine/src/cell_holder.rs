@@ -99,8 +99,8 @@ impl<'a> Iterator for RowIterator<'a> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CellHolder {
     layout: Vec<Row>,
-    width: usize,
-    height: usize,
+    pub(crate) width: usize,
+    pub(crate) height: usize,
     occupied_cells: usize
 }
 

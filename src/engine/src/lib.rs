@@ -18,6 +18,7 @@ mod command_dispatcher;
 pub mod utils;
 pub mod piece_points;
 mod piece_queue;
+mod garbage_mgr;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

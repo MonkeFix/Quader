@@ -115,25 +115,27 @@ impl PieceMgr {
     /// Tries to move the current piece one cell to the left `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_left(&mut self, delta: u32) {
-        for _ in 0..delta {
-            if self.test_movement(-1, 0) {
-                self.curr_piece.move_left();
-                self.last_move_type = LastMoveType::Movement;
-            }
+    pub fn move_left(&mut self) -> bool {
+        if self.test_movement(-1, 0) {
+            self.curr_piece.move_left();
+            self.last_move_type = LastMoveType::Movement;
+            return true;
         }
+
+        false
     }
 
     /// Tries to move the current piece one cell to the right `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
-    pub fn move_right(&mut self, delta: u32) {
-        for _ in 0..delta {
-            if self.test_movement(1, 0) {
-                self.curr_piece.move_right();
-                self.last_move_type = LastMoveType::Movement;
-            }
+    pub fn move_right(&mut self) -> bool {
+        if self.test_movement(1, 0) {
+            self.curr_piece.move_right();
+            self.last_move_type = LastMoveType::Movement;
+            return true;
         }
+
+        false
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
@@ -180,22 +182,14 @@ impl PieceMgr {
     /// Tries to move the current piece one cell down `dt` times.
     /// If it fails, then nothing happens as the piece collides with other cells.
     /// Returns `true` if piece successfully moved down.
-    pub fn soft_drop(&mut self, dt: u32) -> bool {
-
-        let dt = std::cmp::min(dt, self.board_settings.height as u32);
-        let mut res = false;
-
-        for _ in 0..dt {
-            if self.test_movement(0, 1) {
-                self.curr_piece.move_down();
-                self.last_move_type = LastMoveType::Movement;
-                res = true;
-            } else {
-                res = false;
-            }
+    pub fn soft_drop(&mut self) -> bool {
+        if self.test_movement(0, 1) {
+            self.curr_piece.move_down();
+            self.last_move_type = LastMoveType::Movement;
+            return true;
         }
-
-        res
+        
+        false
     }
 
     /// Tries to hard drop the current piece.
