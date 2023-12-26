@@ -1,6 +1,5 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
-use crate::board::MoveAction;
 use crate::cell_holder::CellHolder;
 use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::AttackSettings;
@@ -16,6 +15,19 @@ pub struct HardDropInfo {
     pub tspin_status: TSpinStatus,
     pub last_move_type: LastMoveType,
     pub occupied_cells_left: u32
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum MoveAction {
+    MoveLeft,
+    MoveRight,
+
+    RotateCW,
+    RotateCCW,
+    RotateDeg180,
+
+    SoftDrop,
+    HardDrop,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
@@ -83,7 +95,7 @@ impl MoveResult {
         attack_settings: &AttackSettings,
         garbage_mgr: &mut GarbageMgr,
         cell_holder: &mut CellHolder,
-        move_queue: &[MoveAction],
+        move_queue: Vec<MoveAction>,
         time_mgr: &TimeMgr
     ) -> MoveResult {
         let mut result = MoveResult {
@@ -91,7 +103,7 @@ impl MoveResult {
             b2b: scoring_mgr.b2b,
             combo: scoring_mgr.combo,
             hard_drop_info,
-            move_queue: move_queue.to_vec(),
+            move_queue,
             timestamp: time_mgr.cur_sec,
             ..Default::default()
         };
@@ -211,17 +223,40 @@ impl BoardStats {
     }
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct Replay {
-    moves: Vec<MoveResult>
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReplayMove {
+    pub action: MoveAction,
+    pub timestamp: f32
 }
 
-impl Replay {
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ReplayMgr {
+    pub moves: Vec<ReplayMove>,
+    pub cur_move_queue: Vec<MoveAction>
+}
+
+impl ReplayMgr {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn push_move(&mut self, move_info: MoveResult) {
-        self.moves.push(move_info);
+    pub fn push_move(&mut self, timestamp: f32, move_action: MoveAction) {
+        self.moves.push(ReplayMove {
+            action: move_action,
+            timestamp
+        });
+        self.cur_move_queue.push(move_action);
+    }
+
+    pub fn end_move(&mut self) -> Vec<MoveAction> {
+        let res = self.cur_move_queue.clone();
+        self.cur_move_queue.clear();
+
+        res
+    }
+
+    pub fn reset(&mut self) {
+        self.moves.clear();
+        self.cur_move_queue.clear();
     }
 }

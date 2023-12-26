@@ -1,28 +1,14 @@
 ﻿use std::sync::Arc;
-use serde::{Deserialize, Serialize};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;
 use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
 use crate::piece::{Piece, PieceType, RotationDirection, RotationState};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
-use crate::replays::{BoardStats, MoveResult};
+use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
 use crate::scoring::{ScoringMgr};
 use crate::time_mgr::TimeMgr;
 use crate::wall_kick_data::{WallKickData};
-
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum MoveAction {
-    MoveLeft,
-    MoveRight,
-
-    RotateCW,
-    RotateCCW,
-    RotateDeg180,
-
-    SoftDrop,
-    HardDrop,
-}
 
 #[derive(Debug)]
 pub struct Board {
@@ -36,10 +22,10 @@ pub struct Board {
     pub(crate) scoring_mgr: ScoringMgr,
     pub board_stats: BoardStats,
     pub is_dead: bool,
-    pub move_queue: Vec<MoveAction>,
     pub garbage_mgr: GarbageMgr,
 
-    pub time_mgr: TimeMgr
+    pub time_mgr: TimeMgr,
+    pub replay_mgr: ReplayMgr
 }
 
 impl Board {
@@ -58,9 +44,9 @@ impl Board {
             scoring_mgr: ScoringMgr::new(),
             board_stats: BoardStats::default(),
             is_dead: false,
-            move_queue: Vec::default(),
             garbage_mgr: GarbageMgr::new(&game_settings.attack),
-            time_mgr: TimeMgr::new()
+            time_mgr: TimeMgr::new(),
+            replay_mgr: ReplayMgr::default()
         }
     }
 
@@ -128,7 +114,7 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_left() {
-                self.move_queue.push(MoveAction::MoveLeft);
+                self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::MoveLeft);
                 moves_count += 1;
             }
         }
@@ -142,7 +128,7 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_right() {
-                self.move_queue.push(MoveAction::MoveRight);
+                self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::MoveRight);
                 moves_count += 1;
             }
         }
@@ -161,7 +147,7 @@ impl Board {
                 RotationDirection::CounterClockwise => MoveAction::RotateCCW,
                 RotationDirection::Deg180 => MoveAction::RotateDeg180
             };
-            self.move_queue.push(action);
+            self.replay_mgr.push_move(self.time_mgr.cur_sec, action);
 
             return Some(self.piece_mgr.curr_piece.current_rotation)
         }
@@ -193,8 +179,9 @@ impl Board {
 
         self.scoring_mgr.hard_drop(&hard_drop_info);
         self.board_stats.hard_drop(&hard_drop_info, &self.scoring_mgr);
+        self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::HardDrop);
 
-        self.move_queue.push(MoveAction::HardDrop);
+        let move_queue = self.replay_mgr.end_move();
 
         let move_result = MoveResult::new(
             &self.scoring_mgr,
@@ -202,11 +189,9 @@ impl Board {
             &self.game_settings.attack,
             &mut self.garbage_mgr,
             &mut self.piece_mgr.cell_holder,
-            &self.move_queue,
+            move_queue,
             &self.time_mgr
         );
-
-        self.move_queue.clear();
 
         Ok(move_result)
     }
@@ -221,7 +206,7 @@ impl Board {
         for _ in 0..dt {
             if self.piece_mgr.soft_drop() {
                 self.gravity_mgr.reset_lock();
-                self.move_queue.push(MoveAction::SoftDrop);
+                self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::SoftDrop);
                 amount_moved += 1;
             }
         }
@@ -267,6 +252,7 @@ impl Board {
         self.piece_mgr.reset();
         self.is_dead = false;
         self.time_mgr.reset();
+        self.replay_mgr.reset();
     }
 
     /// Enables current board. All BoardCommands will execute normally.
