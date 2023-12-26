@@ -1,17 +1,17 @@
-﻿use std::collections::VecDeque;
-use std::sync::Arc;
-use crate::board_command::{BoardCommand, BoardMoveDir};
+﻿use std::sync::Arc;
+use serde::{Deserialize, Serialize};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;
 use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
-use crate::piece::{PieceType, RotationDirection};
+use crate::piece::{Piece, PieceType, RotationDirection, RotationState};
 use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
-use crate::replays::{BoardStats, HardDropInfo, MoveInfo};
+use crate::replays::{BoardStats, MoveResult};
 use crate::scoring::{ScoringMgr};
+use crate::time_mgr::TimeMgr;
 use crate::wall_kick_data::{WallKickData};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum MoveAction {
     MoveLeft,
     MoveRight,
@@ -31,26 +31,21 @@ pub struct Board {
     pub(crate) gravity_mgr: GravityMgr,
     pub(crate) piece_mgr: Box<PieceMgr>,
     pub(crate) is_enabled: bool,
-    // used for generating garbage holes
 
     wkd: Arc<WallKickData>,
     pub(crate) scoring_mgr: ScoringMgr,
     pub board_stats: BoardStats,
     pub is_dead: bool,
-    pub move_queue: VecDeque<MoveAction>,
-    pub prev_move_queue: Option<VecDeque<MoveAction>>,
-    pub garbage_mgr: GarbageMgr
+    pub move_queue: Vec<MoveAction>,
+    pub garbage_mgr: GarbageMgr,
+
+    pub time_mgr: TimeMgr
 }
 
 impl Board {
 
-    // TODO: Use attacks and send garbage (DamageMgr)
-    // TODO: Add replays
-
     pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64) -> Self {
 
-        // TODO: Maybe create a new thread in which every tick there will be time pulled and GravityMgr updated with correct dt
-        // TODO: and sends commands to the Board
         let gravity_mgr = GravityMgr::new(&game_settings.gravity);
         let piece_mgr = Box::new(PieceMgr::new(&game_settings, seed));
 
@@ -63,15 +58,15 @@ impl Board {
             scoring_mgr: ScoringMgr::new(),
             board_stats: BoardStats::default(),
             is_dead: false,
-            move_queue: VecDeque::new(),
-            prev_move_queue: None,
-            garbage_mgr: GarbageMgr::new(&game_settings.attack)
+            move_queue: Vec::default(),
+            garbage_mgr: GarbageMgr::new(&game_settings.attack),
+            time_mgr: TimeMgr::new()
         }
     }
 
-    /// Executes specified `BoardCommand`.
-    pub fn exec_cmd(&mut self, cmd: &BoardCommand) -> Option<HardDropInfo> {
-        let mut res = HardDropInfo::default();
+    // Executes specified `BoardCommand`.
+/*    pub fn exec_cmd(&mut self, cmd: &BoardCommand) -> Option<HardDropInfo> {
+        let mut res = None;
 
         match cmd {
             BoardCommand::Move(dir, delta) => {
@@ -82,24 +77,38 @@ impl Board {
             },
             BoardCommand::Rotate(dir) => self.rotate(*dir),
             BoardCommand::HardDrop => {
-                res = self.hard_drop().unwrap_or_else(|_err| {
+                res = Some(self.hard_drop().unwrap_or_else(|_err| {
                     //println!("cannot apply piece!");
                     HardDropInfo::default()
-                });
+                }));
             },
             BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
             BoardCommand::SendGarbage(amount, _messiness) => self.attack(*amount as i32), //self.push_garbage(*amount, *messiness),
-            BoardCommand::Update(dt) => { res = self.update(*dt).unwrap_or_default(); },
+            BoardCommand::Update(dt) => {
+                let r = self.update(*dt);
+                if let Some(update_res) = r {
+                    res = Some(update_res);
+                }
+            },
             BoardCommand::HoldPiece => self.hold_piece(),
             BoardCommand::RequestBoardLayout => {}
         }
 
-        Some(res)
-    }
+        res
+    }*/
 
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
-    pub fn update(&mut self, dt: f32) -> Option<HardDropInfo> {
+    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
+        if !self.is_enabled {
+            return None;
+        }
+
+        if self.is_dead {
+            return Some(Err(UpdateErrorReason::BoardDead));
+        }
+
+        self.time_mgr.update(dt);
         self.garbage_mgr.update((dt * 1000.0) as u32);
         match self.gravity_mgr.update(&self.piece_mgr, dt) {
             GravityUpdateResult::None => None,
@@ -108,31 +117,41 @@ impl Board {
                 None
             }
             GravityUpdateResult::HardDrop => {
-                self.hard_drop().ok()
+                Some(self.hard_drop())
             }
         }
     }
 
     /// Tries to move current piece to the left by amount `delta`.
-    pub fn move_left(&mut self, delta: u32) {
+    pub fn move_left(&mut self, delta: u32) -> u32 {
+        let mut moves_count = 0;
+
         for _ in 0..delta {
             if self.piece_mgr.move_left() {
-                self.move_queue.push_back(MoveAction::MoveLeft);
+                self.move_queue.push(MoveAction::MoveLeft);
+                moves_count += 1;
             }
         }
+
+        moves_count
     }
 
     /// Tries to move current piece to the right by amount `delta`.
-    pub fn move_right(&mut self, delta: u32) {
+    pub fn move_right(&mut self, delta: u32) -> u32 {
+        let mut moves_count = 0;
+
         for _ in 0..delta {
             if self.piece_mgr.move_right() {
-                self.move_queue.push_back(MoveAction::MoveRight);
+                self.move_queue.push(MoveAction::MoveRight);
+                moves_count += 1;
             }
         }
+
+        moves_count
     }
 
     /// Tries to rotate current piece to direction `RotationDirection`
-    pub fn rotate(&mut self, direction: RotationDirection) {
+    pub fn rotate(&mut self, direction: RotationDirection) -> Option<RotationState> {
         if self.piece_mgr.rotate(&self.wkd, direction) {
             // prolong lock only if rotation was successful
             self.gravity_mgr.prolong_lock();
@@ -142,16 +161,18 @@ impl Board {
                 RotationDirection::CounterClockwise => MoveAction::RotateCCW,
                 RotationDirection::Deg180 => MoveAction::RotateDeg180
             };
-            self.move_queue.push_back(action);
+            self.move_queue.push(action);
+
+            return Some(self.piece_mgr.curr_piece.current_rotation)
         }
+
+        None
     }
 
     /// Tries to hold current piece. Doesn't do anything if it fails.
     /// It may fail if the player has already held the piece during his turn.
-    pub fn hold_piece(&mut self) {
-        if let Some(_p) = self.piece_mgr.hold_piece() {
-            // TODO: Send a signal to client that the hold and current piece were updated
-        }
+    pub fn hold_piece(&mut self) -> Option<&Piece> {
+        self.piece_mgr.hold_piece()
     }
 
     /// Returns currently hold `PieceType`. If there's none, returns `None`.
@@ -159,43 +180,53 @@ impl Board {
         self.piece_mgr.get_hold_piece()
     }
 
-    pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
+    pub fn hard_drop(&mut self) -> Result<MoveResult, UpdateErrorReason> {
+        if !self.is_enabled {
+            return Err(UpdateErrorReason::BoardDisabled);
+        }
+        if self.is_dead {
+            return Err(UpdateErrorReason::BoardDead);
+        }
+
         let piece_mgr = &mut self.piece_mgr;
-        let result = piece_mgr.hard_drop()?;
+        let hard_drop_info = piece_mgr.hard_drop()?;
 
-        self.scoring_mgr.hard_drop(&result);
+        self.scoring_mgr.hard_drop(&hard_drop_info);
+        self.board_stats.hard_drop(&hard_drop_info, &self.scoring_mgr);
 
-        self.board_stats.hard_drop(&result, &self.scoring_mgr);
+        self.move_queue.push(MoveAction::HardDrop);
 
-        let move_info = MoveInfo::new(
+        let move_result = MoveResult::new(
             &self.scoring_mgr,
-            &result,
+            hard_drop_info,
             &self.game_settings.attack,
             &mut self.garbage_mgr,
-            &mut self.piece_mgr.cell_holder
+            &mut self.piece_mgr.cell_holder,
+            &self.move_queue,
+            &self.time_mgr
         );
-
-        dbg!(move_info);
-
-        self.move_queue.push_back(MoveAction::HardDrop);
-
-        self.prev_move_queue = Some(self.move_queue.iter().copied().collect::<VecDeque<MoveAction>>());
 
         self.move_queue.clear();
 
-        Ok(result)
+        Ok(move_result)
     }
 
     /// Soft drops current piece. That means moving it down by amount `delta`.
-    pub fn soft_drop(&mut self, delta: u32) {
+    /// Returns an `u32` which indicates how many times the piece was successfully
+    /// soft dropped.
+    pub fn soft_drop(&mut self, delta: u32) -> u32 {
         let dt = std::cmp::min(delta, self.game_settings.board.height as u32);
+        let mut amount_moved = 0;
 
         for _ in 0..dt {
             if self.piece_mgr.soft_drop() {
                 self.gravity_mgr.reset_lock();
-                self.move_queue.push_back(MoveAction::SoftDrop);
+                self.move_queue.push(MoveAction::SoftDrop);
+                amount_moved += 1;
             }
         }
+
+        amount_moved
     }
 
     /// Sends garbage onto current board with specified `amount` of garbage rows and `messiness`.
@@ -206,6 +237,9 @@ impl Board {
         self.garbage_mgr.push_garbage(amount, messiness, &mut self.piece_mgr.cell_holder);
     }
 
+    /// Pushes damage onto board. The difference between this method and `push_garbage()`
+    /// is that `push_garbage()` adds garbage immediately, whereas this method
+    /// adds damage into the damage queue.
     pub fn attack(&mut self, damage: i32) {
         self.garbage_mgr.attack(damage);
     }
@@ -230,6 +264,9 @@ impl Board {
         self.scoring_mgr.combo = 0;
         self.scoring_mgr.b2b = 0;
         self.board_stats.reset();
+        self.piece_mgr.reset();
+        self.is_dead = false;
+        self.time_mgr.reset();
     }
 
     /// Enables current board. All BoardCommands will execute normally.
@@ -240,6 +277,7 @@ impl Board {
 
         self.is_enabled = true;
         self.gravity_mgr.enable();
+        self.time_mgr.enable();
     }
 
     /// Disables current board. Most BoardCommands will stop execution.
@@ -250,5 +288,6 @@ impl Board {
 
         self.is_enabled = false;
         self.gravity_mgr.disable();
+        self.time_mgr.disable();
     }
 }

@@ -1,10 +1,12 @@
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
+use crate::board::MoveAction;
 use crate::cell_holder::CellHolder;
 use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::AttackSettings;
 use crate::garbage_mgr::GarbageMgr;
 use crate::scoring::{ScoringMgr, TSpinStatus};
+use crate::time_mgr::TimeMgr;
 
 /// Represents just a move done by a player.
 /// This includes lines cleared
@@ -33,22 +35,23 @@ impl Default for HardDropInfo {
 }
 
 ///
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub struct MoveInfo {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MoveResult {
     pub timestamp: f32,
-    pub lines_cleared: u32,
     pub mod_bits: u32,
     pub b2b: u32,
     pub combo: u32,
     pub is_success: bool,
-    pub attack: u32
+    pub attack: u32,
+
+    pub hard_drop_info: HardDropInfo,
+    pub move_queue: Vec<MoveAction>
 }
 
-impl Display for MoveInfo {
+impl Display for MoveResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: LC: {}, Mods: {}, B2B: {}, Combo: {}, Success: {}, Attack: {}",
+        write!(f, "{}: Mods: {}, B2B: {}, Combo: {}, Success: {}, Attack: {}",
             self.timestamp,
-            self.lines_cleared,
             self.mod_bits,
             self.b2b,
             self.combo,
@@ -58,33 +61,38 @@ impl Display for MoveInfo {
     }
 }
 
-impl Default for MoveInfo {
+impl Default for MoveResult {
     fn default() -> Self {
         Self {
             timestamp: 0.0,
-            lines_cleared: 0,
             mod_bits: 0,
             b2b: 0,
             combo: 0,
             is_success: false,
-            attack: 0
+            attack: 0,
+            move_queue: vec![],
+            hard_drop_info: HardDropInfo::default()
         }
     }
 }
 
-impl MoveInfo {
+impl MoveResult {
     pub fn new(
         scoring_mgr: &ScoringMgr,
-        hard_drop_info: &HardDropInfo,
+        hard_drop_info: HardDropInfo,
         attack_settings: &AttackSettings,
         garbage_mgr: &mut GarbageMgr,
-        cell_holder: &mut CellHolder
-    ) -> MoveInfo {
-        let mut result = MoveInfo {
+        cell_holder: &mut CellHolder,
+        move_queue: &[MoveAction],
+        time_mgr: &TimeMgr
+    ) -> MoveResult {
+        let mut result = MoveResult {
             is_success: true,
             b2b: scoring_mgr.b2b,
             combo: scoring_mgr.combo,
-            lines_cleared: hard_drop_info.lines_cleared,
+            hard_drop_info,
+            move_queue: move_queue.to_vec(),
+            timestamp: time_mgr.cur_sec,
             ..Default::default()
         };
 
@@ -97,7 +105,7 @@ impl MoveInfo {
 
         let dmg = calculate_damage(attack_settings, &result);
 
-        let dmg = garbage_mgr.hard_drop(cell_holder, hard_drop_info, dmg as i32);
+        let dmg = garbage_mgr.hard_drop(cell_holder, &result.hard_drop_info, dmg as i32);
         result.attack = dmg as u32;
 
         result
@@ -205,7 +213,7 @@ impl BoardStats {
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Replay {
-    moves: Vec<MoveInfo>
+    moves: Vec<MoveResult>
 }
 
 impl Replay {
@@ -213,7 +221,7 @@ impl Replay {
         Self::default()
     }
 
-    pub fn push_move(&mut self, move_info: MoveInfo) {
+    pub fn push_move(&mut self, move_info: MoveResult) {
         self.moves.push(move_info);
     }
 }

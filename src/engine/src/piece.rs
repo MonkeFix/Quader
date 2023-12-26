@@ -137,7 +137,7 @@ pub struct Piece {
     bounds: Rect,
     x: u32,
     y: u32,
-    current_rotation: RotationState,
+    pub current_rotation: RotationState,
     wall_kick_type: WallKickType
 }
 

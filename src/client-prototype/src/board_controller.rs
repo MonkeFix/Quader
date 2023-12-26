@@ -1,18 +1,14 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::mpsc::Receiver;
+use std::sync::Arc;
 use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{Board};
-use quader_engine::board_command::{BoardCommand, BoardMessage, BoardMoveDir};
-use quader_engine::board_manager::BoardManager;
 use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
 use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
-use quader_engine::replays::HardDropInfo;
 use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
+use quader_engine::wall_kick_data::WallKickData;
 
 use crate::renderable::Renderable;
 use crate::updatable::Updatable;
@@ -21,6 +17,7 @@ const DEFAULT_CELL_SIZE: f32 = 32.0;
 
 struct PieceMover {
     elapsed: f32,
+    #[allow(dead_code)]
     arr: f32,
     das: f32,
     sdf: u32,
@@ -29,12 +26,12 @@ struct PieceMover {
 }
 
 impl PieceMover {
-    pub fn move_left(&self, uuid: &str, bm: &mut BoardManager) {
-        bm.send_command(uuid, BoardCommand::Move(BoardMoveDir::Left, 1));
+    pub fn move_left(&self, board: &mut Board) {
+        board.move_left(1);
     }
 
-    pub fn move_right(&self, uuid: &str, bm: &mut BoardManager) {
-        bm.send_command(uuid, BoardCommand::Move(BoardMoveDir::Right, 1));
+    pub fn move_right(&self, board: &mut Board) {
+        board.move_right(1);
     }
 }
 
@@ -43,32 +40,23 @@ pub struct BoardController {
     y: f32,
     cell_size: f32,
     render_offset: f32,
-    board_mgr: BoardManager,
-    receiver: Receiver<BoardMessage>,
-    uuid: String,
-    board: Rc<RefCell<Board>>,
-    piece_mover: PieceMover
+    board: Board,
+    piece_mover: PieceMover,
+    //wkd: Arc<WallKickData>
 }
 
 impl BoardController {
     pub fn new(x: f32, y: f32) -> Self {
 
         let game_settings = GameSettings::default();
-
-        let mut board_mgr = BoardManager::new(game_settings);
-
-        let rcv = board_mgr.add_board();
-
-        //dbg!(&rcv.2);
+        let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
+        let board = Board::new(game_settings, wkd, rand::rand() as u64);
 
         BoardController {
-            board: rcv.2,
+            board,
             x, y,
             cell_size: DEFAULT_CELL_SIZE,
             render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE,
-            board_mgr,
-            receiver: rcv.1,
-            uuid: rcv.0,
             piece_mover: PieceMover {
                 elapsed: 0.0,
                 arr: 0.0,
@@ -76,15 +64,10 @@ impl BoardController {
                 sdf: u32::MAX,
                 is_left_down: false,
                 is_right_down: false
-            }
+            },
+            //wkd
         }
     }
-
-    /*pub fn init(&mut self) {
-        let rcv = self.board_mgr.add_board();
-        self.receiver = Some(rcv.1);
-        self.uuid = Some(rcv.0);
-    }*/
 
     fn point_to_coords(&self, point: &Point) -> (f32, f32) {
         self.usize_to_coords(point.x as usize, point.y as usize)
@@ -140,7 +123,7 @@ impl Renderable for BoardController {
 
     fn render(&self) {
         // render board layout
-        let b = self.board.as_ref().borrow();
+        let b = &self.board;
         let layout = b.get_cell_holder();
 
         for (y, row) in layout.get_layout().iter().enumerate() {
@@ -167,7 +150,7 @@ impl Renderable for BoardController {
             });
 
         // render ghost piece
-        let ghost_y = self.board.borrow().find_nearest_y();
+        let ghost_y = self.board.find_nearest_y();
         points
             .iter()
             .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, ghost_y as i32)))
@@ -205,7 +188,7 @@ impl Renderable for BoardController {
     fn debug_render(&mut self) {
 
         // render piece bounds
-        let board = self.board.as_ref().borrow();
+        let board = &self.board;
         let piece = board.get_piece_mgr().get_piece();
 
         let bounds = piece.get_bounds();
@@ -230,7 +213,7 @@ impl Renderable for BoardController {
 
         // render debug ui
         root_ui().window(hash!(), Vec2::new(800., 20.), Vec2::new(450., 200.), |ui| {
-            let board = self.board.borrow();
+            let board = &self.board;
             let piece_mgr = board.get_piece_mgr();
             let piece = piece_mgr.get_piece();
             ui.label(None, &format!("Piece position: {{{}, {}}}", piece.get_x(), piece.get_y()));
@@ -278,14 +261,10 @@ impl Renderable for BoardController {
 
 impl Updatable for BoardController {
     fn update(&mut self, dt: f32) {
-        if is_key_pressed(KeyCode::A) {
-
-        }
-
         let elapsed = dt * 1000.0; // convert to milliseconds
 
         if is_key_pressed(KeyCode::Left) {
-            self.piece_mover.move_left(&self.uuid, &mut self.board_mgr);
+            self.piece_mover.move_left(&mut self.board);
         }
         if is_key_down(KeyCode::Left) {
             self.piece_mover.is_left_down = true;
@@ -297,7 +276,7 @@ impl Updatable for BoardController {
         }
 
         if is_key_pressed(KeyCode::Right) {
-            self.piece_mover.move_right(&self.uuid, &mut self.board_mgr);
+            self.piece_mover.move_right(&mut self.board);
         }
         if is_key_down(KeyCode::Right) {
             self.piece_mover.is_right_down = true;
@@ -313,83 +292,54 @@ impl Updatable for BoardController {
 
             for _ in 0..moves {
                 if self.piece_mover.is_left_down {
-                    self.piece_mover.move_left(&self.uuid, &mut self.board_mgr);
+                    self.piece_mover.move_left(&mut self.board);
                 }
                 if self.piece_mover.is_right_down {
-                    self.piece_mover.move_right(&self.uuid, &mut self.board_mgr);
+                    self.piece_mover.move_right(&mut self.board);
                 }
             }
         }
 
         if is_key_pressed(KeyCode::Down) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::SoftDrop(self.piece_mover.sdf)
-            );
+            self.board.soft_drop(self.piece_mover.sdf);
         }
         if is_key_pressed(KeyCode::Space) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::HardDrop
-            );
+            let result = self.board.hard_drop();
+            match result {
+                Ok(move_info) => {
+                    dbg!(move_info);
+                }
+                Err(reason) => {
+                    dbg!(reason);
+                }
+            }
         }
         if is_key_pressed(KeyCode::Z) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::Rotate(RotationDirection::CounterClockwise)
-            );
+            self.board.rotate(RotationDirection::CounterClockwise);
         }
         if is_key_pressed(KeyCode::X) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::Rotate(RotationDirection::Clockwise)
-            );
+            self.board.rotate(RotationDirection::Clockwise);
         }
         if is_key_pressed(KeyCode::F) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::Rotate(RotationDirection::Deg180)
-            );
+            self.board.rotate(RotationDirection::Deg180);
         }
         if is_key_pressed(KeyCode::C) {
-            self.board_mgr.send_command(
-                &self.uuid,
-                BoardCommand::HoldPiece
-            )
+            self.board.hold_piece();
         }
 
         if is_key_pressed(KeyCode::T) {
-            //let mut board = self.board.borrow_mut();
-            //board.push_garbage(1, 0);
-            self.board_mgr.send_command(&self.uuid, BoardCommand::SendGarbage(2, 0));
-            //println!("{}", board.get_cell_holder().get_occupied_cell_count())
+            self.board.attack(2);
         }
 
-        self.board_mgr.send_command(&self.uuid, BoardCommand::Update(dt));
-
-        if let Ok(msg) = self.board_mgr.bi.poll_recv_hard_drop() {
-            if msg.lines_cleared > 0 {
-                dbg!(&msg);
+        if let Some(res) = self.board.update(dt) {
+            match res {
+                Ok(move_info) => {
+                    dbg!(move_info);
+                }
+                Err(reason) => {
+                    dbg!(reason);
+                }
             }
         }
-
-        if let Ok(msg) = &self.receiver.try_recv() {
-            match msg {
-                BoardMessage::NewPieceInQueue(_) => {}
-                BoardMessage::PieceUpdated => {}
-                BoardMessage::GarbageReceived(_, _) => {}
-                BoardMessage::GameStateChanged(_) => {}
-                BoardMessage::PlayerRemoved => {}
-                BoardMessage::BoardUpdated => {}
-            }
-            //println!("msg: {:?}", msg);
-        }
-
-        /*for msg in self.receiver.iter() {
-             println!("msg: {:?}", msg);
-        }*/
-        /*while let Some(i) = self.receiver.recv() {
-            println!("got = {:?}", i);
-        }*/
     }
 }

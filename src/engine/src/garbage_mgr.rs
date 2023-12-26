@@ -63,7 +63,6 @@ impl GarbageMgr {
         if !self.queue.is_empty() {
             if hard_drop_info.lines_cleared > 0 {
 
-                //let damage_cancel = calculate_damage();
                 let mut damage_cancel: i32 = outgoing_damage;
                 let mut res = false;
 

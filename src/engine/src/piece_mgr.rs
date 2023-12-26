@@ -9,8 +9,11 @@ use crate::scoring::TSpinStatus;
 use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
+#[derive(Debug, Copy, Clone)]
 pub enum UpdateErrorReason {
-    CannotApplyPiece
+    CannotApplyPiece,
+    BoardDead,
+    BoardDisabled
 }
 
 fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
@@ -32,7 +35,7 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
 
 #[derive(Debug)]
 pub struct PieceMgr {
-    curr_piece: Piece,
+    pub curr_piece: Piece,
     board_settings: BoardSettings,
     pub cell_holder: Box<CellHolder>,
     hold_piece: Option<PieceType>,

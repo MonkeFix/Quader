@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 use serde::{Deserialize, Serialize};
-use crate::replays::{HardDropInfo, LastMoveType, MoveInfo};
+use crate::replays::{HardDropInfo, LastMoveType};
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TSpinStatus {

@@ -1,13 +1,13 @@
 use crate::game_settings::{AttackSettings, BoardSettings};
 use crate::primitives::Point;
-use crate::replays::MoveInfo;
+use crate::replays::MoveResult;
 use crate::scoring::{damage_mods, has_flag, thresholds, TSpinStatus};
 
 
-pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveInfo) -> u32 {
+pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveResult) -> u32 {
     let mut attack = attack_settings.lines_0;
 
-    if mv.lines_cleared == 0 {
+    if mv.hard_drop_info.lines_cleared == 0 {
         return attack;
     }
 
@@ -67,7 +67,7 @@ pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveInfo) -> u32 
 
 pub fn create_board_move_bits(
     total_cells: u32,
-    mv: &MoveInfo,
+    mv: &MoveResult,
     t_spin_status: TSpinStatus
 ) -> u32 {
 
@@ -77,13 +77,13 @@ pub fn create_board_move_bits(
         res |= damage_mods::ALL_CLEAR;
     }
 
-    if mv.lines_cleared == 1 {
+    if mv.hard_drop_info.lines_cleared == 1 {
         res |= damage_mods::SINGLE;
-    } else if mv.lines_cleared == 2 {
+    } else if mv.hard_drop_info.lines_cleared == 2 {
         res |= damage_mods::DOUBLE;
-    } else if mv.lines_cleared == 3 {
+    } else if mv.hard_drop_info.lines_cleared == 3 {
         res |= damage_mods::TRIPLE;
-    } else if mv.lines_cleared >= 4 {
+    } else if mv.hard_drop_info.lines_cleared >= 4 {
         res |= damage_mods::QUAD;
     }
 

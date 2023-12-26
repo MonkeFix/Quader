@@ -1,4 +1,4 @@
-use std::cell::{RefCell};
+/*use std::cell::{RefCell};
 use std::collections::HashMap;
 use std::ops::DerefMut;
 use std::rc::Rc;
@@ -211,4 +211,4 @@ impl BoardManager {
     pub fn get_board_count(&self) -> usize {
         self.boards.lock().unwrap().len()
     }
-}
+}*/
