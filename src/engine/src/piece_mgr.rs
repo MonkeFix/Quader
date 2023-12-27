@@ -1,6 +1,6 @@
 use crate::cell_holder::{CellHolder, CellType};
 use crate::damage_calculation::check_t_overhang;
-use crate::game_settings::{BOARD_VISIBLE_HEIGHT, BoardSettings, GameSettings};
+use crate::game_settings::{BoardSettings, GameSettings};
 use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
 use crate::piece_queue::PieceQueue;
 use crate::primitives::Point;
@@ -53,7 +53,7 @@ impl PieceMgr {
         let mut piece_queue = PieceQueue::new(seed);
         let next_piece = piece_queue.next();
         let mut piece = Piece::new(next_piece);
-        reset_piece(&mut piece, board_settings.width, board_settings.height);
+        reset_piece(&mut piece, board_settings.width, board_settings.full_height());
 
         Self {
             curr_piece: piece,
@@ -169,7 +169,7 @@ impl PieceMgr {
         let mut y = piece.get_y();
         let points = piece.get_positions();
 
-        for i in piece.get_y()..=(self.board_settings.height as u32) {
+        for i in piece.get_y()..=(self.board_settings.full_height() as u32) {
             let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
             let new_points = adjust_positions_clone(points, offset);
             if self.cell_holder.intersects_any(&new_points) {
@@ -219,7 +219,7 @@ impl PieceMgr {
 
         let lines_cleared = self.cell_holder.check_row_clears(None);
 
-        if nearest_y <= BOARD_VISIBLE_HEIGHT as u32 && lines_cleared.is_empty() {
+        if nearest_y <= self.board_settings.height as u32 && lines_cleared.is_empty() {
             return Err(UpdateErrorReason::CannotApplyPiece);
         }
 
@@ -256,7 +256,7 @@ impl PieceMgr {
         if b.x + x < 0 || b.x + b.width as i32 + x > self.board_settings.width as i32 {
             return false;
         }
-        if b.y + b.height as i32 + y > self.board_settings.height as i32 {
+        if b.y + b.height as i32 + y > self.board_settings.full_height() as i32 {
             return false;
         }
 
@@ -317,7 +317,7 @@ impl PieceMgr {
 
     fn reset_cur_piece(&mut self) {
         self.last_move_type = LastMoveType::None;
-        reset_piece(&mut self.curr_piece, self.board_settings.width, self.board_settings.height);
+        reset_piece(&mut self.curr_piece, self.board_settings.width, self.board_settings.full_height());
     }
 
     pub fn enable(&mut self) {

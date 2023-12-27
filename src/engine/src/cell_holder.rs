@@ -1,6 +1,6 @@
 ﻿use std::slice::Iter;
 use serde::{Deserialize, Serialize};
-use crate::game_settings::{BOARD_HEIGHT, BOARD_WIDTH, BoardSettings};
+use crate::game_settings::{BoardSettings};
 use crate::primitives::{Point, Rect};
 use crate::utils::adjust_positions_clone;
 
@@ -19,48 +19,69 @@ pub enum CellType {
 }
 
 pub trait BoolArray {
-    fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT];
+    fn to_bool_array(&self) -> Vec<Vec<bool>>;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub struct Row([CellType; BOARD_WIDTH]);
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Row {
+    cells: Vec<CellType>,
+    width: usize
+}
+
+impl Default for Row {
+    fn default() -> Self {
+        Self {
+            cells: vec![CellType::None; 10],
+            width: 10
+        }
+    }
+}
 
 impl Row {
+    pub fn new(width: usize, fill_with: CellType) -> Self {
+        Self {
+            cells: vec![fill_with; width],
+            width
+        }
+    }
+
     pub fn set(&mut self, x: usize, cell_type: CellType) -> CellType {
-        let tmp = self.0[x];
-        self.0[x] = cell_type;
+        let tmp = self.cells[x];
+        self.cells[x] = cell_type;
 
         tmp
     }
 
     pub fn get(&self, x: usize) -> CellType {
-        self.0[x]
+        self.cells[x]
     }
 
     pub fn is_full(&self) -> bool {
-        self.0.iter().all(|&b| b != CellType::None && b != CellType::Solid)
+        self.cells.iter().all(|&b| b != CellType::None && b != CellType::Solid)
     }
 
     pub fn is_empty(&self) -> bool {
-        self.0.iter().all(|&b| b == CellType::None)
+        self.cells.iter().all(|&b| b == CellType::None)
     }
 
     pub fn get_occupied_cell_count(&self) -> usize {
-        self.0.iter().filter(|c| increases_cells(**c)).count()
+        self.cells.iter().filter(|c| increases_cells(**c)).count()
     }
 
     pub fn iter(&self) -> Iter<'_, CellType> {
-        self.0.iter()
+        self.cells.iter()
     }
 
-    pub const EMPTY: &'static Self = &Row([CellType::None; BOARD_WIDTH]);
-    pub const SOLID: &'static Self = &Row([CellType::Solid; BOARD_WIDTH]);
-    pub const GARBAGE: &'static Self = &Row([CellType::Garbage; BOARD_WIDTH]);
-}
+    pub fn empty(width: usize) -> Row {
+        Row::new(width, CellType::None)
+    }
 
-impl Default for Row {
-    fn default() -> Self {
-        Row([CellType::None; BOARD_WIDTH])
+    pub fn solid(width: usize) -> Row {
+        Row::new(width, CellType::Solid)
+    }
+
+    pub fn garbage(width: usize) -> Row {
+        Row::new(width, CellType::Garbage)
     }
 }
 
@@ -85,12 +106,12 @@ impl<'a> Iterator for RowIterator<'a> {
     type Item = CellType;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.row.0.len() {
+        if self.index >= self.row.cells.len() {
             self.index = 0;
             return None;
         }
 
-        let result = self.row.0[self.index];
+        let result = self.row.cells[self.index];
         self.index += 1;
         Some(result)
     }
@@ -108,7 +129,7 @@ pub fn increases_cells(cell_type: CellType) -> bool {
     cell_type != CellType::None && cell_type != CellType::Solid
 }
 
-impl Default for CellHolder {
+/*impl Default for CellHolder {
     fn default() -> Self {
         CellHolder {
             width: BOARD_WIDTH, height: BOARD_HEIGHT,
@@ -116,28 +137,21 @@ impl Default for CellHolder {
             occupied_cells: 0
         }
     }
-}
+}*/
 
 impl CellHolder {
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
-    pub fn get_height(&self) -> usize {
-        self.height
-    }
 
     pub fn new(board_settings: &BoardSettings) -> Self {
-        // TODO: Add full height (height * 2)
         CellHolder {
-            width: board_settings.width, height: board_settings.height,
-            layout: [*Row::EMPTY; BOARD_HEIGHT].to_vec(),
+            width: board_settings.width, height: board_settings.full_height(),
+            layout: vec![Row::empty(board_settings.width); board_settings.full_height()],
             occupied_cells: 0
         }
     }
 
     pub fn reset(&mut self) {
         for row in self.layout.iter_mut() {
-            *row = *Row::EMPTY;
+            *row = Row::empty(self.width);
         }
 
         self.occupied_cells = 0;
@@ -191,9 +205,9 @@ impl CellHolder {
     pub fn move_up(&mut self, update_cell_count: bool) {
         (1..self.height)
             .for_each(|y| {
-                let cur = self.layout[y];
+                let cur = self.layout[y].clone();
 
-                self.layout[y] = *Row::EMPTY;
+                self.layout[y] = Row::empty(self.width);
                 self.layout[y - 1] = cur;
             });
 
@@ -210,7 +224,7 @@ impl CellHolder {
     }
 
     pub fn create_garbage_row(&self, hole_x: u32) -> Row {
-        let mut res = *Row::GARBAGE;
+        let mut res = Row::garbage(self.width);
         res.set(hole_x as usize, CellType::None);
 
         res
@@ -220,9 +234,9 @@ impl CellHolder {
         (0..=(from_y - 1))
             .rev()
             .for_each(|y| {
-                let cur = self.layout[y];
+                let cur = self.layout[y].clone();
 
-                self.layout[y] = *Row::EMPTY;
+                self.layout[y] = Row::empty(self.width);
                 self.layout[y + 1] = cur;
             });
         if update_cell_count {
@@ -245,14 +259,16 @@ impl CellHolder {
     }
 
     pub fn set_row(&mut self, y: usize, row: Row) {
-        let old_row = self.layout[y];
+        let old_row = self.layout[y].clone();
         let update_occupied_cells = false;
+
+        let row_cells = row.get_occupied_cell_count();
 
         self.layout[y] = row;
 
         if update_occupied_cells {
             let c1 = old_row.get_occupied_cell_count();
-            let c2 = row.get_occupied_cell_count();
+            let c2 = row_cells;
 
             let min = std::cmp::min(c1, c2);
             let max = std::cmp::max(c1, c2);
@@ -286,11 +302,11 @@ impl CellHolder {
 }
 
 impl BoolArray for CellHolder {
-    fn to_bool_array(&self) -> [[bool; BOARD_WIDTH]; BOARD_HEIGHT] {
-        let mut result = [[false; BOARD_WIDTH]; BOARD_HEIGHT];
+    fn to_bool_array(&self) -> Vec<Vec<bool>> {
+        let mut result = vec![vec![]];
 
         for (y, row) in self.layout.iter().enumerate() {
-            for (x, &bt) in row.0.iter().enumerate() {
+            for (x, &bt) in row.iter().enumerate() {
                 result[y][x] = bt != CellType::None;
             }
         }
@@ -302,6 +318,9 @@ impl BoolArray for CellHolder {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const BOARD_WIDTH: usize = 10;
+    const BOARD_HEIGHT: usize = 40;
 
     const BOARD_SETTINGS: BoardSettings = BoardSettings {
         width: BOARD_WIDTH,
@@ -340,14 +359,14 @@ mod tests {
 
     #[test]
     fn row_consts_are_correct() {
-        let a = Row::EMPTY;
+        let a = Row::empty(BOARD_WIDTH);
         format!("{:?}", a);
         format!("{:?}", a);
     }
 
     #[test]
     fn solid_row_is_solid() {
-        let solid1 = *Row::SOLID;
+        let solid1 = Row::solid(BOARD_WIDTH);
         let mut solid2 = Row::default();
         for x in 0..BOARD_WIDTH {
             solid2.set(x, CellType::Solid);
@@ -367,7 +386,7 @@ mod tests {
 
     #[test]
     fn empty_row_is_empty() {
-        let empty1 = *Row::EMPTY;
+        let empty1 = Row::empty(BOARD_WIDTH);
         let empty2 = Row::default();
 
         assert!(empty1.is_empty());
@@ -400,8 +419,8 @@ mod tests {
     fn dimensions_are_correct() {
         let holder = create_empty_holder();
 
-        assert_eq!(BOARD_WIDTH, holder.get_width());
-        assert_eq!(BOARD_HEIGHT, holder.get_height());
+        assert_eq!(BOARD_WIDTH, holder.width);
+        assert_eq!(BOARD_HEIGHT, holder.height);
     }
 
     #[test]
@@ -409,7 +428,7 @@ mod tests {
         let holder = create_empty_holder();
 
         for row in holder.layout {
-            assert_eq!(*Row::EMPTY, row);
+            assert_eq!(Row::empty(BOARD_WIDTH), row);
         }
     }
 
@@ -423,7 +442,7 @@ mod tests {
 
         holder.reset();
 
-        assert_eq!(*Row::EMPTY, *holder.get_row(0));
+        assert_eq!(Row::empty(BOARD_WIDTH), *holder.get_row(0));
     }
 
     #[test]
@@ -436,13 +455,13 @@ mod tests {
         for c in 0..10 {
             full_row.set(c, CellType::I);
         }
-        holder.set_row(1, full_row);
+        holder.set_row(1, full_row.clone());
 
         let cleared_rows = holder.check_row_clears(None);
         assert_eq!(1, cleared_rows.len());
         assert_eq!(1, cleared_rows[0]);
 
-        holder.set_row(39, full_row);
+        holder.set_row(39, full_row.clone());
 
         let cleared_rows = holder.check_row_clears(None);
         assert_eq!(2, cleared_rows.len());

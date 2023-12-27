@@ -59,6 +59,7 @@ impl GarbageMgr {
 
     pub fn hard_drop(&mut self, cell_holder: &mut CellHolder, hard_drop_info: &HardDropInfo, outgoing_damage: i32) -> i32 {
         let mut result = 0;
+        // TODO: Rework this shitty mess
 
         if !self.queue.is_empty() {
             if hard_drop_info.lines_cleared > 0 {

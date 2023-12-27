@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use crate::wall_kick_data::{WallKickDataMode};
 
-pub const BOARD_WIDTH: usize = 10;
-pub const BOARD_HEIGHT: usize = 40;
-pub const BOARD_VISIBLE_HEIGHT: usize = BOARD_HEIGHT / 2;
+//pub const BOARD_WIDTH: usize = 10;
+//pub const BOARD_HEIGHT: usize = 40;
+//pub const BOARD_FULL_HEIGHT: usize = BOARD_HEIGHT * 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct GravitySettings {
@@ -72,9 +72,15 @@ pub struct BoardSettings {
 impl Default for BoardSettings {
     fn default() -> Self {
         Self {
-            width: BOARD_WIDTH,
-            height: BOARD_HEIGHT
+            width: 10,
+            height: 20
         }
+    }
+}
+
+impl BoardSettings {
+    pub fn full_height(&self) -> usize {
+        self.height * 2
     }
 }
 
@@ -85,46 +91,13 @@ pub struct GameSettings {
     pub attack: AttackSettings,
     pub wall_kick_data_mode: WallKickDataMode
 }
-
-impl GameSettings {
-    pub fn new(gravity_settings: Option<GravitySettings>,
-               board_settings: Option<BoardSettings>,
-               attack_settings: Option<AttackSettings>,
-               wall_kick_data_mode: Option<WallKickDataMode>)
-        -> Self {
-
-        let gravity = if let Some(g) = gravity_settings {
-            g
-        } else {
-            GravitySettings::default()
-        };
-
-        let board = if let Some(b) = board_settings {
-            b
-        } else {
-            BoardSettings::default()
-        };
-
-        let attack = if let Some(a) = attack_settings {
-            a
-        } else {
-            AttackSettings::default()
-        };
-
-        let wall_kick_data_mode = if let Some(w) = wall_kick_data_mode {
-            w
-        } else {
-            WallKickDataMode::Standard
-        };
-
-        Self {
-            gravity, board, attack, wall_kick_data_mode
-        }
-    }
-}
-
 impl Default for GameSettings {
     fn default() -> Self {
-        GameSettings::new(None, None, None, None)
+        Self {
+            gravity: GravitySettings::default(),
+            board: BoardSettings::default(),
+            attack: AttackSettings::default(),
+            wall_kick_data_mode: WallKickDataMode::Standard
+        }
     }
 }

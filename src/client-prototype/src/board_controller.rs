@@ -4,7 +4,7 @@ use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{Board};
-use quader_engine::game_settings::{BOARD_VISIBLE_HEIGHT, GameSettings};
+use quader_engine::game_settings::{GameSettings};
 use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
@@ -42,6 +42,7 @@ pub struct BoardController {
     render_offset: f32,
     board: Board,
     piece_mover: PieceMover,
+    game_settings: GameSettings
     //wkd: Arc<WallKickData>
 }
 
@@ -52,11 +53,13 @@ impl BoardController {
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
         let board = Board::new(game_settings, wkd, rand::rand() as u64);
 
+        dbg!(&game_settings);
+
         BoardController {
             board,
             x, y,
             cell_size: DEFAULT_CELL_SIZE,
-            render_offset: BOARD_VISIBLE_HEIGHT as f32 * DEFAULT_CELL_SIZE,
+            render_offset: game_settings.board.height as f32 * DEFAULT_CELL_SIZE,
             piece_mover: PieceMover {
                 elapsed: 0.0,
                 arr: 0.0,
@@ -65,6 +68,7 @@ impl BoardController {
                 is_left_down: false,
                 is_right_down: false
             },
+            game_settings
             //wkd
         }
     }
@@ -131,7 +135,7 @@ impl Renderable for BoardController {
                 let color = cell_to_color(cell);
                 let pos = self.usize_to_coords(x, y);
 
-                if y >= BOARD_VISIBLE_HEIGHT {
+                if y >= self.game_settings.board.height {
                     self.render_cell(pos.0, pos.1 - self.render_offset, color);
                 }
             }
@@ -262,6 +266,13 @@ impl Renderable for BoardController {
 impl Updatable for BoardController {
     fn update(&mut self, dt: f32) {
         let elapsed = dt * 1000.0; // convert to milliseconds
+
+        if is_key_down(KeyCode::Q) {
+            self.y -= 1.0;
+        }
+        if is_key_down(KeyCode::A) {
+            self.y += 1.0;
+        }
 
         if is_key_pressed(KeyCode::Left) {
             self.piece_mover.move_left(&mut self.board);

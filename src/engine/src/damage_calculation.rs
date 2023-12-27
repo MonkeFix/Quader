@@ -142,7 +142,7 @@ pub fn check_t_overhang<F>(board_settings: &BoardSettings, piece_x: i32, piece_y
     let mut non_oob_overhangs = 0;
 
     for p in point_arr {
-        if crate::utils::is_oob(p.x, p.y, board_settings.width as i32, board_settings.height as i32) {
+        if crate::utils::is_oob(p.x, p.y, board_settings.width as i32, board_settings.full_height() as i32) {
             oob_overhangs += 1;
         } else if not_empty_func(p) {
             non_oob_overhangs += 1;

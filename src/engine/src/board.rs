@@ -200,7 +200,7 @@ impl Board {
     /// Returns an `u32` which indicates how many times the piece was successfully
     /// soft dropped.
     pub fn soft_drop(&mut self, delta: u32) -> u32 {
-        let dt = std::cmp::min(delta, self.game_settings.board.height as u32);
+        let dt = std::cmp::min(delta, self.game_settings.board.full_height() as u32);
         let mut amount_moved = 0;
 
         for _ in 0..dt {
