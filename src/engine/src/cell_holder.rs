@@ -303,7 +303,7 @@ impl CellHolder {
 
 impl BoolArray for CellHolder {
     fn to_bool_array(&self) -> Vec<Vec<bool>> {
-        let mut result = vec![vec![]];
+        let mut result = vec![vec![false; self.width]; self.height];
 
         for (y, row) in self.layout.iter().enumerate() {
             for (x, &bt) in row.iter().enumerate() {
