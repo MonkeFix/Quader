@@ -63,7 +63,7 @@ impl GarbageMgr {
     }
 
 
-    pub fn hard_drop(&mut self, cell_holder: &mut CellHolder, hard_drop_info: &HardDropInfo, outgoing_damage: i32) -> i32 {
+    pub fn hard_drop(&mut self, hard_drop_info: &HardDropInfo, outgoing_damage: i32) -> i32 {
         let mut result = 0;
         // TODO: Rework this shitty mess
 
@@ -91,9 +91,9 @@ impl GarbageMgr {
                 }
 
             } else if self.garbage_delay_ms == 0 {
-                let dmg = self.queue.pop_front().unwrap() as u32;
-                self.push_garbage(dmg, 0, cell_holder);
+                let dmg = self.queue.pop_front().unwrap();
                 self.garbage_delay_ms = self.attack_settings.garbage_delay_ms;
+                return -dmg;
             }
         } else {
             // return full attack

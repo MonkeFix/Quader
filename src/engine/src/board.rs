@@ -172,10 +172,14 @@ impl Board {
             hard_drop_info,
             &self.game_settings.attack,
             &mut self.garbage_mgr,
-            &mut self.piece_mgr.cell_holder,
+            &self.piece_mgr.cell_holder,
             move_queue,
             &self.time_mgr
         );
+
+        if move_result.attack < 0 {
+            self.garbage_mgr.push_garbage(-move_result.attack as u32, 0, &mut self.piece_mgr.cell_holder);
+        }
 
         Ok(move_result)
     }

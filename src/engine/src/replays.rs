@@ -53,8 +53,10 @@ pub struct MoveResult {
     pub mod_bits: u32,
     pub b2b: u32,
     pub combo: u32,
+    /// False if the piece fails to spawn or apply to the cell holder. True otherwise.
     pub is_success: bool,
-    pub attack: u32,
+    /// Positive if the board is dealing damage. Negative if it takes damage.
+    pub attack: i32,
 
     pub hard_drop_info: HardDropInfo,
     pub move_queue: Vec<MoveAction>
@@ -94,7 +96,7 @@ impl MoveResult {
         hard_drop_info: HardDropInfo,
         attack_settings: &AttackSettings,
         garbage_mgr: &mut GarbageMgr,
-        cell_holder: &mut CellHolder,
+        cell_holder: &CellHolder,
         move_queue: Vec<MoveAction>,
         time_mgr: &TimeMgr
     ) -> MoveResult {
@@ -116,9 +118,7 @@ impl MoveResult {
         result.mod_bits = bits;
 
         let dmg = calculate_damage(attack_settings, &result);
-
-        let dmg = garbage_mgr.hard_drop(cell_holder, &result.hard_drop_info, dmg as i32);
-        result.attack = dmg as u32;
+        result.attack = garbage_mgr.hard_drop(&result.hard_drop_info, dmg as i32);
 
         result
     }
