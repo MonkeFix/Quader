@@ -58,6 +58,10 @@ impl GravityMgr {
 
     pub fn update(&mut self, piece_mgr: &PieceMgr, dt: f32) -> GravityUpdateResult {
         let mut res = GravityUpdateResult::None;
+        
+        if !self.is_enabled {
+            return res;
+        }
 
         self.intermediate_y += self.cur_gravity * dt;
 

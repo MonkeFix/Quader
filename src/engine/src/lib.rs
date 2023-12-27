@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod board;
 pub mod primitives;
 pub mod piece;

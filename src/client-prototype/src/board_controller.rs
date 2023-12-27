@@ -7,6 +7,7 @@ use quader_engine::board::{Board};
 use quader_engine::game_settings::{GameSettings};
 use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
+use quader_engine::rng_manager::RngManager;
 use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
 use quader_engine::wall_kick_data::WallKickData;
 
@@ -49,9 +50,12 @@ pub struct BoardController {
 impl BoardController {
     pub fn new(x: f32, y: f32) -> Self {
 
+        let mut rng_mgr = RngManager::from_entropy();
+        let seed = rng_mgr.gen();
+
         let game_settings = GameSettings::default();
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
-        let board = Board::new(game_settings, wkd, rand::rand() as u64);
+        let board = Board::new(game_settings, wkd, seed);
 
         dbg!(&game_settings);
 

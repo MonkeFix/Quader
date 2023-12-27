@@ -19,6 +19,14 @@ impl RngManager {
         }
     }
 
+    pub fn from_entropy() -> Self {
+        let rng = SeedableRng::from_entropy();
+        Self {
+            rng,
+            seed: 0
+        }
+    }
+
     pub fn set_seed(&mut self, seed: u64) {
         self.rng = SeedableRng::seed_from_u64(seed);
         self.seed = seed;

@@ -178,7 +178,11 @@ impl Board {
         );
 
         if move_result.attack < 0 {
-            self.garbage_mgr.push_garbage(-move_result.attack as u32, 0, &mut self.piece_mgr.cell_holder);
+            self.garbage_mgr.push_garbage(
+                -move_result.attack as u32,
+                0,
+                &mut self.piece_mgr.cell_holder
+            );
         }
 
         Ok(move_result)
@@ -303,7 +307,7 @@ impl BoardSimple {
         }
     }
 
-    /// Sends `amount` rows of garbage with hole at `hole_x`.
+    /// Sends `amount` rows of garbage with a hole at `hole_x`.
     pub fn send_garbage(&mut self, amount: u32, hole_x: u32) {
         self.garbage_mgr.push_garbage_at(amount, hole_x, &mut self.piece_mgr.cell_holder);
     }

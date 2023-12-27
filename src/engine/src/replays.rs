@@ -118,7 +118,7 @@ impl MoveResult {
         result.mod_bits = bits;
 
         let dmg = calculate_damage(attack_settings, &result);
-        result.attack = garbage_mgr.hard_drop(&result.hard_drop_info, dmg as i32);
+        result.attack = garbage_mgr.hard_drop(hard_drop_info.lines_cleared, dmg as i32);
 
         result
     }

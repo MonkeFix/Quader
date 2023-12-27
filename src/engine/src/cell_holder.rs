@@ -420,7 +420,7 @@ mod tests {
         let holder = create_empty_holder();
 
         assert_eq!(BOARD_WIDTH, holder.width);
-        assert_eq!(BOARD_HEIGHT, holder.height);
+        assert_eq!(BOARD_HEIGHT, holder.height / 2);
     }
 
     #[test]
