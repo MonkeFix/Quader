@@ -50,39 +50,6 @@ impl Board {
         }
     }
 
-    // Executes specified `BoardCommand`.
-/*    pub fn exec_cmd(&mut self, cmd: &BoardCommand) -> Option<HardDropInfo> {
-        let mut res = None;
-
-        match cmd {
-            BoardCommand::Move(dir, delta) => {
-                match dir {
-                    BoardMoveDir::Left => self.move_left(*delta),
-                    BoardMoveDir::Right => self.move_right(*delta)
-                }
-            },
-            BoardCommand::Rotate(dir) => self.rotate(*dir),
-            BoardCommand::HardDrop => {
-                res = Some(self.hard_drop().unwrap_or_else(|_err| {
-                    //println!("cannot apply piece!");
-                    HardDropInfo::default()
-                }));
-            },
-            BoardCommand::SoftDrop(delta) => self.soft_drop(*delta),
-            BoardCommand::SendGarbage(amount, _messiness) => self.attack(*amount as i32), //self.push_garbage(*amount, *messiness),
-            BoardCommand::Update(dt) => {
-                let r = self.update(*dt);
-                if let Some(update_res) = r {
-                    res = Some(update_res);
-                }
-            },
-            BoardCommand::HoldPiece => self.hold_piece(),
-            BoardCommand::RequestBoardLayout => {}
-        }
-
-        res
-    }*/
-
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
     pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
@@ -166,6 +133,23 @@ impl Board {
         self.piece_mgr.get_hold_piece()
     }
 
+    /// Executes specified `MoveAction` once. Returns `None` if a simple action occurs,
+    /// for example, `MoveLeft` or `MoveRight`.
+    pub fn exec_action(&mut self, action: MoveAction) -> Option<Result<MoveResult, UpdateErrorReason>> {
+        match action {
+            MoveAction::MoveLeft => { self.move_left(1); },
+            MoveAction::MoveRight => { self.move_right(1); },
+            MoveAction::RotateCW => { self.rotate(RotationDirection::Clockwise); },
+            MoveAction::RotateCCW => { self.rotate(RotationDirection::CounterClockwise); },
+            MoveAction::RotateDeg180 => { self.rotate(RotationDirection::Deg180); },
+            MoveAction::SoftDrop => { self.soft_drop(1); },
+            MoveAction::HardDrop => { return Some(self.hard_drop()); }
+        }
+
+        None
+    }
+
+    /// Performs a hard drop and at same time updates all the board's internals.
     pub fn hard_drop(&mut self) -> Result<MoveResult, UpdateErrorReason> {
         if !self.is_enabled {
             return Err(UpdateErrorReason::BoardDisabled);
