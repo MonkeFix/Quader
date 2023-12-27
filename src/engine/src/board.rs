@@ -261,3 +261,46 @@ impl Board {
         self.time_mgr.disable();
     }
 }
+
+/// Simplified or lightweight version of `Board` which contains only the essentials.
+/// It can only execute a `MoveAction`, doesn't track any scores, but it can handle incoming garbage.
+/// Piece can be moved and rotated freely without doing any checks.
+pub struct BoardSimple {
+    pub piece_mgr: Box<PieceMgr>,
+    pub is_enabled: bool,
+    pub garbage_mgr: GarbageMgr,
+}
+
+impl BoardSimple {
+    pub fn new(game_settings: GameSettings, seed: u64) -> Self {
+        Self {
+            piece_mgr: Box::new(PieceMgr::new(&game_settings, seed)),
+            is_enabled: true,
+            garbage_mgr: GarbageMgr::new(&game_settings.attack)
+        }
+    }
+
+    /// Executes a `MoveAction` once. Does nothing if board is disabled.
+    pub fn exec_action(&mut self, move_action: MoveAction) {
+        if !self.is_enabled {
+            return;
+        }
+
+        match move_action {
+            MoveAction::MoveLeft => { self.piece_mgr.move_left(); }
+            MoveAction::MoveRight => { self.piece_mgr.move_right(); }
+            MoveAction::RotateCW => { self.piece_mgr.rotate_simple(RotationDirection::Clockwise); }
+            MoveAction::RotateCCW => { self.piece_mgr.rotate_simple(RotationDirection::CounterClockwise); }
+            MoveAction::RotateDeg180 => { self.piece_mgr.rotate_simple(RotationDirection::Deg180); }
+            MoveAction::SoftDrop => { self.piece_mgr.soft_drop(); }
+            MoveAction::HardDrop => {
+                self.piece_mgr.hard_drop().ok();
+            }
+        }
+    }
+
+    /// Sends `amount` rows of garbage with hole at `hole_x`.
+    pub fn send_garbage(&mut self, amount: u32, hole_x: u32) {
+        self.garbage_mgr.push_garbage_at(amount, hole_x, &mut self.piece_mgr.cell_holder);
+    }
+}

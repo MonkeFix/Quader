@@ -161,6 +161,11 @@ impl PieceMgr {
 
         false
     }
+    
+    /// Rotates the piece without performing any wall kick tests.
+    pub(crate) fn rotate_simple(&mut self, rotation: RotationDirection) {
+        self.curr_piece.rotate_simple(rotation);
+    }
 
     /// Returns nearest Y coordinate the piece fits at.
     /// May be useful for rendering ghost piece.

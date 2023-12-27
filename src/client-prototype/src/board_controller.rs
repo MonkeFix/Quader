@@ -192,13 +192,13 @@ impl Renderable for BoardController {
     fn debug_render(&mut self) {
 
         // render piece bounds
-        let board = &self.board;
-        let piece = board.get_piece_mgr().get_piece();
+        //let board = &self.board;
+        //let piece = board.get_piece_mgr().get_piece();
 
-        let bounds = piece.get_bounds();
-        let pos = self.i32_to_coords(bounds.x, bounds.y);
+        //let bounds = piece.get_bounds();
+        //let pos = self.i32_to_coords(bounds.x, bounds.y);
 
-        draw_rectangle_lines(
+        /*draw_rectangle_lines(
             pos.0,
             pos.1 - self.render_offset,
             bounds.width as f32 * self.cell_size,
@@ -209,7 +209,7 @@ impl Renderable for BoardController {
 
         let pos = self.u32_to_coords(piece.get_x(), piece.get_y());
         draw_rectangle(self.x + pos.0 * self.cell_size, self.y + pos.1 * self.cell_size, 3., 3., Color::from_rgba(255, 255, 255, 255));
-
+*/
         /*match piece.get_offset_type() {
             OffsetType::Cell => draw_circle(pos.0, pos.1, 8.0, Color::from_rgba(255, 0, 0, 255)),
             OffsetType::BetweenCells => draw_circle(pos.0, pos.1 - 800.0, 8.0, Color::from_rgba(255, 0, 0, 255)),

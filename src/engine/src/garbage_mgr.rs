@@ -56,6 +56,12 @@ impl GarbageMgr {
         }
     }
 
+    pub fn push_garbage_at(&mut self, amount: u32, hole_x: u32, cell_holder: &mut CellHolder) {
+        for _ in 0..amount {
+            cell_holder.push_garbage(hole_x);
+        }
+    }
+
 
     pub fn hard_drop(&mut self, cell_holder: &mut CellHolder, hard_drop_info: &HardDropInfo, outgoing_damage: i32) -> i32 {
         let mut result = 0;

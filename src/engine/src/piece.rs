@@ -250,7 +250,7 @@ impl Piece {
         calc_bounds(self.get_current_pos(), self.x as i32, self.y as i32)
     }
 
-    fn rotate_simple(&mut self, rotation: RotationDirection) {
+    pub(crate) fn rotate_simple(&mut self, rotation: RotationDirection) {
         match rotation {
             RotationDirection::Clockwise => self.rotate_right(),
             RotationDirection::CounterClockwise => self.rotate_left(),
