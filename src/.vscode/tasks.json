@@ -12,10 +12,7 @@
 				"$rustc"
 			],
 			"label": "Run Quader",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+			
 		},
 		{
 			"type": "cargo",
