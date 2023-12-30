@@ -28,6 +28,8 @@ pub enum MoveAction {
 
     SoftDrop,
     HardDrop,
+
+    HoldPiece
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]

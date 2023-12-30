@@ -125,7 +125,14 @@ impl Board {
     /// Tries to hold current piece. Doesn't do anything if it fails.
     /// It may fail if the player has already held the piece during his turn.
     pub fn hold_piece(&mut self) -> Option<&Piece> {
-        self.piece_mgr.hold_piece()
+        
+        let result = self.piece_mgr.hold_piece();
+
+        if let Some(_) = result {
+            self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::HoldPiece);
+        }
+
+        result
     }
 
     /// Returns currently hold `PieceType`. If there's none, returns `None`.
@@ -144,6 +151,7 @@ impl Board {
             MoveAction::RotateDeg180 => { self.rotate(RotationDirection::Deg180); },
             MoveAction::SoftDrop => { self.soft_drop(1); },
             MoveAction::HardDrop => { return Some(self.hard_drop()); }
+            MoveAction::HoldPiece => { self.hold_piece(); }
         }
 
         None
@@ -303,6 +311,9 @@ impl BoardSimple {
             MoveAction::SoftDrop => { self.piece_mgr.soft_drop_force(); }
             MoveAction::HardDrop => {
                 self.piece_mgr.hard_drop().ok();
+            }
+            MoveAction::HoldPiece => {
+                self.piece_mgr.hold_piece();
             }
         }
     }
