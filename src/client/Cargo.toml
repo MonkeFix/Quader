@@ -9,6 +9,9 @@ edition = "2021"
 quader_engine = { path = "../engine" }
 quader_skynet = { path = "../skynet" }
 bevy = { version =  "0.12", features = ["dynamic_linking"] }
+bevy-inspector-egui = { version = "0.22.0" }
+bevy_framepace = { version = "0.14" }
+colored = { version = "2.1.0", optional = true }
 rand = "0.8.5"
 rand_chacha = "0.3.1"
 serde = { version = "1.0", features = ["derive"] }
