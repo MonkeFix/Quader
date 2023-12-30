@@ -128,6 +128,12 @@ impl PieceMgr {
         false
     }
 
+    /// Forcibly moves current piece to the left (x = x - 1) without performing any checks.
+    pub fn move_left_force(&mut self) {
+        self.curr_piece.move_left();
+        self.last_move_type = LastMoveType::Movement;
+    }
+
     /// Tries to move the current piece one cell to the right `delta` times.
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
@@ -139,6 +145,12 @@ impl PieceMgr {
         }
 
         false
+    }
+
+    /// Forcibly moves current piece to the right (x = x + 1) without performing any checks.
+    pub fn move_right_force(&mut self) {
+        self.curr_piece.move_right();
+        self.last_move_type = LastMoveType::Movement;
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
@@ -163,7 +175,7 @@ impl PieceMgr {
     }
     
     /// Rotates the piece without performing any wall kick tests.
-    pub(crate) fn rotate_simple(&mut self, rotation: RotationDirection) {
+    pub(crate) fn rotate_force(&mut self, rotation: RotationDirection) {
         self.curr_piece.rotate_simple(rotation);
     }
 
@@ -198,6 +210,12 @@ impl PieceMgr {
         }
         
         false
+    }
+
+    /// Forcibly soft drops current piece by one cell (y = y + 1) without performing any checks.
+    pub fn soft_drop_force(&mut self) {
+        self.curr_piece.move_down();
+        self.last_move_type = LastMoveType::Movement;
     }
 
     /// Tries to hard drop the current piece.

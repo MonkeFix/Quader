@@ -295,12 +295,12 @@ impl BoardSimple {
         }
 
         match move_action {
-            MoveAction::MoveLeft => { self.piece_mgr.move_left(); }
-            MoveAction::MoveRight => { self.piece_mgr.move_right(); }
-            MoveAction::RotateCW => { self.piece_mgr.rotate_simple(RotationDirection::Clockwise); }
-            MoveAction::RotateCCW => { self.piece_mgr.rotate_simple(RotationDirection::CounterClockwise); }
-            MoveAction::RotateDeg180 => { self.piece_mgr.rotate_simple(RotationDirection::Deg180); }
-            MoveAction::SoftDrop => { self.piece_mgr.soft_drop(); }
+            MoveAction::MoveLeft => { self.piece_mgr.move_left_force(); }
+            MoveAction::MoveRight => { self.piece_mgr.move_right_force(); }
+            MoveAction::RotateCW => { self.piece_mgr.rotate_force(RotationDirection::Clockwise); }
+            MoveAction::RotateCCW => { self.piece_mgr.rotate_force(RotationDirection::CounterClockwise); }
+            MoveAction::RotateDeg180 => { self.piece_mgr.rotate_force(RotationDirection::Deg180); }
+            MoveAction::SoftDrop => { self.piece_mgr.soft_drop_force(); }
             MoveAction::HardDrop => {
                 self.piece_mgr.hard_drop().ok();
             }
