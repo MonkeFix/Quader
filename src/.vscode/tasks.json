@@ -4,16 +4,26 @@
 		{
 			"type": "cargo",
 			"command": "run",
-			"args": ["--bin", "quader"],
+			"args": [
+				"--bin",
+				"quader"
+			],
 			"problemMatcher": [
 				"$rustc"
 			],
-			"label": "Run Quader"
+			"label": "Run Quader",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		},
 		{
 			"type": "cargo",
 			"command": "run",
-			"args": ["--bin", "quader_client_prototype"],
+			"args": [
+				"--bin",
+				"quader_client_prototype"
+			],
 			"problemMatcher": [
 				"$rustc"
 			],

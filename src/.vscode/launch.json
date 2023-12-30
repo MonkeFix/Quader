@@ -170,7 +170,7 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}/client",
+            "cwd": "${workspaceFolder}",
             "env": {
                 "CARGO_MANIFEST_DIR": "${workspaceFolder}",
                 "PATH": "${env:USERPROFILE}/.rustup/toolchains/nightly-x86_64-pc-windows-msvc/bin;${workspaceFolder}/target/debug/deps;${env:PATH}",
