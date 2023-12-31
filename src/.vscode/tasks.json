@@ -6,7 +6,9 @@
 			"command": "run",
 			"args": [
 				"--bin",
-				"quader"
+				"quader",
+				"--features",
+				"bevy/dynamic_linking"
 			],
 			"problemMatcher": [
 				"$rustc"

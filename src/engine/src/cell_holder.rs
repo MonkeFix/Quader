@@ -24,8 +24,8 @@ pub trait BoolArray {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Row {
-    cells: Vec<CellType>,
-    width: usize
+    pub cells: Vec<CellType>,
+    pub width: usize
 }
 
 impl Default for Row {

@@ -17,7 +17,7 @@ pub struct Board {
     game_settings: GameSettings,
 
     pub(crate) gravity_mgr: GravityMgr,
-    pub(crate) piece_mgr: Box<PieceMgr>,
+    pub piece_mgr: Box<PieceMgr>,
     pub(crate) is_enabled: bool,
 
     wkd: Arc<WallKickData>,

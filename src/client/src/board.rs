@@ -3,9 +3,10 @@ use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use quader_engine::board::Board;
-use quader_engine::cell_holder::CellHolder;
+use quader_engine::cell_holder::{CellHolder, CellType, Row};
 use quader_engine::game_settings::GameSettings;
 use quader_engine::piece::{Piece, RotationDirection};
+use quader_engine::primitives::Point;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::{WallKickData, WallKickDataMode};
 
@@ -19,16 +20,29 @@ pub struct BoardComponent {
     pub board: Board
 }
 
+#[derive(Component, Debug)]
+pub struct BoardCellComponent {
+    pub cell_type: CellType,
+    pub position: Point
+}
+
+pub struct BoardCellHolderComponent {
+    pub layout: Vec<Row>
+}
+
+#[derive(Component, Debug)]
+pub struct PieceComponent {
+    pub positions: Vec<Point>
+}
+
 #[derive(Bundle, Debug)]
 pub struct BoardBundle {
-    position: Position,
     board: BoardComponent
 }
 
 impl Default for BoardBundle {
     fn default() -> Self {
         Self {
-            position: Position { val: Vec2::new(64., 64.) },
             board: BoardComponent {
                 board: Board::new(
                     GameSettings::default(),
@@ -99,8 +113,8 @@ fn keyboard_input_system(
     }
 }
 
-fn test(mut command: Commands) {
-    let aa = TextureAtlasSprite::new(1);
+fn rebuild_board_layout(mut commands: Commands) {
+
 }
 
 fn build_system(
@@ -109,9 +123,10 @@ fn build_system(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>
 ) {
 
-    let board_bundle = BoardBundle::default();
-    let board = &board_bundle.board.board;
-    let piece = &board.get_piece_mgr().cur_piece;
+    let mut board_bundle = BoardBundle::default();
+    let mut board = &mut board_bundle.board.board;
+    let mut piece_mgr = &mut board.piece_mgr;
+    let piece = piece_mgr.cur_piece;
 
     let texture_handle = asset_server.load("skins/default_3.png");
 
@@ -127,13 +142,36 @@ fn build_system(
     let mut sprite = TextureAtlasSprite::new(0);
     sprite.anchor = Anchor::TopLeft;
 
-    for p in piece.get_positions() {
+    /* for p in piece.get_positions() {
         commands.spawn(SpriteSheetBundle {
             texture_atlas: texture_atlas_handle.clone(),
             sprite: sprite.clone(),
             transform: Transform::from_xyz(32.0 * p.x as f32, 32.0 * p.y as f32, 0.),
             ..default()
         });
+    } */
+
+    piece_mgr.cell_holder.set_cell_at(0, 0, CellType::I);
+    piece_mgr.cell_holder.set_cell_at(9, 0, CellType::I);
+    piece_mgr.cell_holder.set_cell_at(0, 39, CellType::I);
+    piece_mgr.cell_holder.set_cell_at(9, 39, CellType::I);
+
+    for (y, row) in piece_mgr.cell_holder.get_layout().iter().enumerate() {
+        for (x, cell) in row.iter().enumerate() {
+            let mut b = commands.spawn(BoardCellComponent {
+                cell_type: *cell,
+                position: Point::new(x as i32, y as i32)
+            });
+
+            if cell != CellType::None {
+                b.insert(SpriteSheetBundle {
+                    texture_atlas: texture_atlas_handle.clone(),
+                    sprite: sprite.clone(),
+                    transform: Transform::from_xyz(x as f32 * 32.0, y as f32 * 32.0, 0.0),
+                    ..default()
+                });
+            }
+        }
     }
 
     commands.spawn(board_bundle);
