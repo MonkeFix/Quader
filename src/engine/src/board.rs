@@ -9,6 +9,8 @@ use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
 use crate::scoring::{ScoringMgr};
 use crate::time_mgr::TimeMgr;
 use crate::wall_kick_data::{WallKickData};
+use serde::ser::Serialize;
+use serde::de::Deserialize;
 
 #[derive(Debug)]
 pub struct Board {
@@ -116,7 +118,7 @@ impl Board {
             };
             self.replay_mgr.push_move(self.time_mgr.cur_sec, action);
 
-            return Some(self.piece_mgr.curr_piece.current_rotation)
+            return Some(self.piece_mgr.cur_piece.current_rotation)
         }
 
         None
@@ -158,6 +160,9 @@ impl Board {
     }
 
     /// Performs a hard drop and at same time updates all the board's internals.
+    /// That includes applying piece onto the board, updating current combo and b2b,
+    /// updating player's statistics, pushing the move to the replay manager, 
+    /// and composing the final `MoveResult`.
     pub fn hard_drop(&mut self) -> Result<MoveResult, UpdateErrorReason> {
         if !self.is_enabled {
             return Err(UpdateErrorReason::BoardDisabled);
@@ -167,14 +172,18 @@ impl Board {
         }
 
         let piece_mgr = &mut self.piece_mgr;
+        // apply the piece onto board
         let hard_drop_info = piece_mgr.hard_drop()?;
-
+        // update combo and b2b
         self.scoring_mgr.hard_drop(&hard_drop_info);
+        // update board stats (apm, pps, etc.)
         self.board_stats.hard_drop(&hard_drop_info, &self.scoring_mgr);
+        // add the move to the replay manager
         self.replay_mgr.push_move(self.time_mgr.cur_sec, MoveAction::HardDrop);
 
         let move_queue = self.replay_mgr.end_move();
 
+        // initializing the move result
         let move_result = MoveResult::new(
             &self.scoring_mgr,
             hard_drop_info,
@@ -185,6 +194,7 @@ impl Board {
             &self.time_mgr
         );
 
+        // if the attack is negative, the board received damage; pushing garbage then
         if move_result.attack < 0 {
             self.garbage_mgr.push_garbage(
                 -move_result.attack as u32,
@@ -281,6 +291,7 @@ impl Board {
 /// Simplified or lightweight version of `Board` which contains only the essentials.
 /// It can only execute a `MoveAction`, doesn't track any scores, but it can handle incoming garbage.
 /// Piece can be moved and rotated freely without doing any checks.
+#[derive(Debug)]
 pub struct BoardSimple {
     pub piece_mgr: Box<PieceMgr>,
     pub is_enabled: bool,
@@ -296,7 +307,7 @@ impl BoardSimple {
         }
     }
 
-    /// Executes a `MoveAction` once. Does nothing if board is disabled.
+    /// Executes a `MoveAction` once. Does nothing if the board is disabled.
     pub fn exec_action(&mut self, move_action: MoveAction) {
         if !self.is_enabled {
             return;

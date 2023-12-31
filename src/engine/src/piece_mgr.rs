@@ -35,7 +35,7 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
 
 #[derive(Debug)]
 pub struct PieceMgr {
-    pub curr_piece: Piece,
+    pub cur_piece: Piece,
     board_settings: BoardSettings,
     pub cell_holder: Box<CellHolder>,
     hold_piece: Option<PieceType>,
@@ -56,7 +56,7 @@ impl PieceMgr {
         reset_piece(&mut piece, board_settings.width, board_settings.full_height());
 
         Self {
-            curr_piece: piece,
+            cur_piece: piece,
             board_settings,
             cell_holder: Box::new(CellHolder::new(&board_settings)),
             hold_piece: None,
@@ -70,19 +70,19 @@ impl PieceMgr {
     pub fn create_piece(&mut self, piece_type: PieceType) -> &Piece {
         let piece = Piece::new(piece_type);
 
-        self.curr_piece = piece;
+        self.cur_piece = piece;
         self.reset_cur_piece();
 
         self.get_piece()
     }
 
     pub fn set_piece(&mut self, piece: Piece) {
-        self.curr_piece = piece;
+        self.cur_piece = piece;
         self.reset_cur_piece();
     }
 
     pub fn get_piece(&self) -> &Piece {
-        &self.curr_piece
+        &self.cur_piece
     }
 
     pub fn get_hold_piece(&self) -> Option<PieceType> {
@@ -120,7 +120,7 @@ impl PieceMgr {
     /// or occupied cells.
     pub fn move_left(&mut self) -> bool {
         if self.test_movement(-1, 0) {
-            self.curr_piece.move_left();
+            self.cur_piece.move_left();
             self.last_move_type = LastMoveType::Movement;
             return true;
         }
@@ -130,7 +130,7 @@ impl PieceMgr {
 
     /// Forcibly moves current piece to the left (x = x - 1) without performing any checks.
     pub fn move_left_force(&mut self) {
-        self.curr_piece.move_left();
+        self.cur_piece.move_left();
         self.last_move_type = LastMoveType::Movement;
     }
 
@@ -139,7 +139,7 @@ impl PieceMgr {
     /// or occupied cells.
     pub fn move_right(&mut self) -> bool {
         if self.test_movement(1, 0) {
-            self.curr_piece.move_right();
+            self.cur_piece.move_right();
             self.last_move_type = LastMoveType::Movement;
             return true;
         }
@@ -149,14 +149,14 @@ impl PieceMgr {
 
     /// Forcibly moves current piece to the right (x = x + 1) without performing any checks.
     pub fn move_right_force(&mut self) {
-        self.curr_piece.move_right();
+        self.cur_piece.move_right();
         self.last_move_type = LastMoveType::Movement;
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
     /// Returns `true` if rotation was successful.
     pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) -> bool {
-        let piece = &self.curr_piece;
+        let piece = &self.cur_piece;
         let rot_type = piece.get_rotation_type(rotation);
         let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];
 
@@ -166,7 +166,7 @@ impl PieceMgr {
         });
 
         if let Some(point) = test {
-            self.curr_piece.rotate(rotation, point.x, point.y);
+            self.cur_piece.rotate(rotation, point.x, point.y);
             self.last_move_type = LastMoveType::Rotation;
             return true;
         }
@@ -176,13 +176,13 @@ impl PieceMgr {
     
     /// Rotates the piece without performing any wall kick tests.
     pub(crate) fn rotate_force(&mut self, rotation: RotationDirection) {
-        self.curr_piece.rotate_simple(rotation);
+        self.cur_piece.rotate_simple(rotation);
     }
 
     /// Returns nearest Y coordinate the piece fits at.
     /// May be useful for rendering ghost piece.
     pub fn find_nearest_y(&self) -> u32 {
-        let piece = &self.curr_piece;
+        let piece = &self.cur_piece;
         let mut y = piece.get_y();
         let points = piece.get_positions();
 
@@ -204,7 +204,7 @@ impl PieceMgr {
     /// Returns `true` if piece successfully moved down.
     pub fn soft_drop(&mut self) -> bool {
         if self.test_movement(0, 1) {
-            self.curr_piece.move_down();
+            self.cur_piece.move_down();
             self.last_move_type = LastMoveType::Movement;
             return true;
         }
@@ -214,7 +214,7 @@ impl PieceMgr {
 
     /// Forcibly soft drops current piece by one cell (y = y + 1) without performing any checks.
     pub fn soft_drop_force(&mut self) {
-        self.curr_piece.move_down();
+        self.cur_piece.move_down();
         self.last_move_type = LastMoveType::Movement;
     }
 
@@ -224,11 +224,11 @@ impl PieceMgr {
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
         let nearest_y = self.find_nearest_y();
 
-        let tspin_status = if self.curr_piece.get_type() == PieceType::T {
+        let tspin_status = if self.cur_piece.get_type() == PieceType::T {
             check_t_overhang(
                 &self.board_settings,
-                self.curr_piece.get_x() as i32,
-                self.curr_piece.get_y() as i32,
+                self.cur_piece.get_x() as i32,
+                self.cur_piece.get_y() as i32,
                 |p| { self.cell_holder.intersects(&p) },
             )
         } else {
@@ -273,7 +273,7 @@ impl PieceMgr {
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
 
-        let piece = &self.curr_piece;
+        let piece = &self.cur_piece;
         let b = piece.get_bounds();
 
         if b.x + x < 0 || b.x + b.width as i32 + x > self.board_settings.width as i32 {
@@ -297,7 +297,7 @@ impl PieceMgr {
     fn test_rotation(&self, kick_params: WallKickCheckParams) -> Option<Point> {
         let tests = kick_params.tests;
         let expected_pos = kick_params.expected_pos;
-        let piece = &self.curr_piece;
+        let piece = &self.cur_piece;
 
         for t in tests {
             let test = Point::new(t.x, -t.y);
@@ -318,7 +318,7 @@ impl PieceMgr {
     /// Returns false if the piece couldn't be fit using its current points.
     /// It usually means that the player just lost.
     fn try_apply_piece(&mut self, y: u32) -> bool {
-        let piece = &self.curr_piece;
+        let piece = &self.cur_piece;
         let points = piece.get_current_pos();
         let x = piece.get_x() as i32;
         let adjusted = adjust_positions_clone(points, Point::new(x, y as i32));
@@ -340,7 +340,7 @@ impl PieceMgr {
 
     fn reset_cur_piece(&mut self) {
         self.last_move_type = LastMoveType::None;
-        reset_piece(&mut self.curr_piece, self.board_settings.width, self.board_settings.full_height());
+        reset_piece(&mut self.cur_piece, self.board_settings.width, self.board_settings.full_height());
     }
 
     pub fn enable(&mut self) {

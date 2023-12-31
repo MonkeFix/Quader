@@ -111,7 +111,7 @@ fn build_system(
 
     let board_bundle = BoardBundle::default();
     let board = &board_bundle.board.board;
-    let piece = &board.get_piece_mgr().curr_piece;
+    let piece = &board.get_piece_mgr().cur_piece;
 
     let texture_handle = asset_server.load("skins/default_3.png");
 

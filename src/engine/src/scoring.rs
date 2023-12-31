@@ -94,12 +94,10 @@ impl ScoringMgr {
         //  - performed a T-Spin which must include a rotation of the piece.
         // Otherwise break it.
         if hard_drop_info.lines_cleared == 4 ||
-            hard_drop_info.last_move_type == LastMoveType::Rotation &&
+            (hard_drop_info.last_move_type == LastMoveType::Rotation &&
                 (
-                    hard_drop_info.lines_cleared >= 1 ||
-                        hard_drop_info.tspin_status == TSpinStatus::Mini ||
-                        hard_drop_info.tspin_status == TSpinStatus::Full
-                ) {
+                    hard_drop_info.lines_cleared >= 1 && hard_drop_info.tspin_status != TSpinStatus::None
+                )) {
             self.b2b += 1;
 
         } else if hard_drop_info.lines_cleared != 0 {
