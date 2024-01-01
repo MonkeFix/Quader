@@ -1,7 +1,13 @@
 use std::sync::Arc;
+use bevy::a11y::accesskit::NodeBuilder;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
-use bevy::sprite::Anchor;
+use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
+use bevy::render::view::RenderLayers;
+use bevy::sprite::{Anchor, MaterialMesh2dBundle};
+use bevy::utils::HashMap;
+use bevy_inspector_egui::inspector_options::std_options::EntityDisplay::Id;
+use uuid::Uuid;
 use quader_engine::board::Board;
 use quader_engine::cell_holder::{CellHolder, CellType, Row};
 use quader_engine::game_settings::GameSettings;
@@ -23,9 +29,10 @@ pub struct BoardComponent {
 #[derive(Component, Debug)]
 pub struct BoardCellComponent {
     pub cell_type: CellType,
-    pub position: Point
+    pub position: Point,
 }
 
+#[derive(Component, Debug)]
 pub struct BoardCellHolderComponent {
     pub layout: Vec<Row>
 }
@@ -38,6 +45,13 @@ pub struct PieceComponent {
 #[derive(Bundle, Debug)]
 pub struct BoardBundle {
     board: BoardComponent
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct CellSprites {
+    pub atlas: Handle<TextureAtlas>,
+    pub sprite_map: HashMap<CellType, TextureAtlasSprite>,
+    pub ghost_sprite: TextureAtlasSprite
 }
 
 impl Default for BoardBundle {
@@ -85,9 +99,11 @@ fn update_board(
 }
 
 fn keyboard_input_system(
-    mut commands: Commands,
+    commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
-    mut q: Query<(Entity, &mut BoardComponent), With<BoardComponent>>
+    mut q: Query<(Entity, &mut BoardComponent), With<BoardComponent>>,
+    cells_query: Query<(Entity, &BoardCellHolderComponent)>,
+    cell_sprites: Res<CellSprites>
 ) {
 
     if q.is_empty() {
@@ -101,26 +117,80 @@ fn keyboard_input_system(
     if keyboard_input.just_pressed(KeyCode::Z) {
         board.rotate(RotationDirection::CounterClockwise);
     }
-
     if keyboard_input.just_pressed(KeyCode::X) {
         board.rotate(RotationDirection::Clockwise);
     }
+    if keyboard_input.just_pressed(KeyCode::F) {
+        board.rotate(RotationDirection::Deg180);
+    }
+
+    if keyboard_input.just_pressed(KeyCode::Left) {
+        board.move_left(1);
+    }
+    if keyboard_input.just_pressed(KeyCode::Right) {
+        board.move_right(1);
+    }
+    if keyboard_input.just_pressed(KeyCode::Down) {
+        board.soft_drop(1);
+    }
+
+    if keyboard_input.just_pressed(KeyCode::C) {
+        board.hold_piece();
+    }
+
 
     if keyboard_input.just_pressed(KeyCode::Space) {
-        for entity in q.iter() {
-            commands.entity(entity.0).despawn();
-        }
+        board.hard_drop().ok();
+        rebuild_board_layout(commands, cells_query, &board, cell_sprites);
     }
 }
 
-fn rebuild_board_layout(mut commands: Commands) {
+fn rebuild_board_layout(
+    mut commands: Commands,
+    mut cells_query: Query<(Entity, &BoardCellHolderComponent)>,
+    board: &Board,
+    cell_sprites: Res<CellSprites>
+) {
 
+    for entity in cells_query.iter() {
+        commands.entity(entity.0).despawn_recursive();
+
+        commands.spawn((SpatialBundle {
+            transform: Transform::from_xyz(0.0, -247., 0.0),
+            ..default()
+        }, BoardCellHolderComponent {
+            layout: vec![]
+        }, Name::new("board-cells"))).with_children(|commands| {
+            for (y, row) in board.get_cell_holder().get_layout().iter().rev().enumerate() {
+                for (x, cell) in row.iter().enumerate() {
+
+                    // draw cells
+                    if *cell != CellType::None {
+
+                        commands.spawn(BoardCellComponent {
+                            cell_type: *cell,
+                            position: Point::new(x as i32, y as i32)
+                        }).insert(SpriteSheetBundle {
+                            texture_atlas: cell_sprites.atlas.clone(),
+                            sprite: cell_sprites.sprite_map[cell].clone(),
+                            transform: Transform::from_xyz(x as f32 * 32.0, y as f32 * 32.0, 1.0),
+                            ..default()
+                        });
+
+                    }
+                }
+            }
+        });
+    }
 }
 
 fn build_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut cell_sprites: ResMut<CellSprites>
 ) {
 
     let mut board_bundle = BoardBundle::default();
@@ -131,7 +201,7 @@ fn build_system(
     let texture_handle = asset_server.load("skins/default_3.png");
 
     let atlas = TextureAtlas::from_grid(
-        texture_handle,
+        texture_handle.clone(),
         Vec2::new(32., 32.),
         12,
         1,
@@ -139,65 +209,135 @@ fn build_system(
         None
     );
     let texture_atlas_handle = texture_atlases.add(atlas);
+
     let mut sprite = TextureAtlasSprite::new(0);
     sprite.anchor = Anchor::TopLeft;
 
-    /* for p in piece.get_positions() {
-        commands.spawn(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle.clone(),
-            sprite: sprite.clone(),
-            transform: Transform::from_xyz(32.0 * p.x as f32, 32.0 * p.y as f32, 0.),
-            ..default()
-        });
-    } */
+    let mut grid_sprite = TextureAtlasSprite::new(10);
+    grid_sprite.anchor = Anchor::TopLeft;
 
-    piece_mgr.cell_holder.set_cell_at(0, 0, CellType::I);
-    piece_mgr.cell_holder.set_cell_at(9, 0, CellType::I);
-    piece_mgr.cell_holder.set_cell_at(0, 39, CellType::I);
-    piece_mgr.cell_holder.set_cell_at(9, 39, CellType::I);
+    let sprite_z = TextureAtlasSprite {
+        index: 0,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_l = TextureAtlasSprite {
+        index: 1,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_o = TextureAtlasSprite {
+        index: 2,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_s = TextureAtlasSprite {
+        index: 3,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_i = TextureAtlasSprite {
+        index: 4,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_j = TextureAtlasSprite {
+        index: 5,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_t = TextureAtlasSprite {
+        index: 6,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_garbage = TextureAtlasSprite {
+        index: 9,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_solid = TextureAtlasSprite {
+        index: 8,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
+    let sprite_ghost = TextureAtlasSprite {
+        index: 7,
+        anchor: Anchor::TopLeft,
+        ..default()
+    };
 
-    for (y, row) in piece_mgr.cell_holder.get_layout().iter().enumerate() {
-        for (x, cell) in row.iter().enumerate() {
-            let mut b = commands.spawn(BoardCellComponent {
-                cell_type: *cell,
-                position: Point::new(x as i32, y as i32)
-            });
+    cell_sprites.atlas = texture_atlas_handle.clone();
+    cell_sprites.ghost_sprite = sprite_ghost;
 
-            if cell != CellType::None {
-                b.insert(SpriteSheetBundle {
-                    texture_atlas: texture_atlas_handle.clone(),
-                    sprite: sprite.clone(),
-                    transform: Transform::from_xyz(x as f32 * 32.0, y as f32 * 32.0, 0.0),
-                    ..default()
-                });
+    cell_sprites.sprite_map = HashMap::new();
+    cell_sprites.sprite_map.insert(CellType::I, sprite_i);
+    cell_sprites.sprite_map.insert(CellType::S, sprite_s);
+    cell_sprites.sprite_map.insert(CellType::Z, sprite_z);
+    cell_sprites.sprite_map.insert(CellType::L, sprite_l);
+    cell_sprites.sprite_map.insert(CellType::J, sprite_j);
+    cell_sprites.sprite_map.insert(CellType::O, sprite_o);
+    cell_sprites.sprite_map.insert(CellType::T, sprite_t);
+    cell_sprites.sprite_map.insert(CellType::Garbage, sprite_garbage);
+    cell_sprites.sprite_map.insert(CellType::Solid, sprite_solid);
+
+
+    commands.spawn((SpatialBundle {
+        transform: Transform::from_xyz(0.0, -247., 0.0),
+        ..default()
+    }, Name::new("board-grid"))).with_children(|commands| {
+        for (y, row) in piece_mgr.cell_holder.get_layout().iter().rev().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
+                // draw grid
+                if y < board.game_settings.board.height {
+                    commands.spawn(SpriteSheetBundle {
+                        texture_atlas: texture_atlas_handle.clone(),
+                        sprite: grid_sprite.clone(),
+                        transform: Transform::from_xyz(x as f32 * 32.0, y as f32 * 32.0 , 0.0),
+                        ..default()
+                    });
+                }
             }
         }
-    }
+    });
+
+    commands.spawn((SpatialBundle {
+        transform: Transform::from_xyz(0.0, -247., 0.0),
+        ..default()
+    }, BoardCellHolderComponent {
+        layout: vec![]
+    }, Name::new("board-cells"))).with_children(|commands| {
+        for (y, row) in piece_mgr.cell_holder.get_layout().iter().rev().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
+
+                // draw cells
+                if *cell != CellType::None {
+
+                    commands.spawn(BoardCellComponent {
+                        cell_type: *cell,
+                        position: Point::new(x as i32, y as i32),
+                    }).insert(SpriteSheetBundle {
+                        texture_atlas: texture_atlas_handle.clone(),
+                        sprite: cell_sprites.sprite_map[cell].clone(),
+                        transform: Transform::from_xyz(x as f32 * 32.0, y as f32 * 32.0, 1.0),
+                        ..default()
+                    });
+
+                }
+            }
+        }
+    });
+
 
     commands.spawn(board_bundle);
 
-
-
-    //commands.spawn(BoardA::new())
-
-    
-
-    // commands.spawn(SpriteBundle {
-    //     texture: asset_server.load("skins/board_default.png"),
-    //     transform: Transform::from_xyz(0., 0., 0.),
-    //     sprite: Sprite {
-    //         anchor: Anchor::TopLeft,
-    //         ..default()
-    //     },
-    //     ..default()
-    // });
-
-    
-
-    // commands.spawn(SpriteSheetBundle {
-    //     texture_atlas: texture_atlas_handle,
-    //     sprite,
-    //     transform: Transform::from_xyz(-200., 0., 0.),
-    //     ..default()
-    // });
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("skins/board_default.png"),
+        transform: Transform::from_xyz(171., 38., -1.0),
+        sprite: Sprite {
+            anchor: Anchor::Center,
+            ..default()
+        },
+        ..default()
+    }, Name::new("board-sprite")));
 }

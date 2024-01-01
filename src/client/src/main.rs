@@ -5,7 +5,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{PresentMode, WindowTheme};
 use bevy_framepace::{FramepaceSettings, Limiter};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use crate::board::BoardPlugin;
+use crate::board::{BoardPlugin, CellSprites};
 
 fn main() {
     let mut app = App::new();
@@ -22,7 +22,8 @@ fn main() {
                     ..default()
                 }),
                 ..default()
-            }),
+            })
+                .set(ImagePlugin::default_nearest()),
             //FrameTimeDiagnosticsPlugin,
             LogDiagnosticsPlugin::default(),
             bevy_framepace::FramepacePlugin,
@@ -30,6 +31,7 @@ fn main() {
         ))
         .add_systems(Startup, setup)
         .add_plugins(BoardPlugin)
+        .init_resource::<CellSprites>()
         //.add_systems(Update, )
     ;
 
