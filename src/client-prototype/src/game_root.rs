@@ -14,12 +14,14 @@ impl GameRoot {
 
         GameRoot {
             close_requested: false,
-            board: Box::new(BoardController::new(160., 128.)),
+            board: Box::new(BoardController::new(400., 128.)),
             debug_render_enabled: true
         }
     }
 
     pub async fn run(&mut self) {
+
+        self.load_content().await;
 
         'main_loop: loop {
             if is_key_pressed(KeyCode::Escape) {
@@ -32,7 +34,7 @@ impl GameRoot {
 
             self.update(get_frame_time());
     
-            clear_background(WHITE);
+            clear_background(BLACK);
             self.render();
             self.render_ui();
     
@@ -40,6 +42,10 @@ impl GameRoot {
 
             next_frame().await
         }
+    }
+
+    async fn load_content(&mut self) {
+        self.board.load_content().await;
     }
 
     pub fn close(&mut self) {
