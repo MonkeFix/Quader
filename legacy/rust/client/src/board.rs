@@ -11,6 +11,7 @@ use uuid::Uuid;
 use quader_engine::board::Board;
 use quader_engine::cell_holder::{CellHolder, CellType, Row};
 use quader_engine::game_settings::GameSettings;
+use quader_engine::piece;
 use quader_engine::piece::{Piece, RotationDirection};
 use quader_engine::primitives::Point;
 use quader_engine::rng_manager::RngManager;
@@ -39,7 +40,7 @@ pub struct BoardCellHolderComponent {
 
 #[derive(Component, Debug)]
 pub struct PieceComponent {
-    pub positions: Vec<Point>
+    //pub positions: Vec<Point>
 }
 
 #[derive(Bundle, Debug)]
@@ -51,7 +52,7 @@ pub struct BoardBundle {
 pub struct CellSprites {
     pub atlas: Handle<TextureAtlas>,
     pub sprite_map: HashMap<CellType, TextureAtlasSprite>,
-    pub ghost_sprite: TextureAtlasSprite
+    pub ghost_sprite: TextureAtlasSprite,
 }
 
 impl Default for BoardBundle {
@@ -103,35 +104,54 @@ fn keyboard_input_system(
     keyboard_input: Res<Input<KeyCode>>,
     mut q: Query<(Entity, &mut BoardComponent), With<BoardComponent>>,
     cells_query: Query<(Entity, &BoardCellHolderComponent)>,
-    cell_sprites: Res<CellSprites>
+    cell_sprites: Res<CellSprites>,
+    mut piece_query: Query<(Entity, &mut Transform), With<PieceComponent>>
 ) {
 
     if q.is_empty() {
         return;
     }
+    if piece_query.is_empty() {
+        return;
+    }
+
+    let mut piece = piece_query.single_mut();
 
     let mut board_ent = q.single_mut();
     let entity = board_ent.0;
     let mut board = &mut board_ent.1.board;
 
     if keyboard_input.just_pressed(KeyCode::Z) {
-        board.rotate(RotationDirection::CounterClockwise);
+        if let Some(_) = board.rotate(RotationDirection::CounterClockwise) {
+
+        }
+
     }
     if keyboard_input.just_pressed(KeyCode::X) {
-        board.rotate(RotationDirection::Clockwise);
+        if let Some(_) = board.rotate(RotationDirection::Clockwise) {
+
+        }
     }
     if keyboard_input.just_pressed(KeyCode::F) {
-        board.rotate(RotationDirection::Deg180);
+        if let Some(_) = board.rotate(RotationDirection::Deg180) {
+
+        }
     }
 
     if keyboard_input.just_pressed(KeyCode::Left) {
-        board.move_left(1);
+        if board.move_left(1) > 0 {
+            piece.1.translation.x -= 32.0;
+        }
     }
     if keyboard_input.just_pressed(KeyCode::Right) {
-        board.move_right(1);
+        if board.move_right(1) > 0 {
+            piece.1.translation.x += 32.0;
+        }
     }
     if keyboard_input.just_pressed(KeyCode::Down) {
-        board.soft_drop(1);
+        if board.soft_drop(1) > 0 {
+            piece.1.translation.y -= 32.0;
+        }
     }
 
     if keyboard_input.just_pressed(KeyCode::C) {
@@ -147,7 +167,7 @@ fn keyboard_input_system(
 
 fn rebuild_board_layout(
     mut commands: Commands,
-    mut cells_query: Query<(Entity, &BoardCellHolderComponent)>,
+    cells_query: Query<(Entity, &BoardCellHolderComponent)>,
     board: &Board,
     cell_sprites: Res<CellSprites>
 ) {
@@ -283,10 +303,10 @@ fn build_system(
 
 
     commands.spawn((SpatialBundle {
-        transform: Transform::from_xyz(0.0, -247., 0.0),
+        transform: Transform::from_xyz(0.0, 330., 0.0).with_scale(Vec3::new(1., -1., 1.)),
         ..default()
     }, Name::new("board-grid"))).with_children(|commands| {
-        for (y, row) in piece_mgr.cell_holder.get_layout().iter().rev().enumerate() {
+        for (y, row) in piece_mgr.cell_holder.get_layout().iter().enumerate() {
             for (x, cell) in row.iter().enumerate() {
                 // draw grid
                 if y < board.game_settings.board.height {
@@ -302,7 +322,7 @@ fn build_system(
     });
 
     commands.spawn((SpatialBundle {
-        transform: Transform::from_xyz(0.0, -247., 0.0),
+        transform: Transform::from_xyz(0.0, -247., 0.0).with_scale(Vec3::new(1., -1., 1.)),
         ..default()
     }, BoardCellHolderComponent {
         layout: vec![]
@@ -325,6 +345,23 @@ fn build_system(
 
                 }
             }
+        }
+    });
+
+    commands.spawn((TransformBundle {
+        local: Transform::from_xyz(128.0, 330., 0.0).with_scale(Vec3::new(1., -1., 1.)),
+        ..default()
+    }, PieceComponent {})
+    ).with_children(|commands| {
+        let p = &board.piece_mgr.cur_piece;
+
+        for point in p.get_positions().iter() {
+            commands.spawn(SpriteSheetBundle {
+                texture_atlas: texture_atlas_handle.clone(),
+                sprite: cell_sprites.sprite_map[&p.get_cell_type()].clone(),
+                transform: Transform::from_xyz(point.x as f32 * 32.0, point.y as f32 * 32.0, 0.0),
+                ..default()
+            });
         }
     });
 

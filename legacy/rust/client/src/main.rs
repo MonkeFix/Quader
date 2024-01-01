@@ -49,6 +49,7 @@ fn setup(
     settings.limiter = Limiter::from_framerate(240.0);
 
     let mut camera = Camera2dBundle::default();
+    //camera.transform.rotate_z(std::f32::consts::PI);
     //camera.projection.viewport_origin = Vec2::new(0., 1.);
     commands.spawn(camera);
 
