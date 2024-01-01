@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign};
 use crate::cell_holder::CellType;
-use crate::piece::PieceType;
+use crate::piece::{OffsetType, PieceType};
 use crate::primitives::{Color, Point, Rect};
 
 pub fn adjust_positions<T: AddAssign + Copy>(data: &mut [Point<T>], offset: Point<T>) {
@@ -100,6 +100,13 @@ pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
 
 pub fn is_oob<T: PartialOrd<i32> + PartialOrd<T>>(x: T, y: T, width: T, height: T) -> bool {
     x < 0 || x >= width || y >= height || y < 0
+}
+
+pub fn piece_type_to_offset_type(piece_type: &PieceType) -> OffsetType {
+    match piece_type {
+        PieceType::I | PieceType::O => OffsetType::BetweenCells,
+        _ => OffsetType::Cell
+    }
 }
 
 // Rotates a 3x3 array counter-clockwise
