@@ -14,7 +14,7 @@ use serde::de::Deserialize;
 
 #[derive(Debug)]
 pub struct Board {
-    game_settings: GameSettings,
+    pub game_settings: GameSettings,
 
     pub(crate) gravity_mgr: GravityMgr,
     pub piece_mgr: Box<PieceMgr>,

@@ -4,7 +4,7 @@ use crate::game_settings::{BoardSettings};
 use crate::primitives::{Point, Rect};
 use crate::utils::adjust_positions_clone;
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CellType {
     None,
     I,
