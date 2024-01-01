@@ -1,14 +1,16 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use quader_engine::board::{Board};
+use quader_engine::cell_holder::CellType;
 use quader_engine::game_settings::{GameSettings};
-use quader_engine::piece::{get_points_for_piece, Piece, PieceType, RotationDirection, RotationState};
+use quader_engine::piece::{get_points_for_piece, OffsetType, Piece, PieceType, RotationDirection, RotationState};
 use quader_engine::primitives::Point;
 use quader_engine::rng_manager::RngManager;
-use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_color};
+use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_cell_type, piece_type_to_color, piece_type_to_offset_type};
 use quader_engine::wall_kick_data::WallKickData;
 
 use crate::renderable::Renderable;
@@ -36,6 +38,21 @@ impl PieceMover {
     }
 }
 
+fn create_cell_rects() -> HashMap<CellType, Rect> {
+    let mut result = HashMap::new();
+    result.insert(CellType::Z, Rect::new(32. * 0., 0., 32., 32.));
+    result.insert(CellType::L, Rect::new(32. * 1., 0., 32., 32.));
+    result.insert(CellType::O, Rect::new(32. * 2., 0., 32., 32.));
+    result.insert(CellType::S, Rect::new(32. * 3., 0., 32., 32.));
+    result.insert(CellType::I, Rect::new(32. * 4., 0., 32., 32.));
+    result.insert(CellType::J, Rect::new(32. * 5., 0., 32., 32.));
+    result.insert(CellType::T, Rect::new(32. * 6., 0., 32., 32.));
+    result.insert(CellType::Solid, Rect::new(32. * 7., 0., 32., 32.));
+    result.insert(CellType::Garbage, Rect::new(32. * 8., 0., 32., 32.));
+
+    result
+}
+
 pub struct BoardController {
     x: f32,
     y: f32,
@@ -43,7 +60,10 @@ pub struct BoardController {
     render_offset: f32,
     board: Board,
     piece_mover: PieceMover,
-    game_settings: GameSettings
+    game_settings: GameSettings,
+    texture_atlas: Option<Texture2D>,
+    cell_rects: HashMap<CellType, Rect>,
+    board_tex: Option<Texture2D>
     //wkd: Arc<WallKickData>
 }
 
@@ -59,6 +79,8 @@ impl BoardController {
 
         dbg!(&game_settings);
 
+
+
         BoardController {
             board,
             x, y,
@@ -72,13 +94,21 @@ impl BoardController {
                 is_left_down: false,
                 is_right_down: false
             },
-            game_settings
+            game_settings,
+            texture_atlas: None,
+            cell_rects: create_cell_rects(),
+            board_tex: None
             //wkd
         }
     }
 
+    pub async fn load_content(&mut self) {
+        self.texture_atlas = Some(load_texture("assets/skins/default_3.png").await.unwrap());
+        self.board_tex = Some(load_texture("assets/skins/board_default.png").await.unwrap());
+    }
+
     fn point_to_coords(&self, point: &Point) -> (f32, f32) {
-        self.usize_to_coords(point.x as usize, point.y as usize)
+        self.i32_to_coords(point.x, point.y)
     }
 
     fn usize_to_coords(&self, x: usize, y: usize) -> (f32, f32) {
@@ -100,7 +130,7 @@ impl BoardController {
         )
     }
 
-    fn render_cell(&self, x: f32, y: f32, color: quader_engine::primitives::Color) {
+    /*fn render_cell(&self, x: f32, y: f32, color: quader_engine::primitives::Color) {
         draw_rectangle(
             x, y,
             self.cell_size, self.cell_size,
@@ -108,14 +138,22 @@ impl BoardController {
         );
 
         draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 1.0, Color::from_rgba(255, 255, 255, 50));
-    }
+    }*/
 
     fn render_piece(&self, x: f32, y: f32, piece: &Piece, alpha: u8) {
-        self.render_piece_type(x, y, piece.get_type(), alpha);
+        self.render_cell_type(x, y, &piece.get_cell_type(), alpha);
     }
 
-    fn render_piece_type(&self, x: f32, y: f32, piece_type: PieceType, alpha: u8) {
-        let color = piece_type_to_color(piece_type);
+    fn render_cell_type(&self, x: f32, y: f32, cell_type: &CellType, alpha: u8) {
+
+        let ta = &self.texture_atlas.as_ref().unwrap();
+
+        draw_texture_ex(ta, x, y, Color::from_rgba(255, 255, 255, alpha), DrawTextureParams {
+            source: Some(self.cell_rects[cell_type].clone()),
+            ..Default::default()
+        });
+
+        /*let color = piece_type_to_color(piece_type);
 
         draw_rectangle(
             x, y,
@@ -123,13 +161,18 @@ impl BoardController {
             Color::from_rgba(color.r, color.g, color.b, alpha)
         );
 
-        draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 2.0, Color::from_rgba(255, 255, 255, alpha / 5));
+
+        draw_rectangle_lines(x, y, self.cell_size, self.cell_size, 2.0, Color::from_rgba(255, 255, 255, alpha / 5));*/
     }
 }
 
 impl Renderable for BoardController {
 
     fn render(&self) {
+
+        let board_tex = self.board_tex.as_ref().unwrap();
+        draw_texture(board_tex, self.x - 188., self.y - 1., WHITE);
+
         // render board layout
         let b = &self.board;
         let layout = b.get_cell_holder();
@@ -139,8 +182,11 @@ impl Renderable for BoardController {
                 let color = cell_to_color(cell);
                 let pos = self.usize_to_coords(x, y);
 
-                if y >= self.game_settings.board.height {
-                    self.render_cell(pos.0, pos.1 - self.render_offset, color);
+                if cell != CellType::None {
+                    self.render_cell_type(pos.0, pos.1 - self.render_offset, &cell, 255);
+                } else if y >= self.game_settings.board.height {
+                    draw_rectangle(pos.0, pos.1 - self.render_offset, 32., 32., Color::from_rgba(20, 20, 20, 230));
+                    draw_rectangle_lines(pos.0, pos.1 - self.render_offset, 32., 32., 1., Color::from_rgba(255, 255, 255, 25));
                 }
             }
         }
@@ -173,11 +219,14 @@ impl Renderable for BoardController {
 
             points
                 .iter()
-                .map(|p| adjust_point_clone(p, Point::new(64 + p.x * self.cell_size as i32, 160 + p.y * self.cell_size as i32)))
+                //.map(|p| adjust_point_clone(p, Point::new(p.x, p.y)))
                 .for_each(|p| {
-                    self.render_piece_type(p.x as f32, p.y as f32, hold_piece, 255);
+                    let pos = self.point_to_coords(&p);
+                    self.render_cell_type(pos.0 - 110., pos.1 + 86., &piece_type_to_cell_type(hold_piece), 255);
                 });
         }
+
+
 
         // render queue
         let queue = &b.get_piece_mgr().piece_queue.queue;
@@ -186,15 +235,26 @@ impl Renderable for BoardController {
 
             points
                 .iter()
-                .map(|p| adjust_point_clone(p, Point::new(540 + p.x * self.cell_size as i32, 160 + (100 * y as i32) + p.y * self.cell_size as i32)))
+                //.map(|p| adjust_point_clone(p, Point::new(p.x, p.y)))
                 .for_each(|p| {
-                    self.render_piece_type(p.x as f32, p.y as f32, *piece_type, 255)
+                    let pos = self.point_to_coords(&p);
+                    let offset_type = piece_type_to_offset_type(piece_type);
+
+                    let pos = (
+                        match offset_type {
+                            OffsetType::Cell => pos.0 + 420.,
+                            OffsetType::BetweenCells => pos.0 + 420. + 16.
+                        },
+                        88. + pos.1 + 96. * y as f32
+                    );
+
+                    self.render_cell_type(pos.0, pos.1, &piece_type_to_cell_type(*piece_type), 255)
                 });
         }
     }
 
     fn debug_render(&mut self) {
-
+        return;
         // render piece bounds
         //let board = &self.board;
         //let piece = board.get_piece_mgr().get_piece();
