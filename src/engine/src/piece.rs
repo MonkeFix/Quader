@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellType;
 use crate::piece_points;
 use crate::primitives::{Point, Rect, Color};
-use crate::utils::{calc_bounds, piece_type_to_color};
+use crate::utils::{calc_bounds, piece_type_to_color, piece_type_to_offset_type};
 use crate::wall_kick_data::{WallKickType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -149,10 +149,7 @@ impl Piece {
             _ => WallKickType::Default
         };
 
-        let offset_type = match piece_type {
-            PieceType::I | PieceType::O => OffsetType::BetweenCells,
-            _ => OffsetType::Cell
-        };
+        let offset_type = piece_type_to_offset_type(&piece_type);
 
         let board_cell_type = crate::utils::piece_type_to_cell_type(piece_type);
         let init_pos = get_points_for_piece(piece_type, RotationState::Initial);
