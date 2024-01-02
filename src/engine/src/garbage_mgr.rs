@@ -1,20 +1,29 @@
 use std::collections::VecDeque;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::AttackSettings;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct IncomingDamage {
     pub amount: i32,
-    pub delay: u32
+    pub delay: u32,
+    pub hole_x: u32
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct GarbageHardDropResult {
+    pub in_damage_queue: Vec<IncomingDamage>,
+    pub out_damage: i32
 }
 
 impl IncomingDamage {
     pub fn new(amount: i32, delay_ms: u32) -> Self {
         Self {
             amount,
-            delay: delay_ms
+            delay: delay_ms,
+            hole_x: 0
         }
     }
 }
@@ -38,11 +47,13 @@ impl GarbageMgr {
         }
     }
 
-    pub fn attack(&mut self, damage: i32) {
+    pub fn attack(&mut self, width: usize, damage: i32) {
         if damage > 0 {
+            let hole_x = self.rng.gen_range(0..width) as u32;
             self.queue.push_back(IncomingDamage {
                 amount: damage,
-                delay: self.attack_settings.garbage_delay_ms
+                delay: self.attack_settings.garbage_delay_ms,
+                hole_x
             });
         }
     }
@@ -78,15 +89,20 @@ impl GarbageMgr {
     }
 
 
-    pub fn hard_drop(&mut self, lines_cleared: u32, outgoing_damage: i32) -> i32 {
+    pub fn hard_drop(&mut self, lines_cleared: u32, outgoing_damage: i32) -> GarbageHardDropResult {
+
+        let mut result = GarbageHardDropResult {
+            in_damage_queue: vec![],
+            out_damage: outgoing_damage
+        };
 
         // if the queue is empty then deal damage to the enemies
         if self.queue.is_empty() {
-            return outgoing_damage;
+            return result;
         }
 
         // accumulate total incoming damage
-        let mut incoming_dmg = 0;
+        let mut incoming_dmg = VecDeque::new();
         loop {
             let recv_dmg = self.queue.front();
             if let Some(dmg) = recv_dmg {
@@ -95,7 +111,7 @@ impl GarbageMgr {
                 }
 
                 let recv_dmg = self.queue.pop_front().unwrap();
-                incoming_dmg += recv_dmg.amount;
+                incoming_dmg.push_back(recv_dmg);
             } else {
                 break;
             }
@@ -103,34 +119,49 @@ impl GarbageMgr {
 
         // if player hasn't cleared any lines, than push garbage onto his board
         if lines_cleared == 0 {
-            return -incoming_dmg;
+            return GarbageHardDropResult {
+                in_damage_queue: incoming_dmg.into_iter().collect(),
+                out_damage: 0
+            };
         }
 
-        let mut dt = outgoing_damage - incoming_dmg;
-        if dt == 0 {
-            return 0;
-        }
+        while !incoming_dmg.is_empty() {
+            let mut recv_dmg = incoming_dmg.pop_front().unwrap();
+            if recv_dmg.amount <= result.out_damage {
+                result.out_damage -= recv_dmg.amount;
+            } else {
+                recv_dmg.amount -= result.out_damage;
+                incoming_dmg.push_front(recv_dmg);
 
-        if dt < 0 {
-            self.queue.push_front(IncomingDamage { amount: -dt, delay: 0 });
-            return 0;
+                result.out_damage = 0;
+
+                for dmg in incoming_dmg {
+                    self.queue.push_front(dmg);
+                }
+
+                return result;
+            }
         }
 
         // see if queue still contains damage entries with delay > 0
         while !self.queue.is_empty() {
             let dmg = self.queue.pop_front().unwrap();
-            dt -= dmg.amount;
-            if dt == 0 {
+            result.out_damage -= dmg.amount;
+            if result.out_damage == 0 {
                 break;
             }
-            if dt < 0 {
-                self.queue.push_front(IncomingDamage { amount: -dt, delay: dmg.delay });
-                dt = 0;
+            if result.out_damage < 0 {
+                self.queue.push_front(IncomingDamage {
+                    amount: -result.out_damage,
+                    delay: dmg.delay,
+                    hole_x: dmg.hole_x
+                });
+                result.out_damage = 0;
                 break;
             }
         }
 
-        dt
+        result
     }
 
     pub fn update(&mut self, elapsed_ms: u32) {
@@ -157,7 +188,7 @@ mod tests {
 
     fn id(amount: i32, delay: u32) -> IncomingDamage {
         IncomingDamage {
-            amount, delay
+            amount, delay, hole_x: 0
         }
     }
 
