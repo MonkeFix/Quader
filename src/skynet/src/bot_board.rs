@@ -78,6 +78,10 @@ impl BotBoard {
             return Some(self.do_bot_move());
         }
 
+        if let Some(r) = self.engine_board.update(dt) {
+            return Some(r);
+        }
+
         None
     }
 
