@@ -3,6 +3,7 @@ use std::sync::Arc;
 use macroquad::hash;
 use macroquad::prelude::*;
 use macroquad::ui::root_ui;
+use rand_chacha::ChaCha8Rng;
 
 use quader_engine::board::{Board};
 use quader_engine::cell_holder::CellType;
@@ -48,7 +49,7 @@ fn create_cell_rects() -> HashMap<CellType, Rect> {
     result.insert(CellType::J, Rect::new(32. * 5., 0., 32., 32.));
     result.insert(CellType::T, Rect::new(32. * 6., 0., 32., 32.));
     result.insert(CellType::Solid, Rect::new(32. * 7., 0., 32., 32.));
-    result.insert(CellType::Garbage, Rect::new(32. * 8., 0., 32., 32.));
+    result.insert(CellType::Garbage, Rect::new(32. * 9., 0., 32., 32.));
 
     result
 }
@@ -226,8 +227,6 @@ impl Renderable for BoardController {
                 });
         }
 
-
-
         // render queue
         let queue = &b.get_piece_mgr().piece_queue.queue;
         for (y, piece_type) in queue.iter().enumerate() {
@@ -250,6 +249,20 @@ impl Renderable for BoardController {
 
                     self.render_cell_type(pos.0, pos.1, &piece_type_to_cell_type(*piece_type), 255)
                 });
+        }
+
+        // render incoming damage
+        let dmg_queue = &b.garbage_mgr.queue;
+        let mut total_dmg = 0;
+        for (i, dmg) in dmg_queue.iter().enumerate() {
+            let x = self.x + 322.;
+            let y = 640. + self.y - total_dmg as f32 * 32.;
+            let w = 14.;
+            let h = -32. * dmg.amount as f32;
+            draw_rectangle(x, y, w, h, RED);
+            draw_rectangle_lines(x, y, w, h, 3., Color::from_rgba(20, 0, 0, 255));
+
+            total_dmg += dmg.amount;
         }
     }
 
@@ -403,7 +416,8 @@ impl Updatable for BoardController {
         }
 
         if is_key_pressed(KeyCode::T) {
-            self.board.attack(2);
+            let mut rng = RngManager::from_entropy();
+            self.board.attack(rng.gen_range(0..6));
         }
 
         if let Some(res) = self.board.update(dt) {
