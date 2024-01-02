@@ -18,7 +18,8 @@ pub struct BotBoard {
     pub game_settings: GameSettings,
     pub bot_interface: Box<Interface>,
     pub bot_settings: BotSettings,
-    elapsed_secs: f32
+    elapsed_secs: f32,
+    hold_used: bool
 }
 
 #[derive(Debug)]
@@ -62,7 +63,8 @@ impl BotBoard {
             bot_interface: Box::new(bot_interface),
             game_settings,
             bot_settings,
-            elapsed_secs: 0.0
+            elapsed_secs: 0.0,
+            hold_used: false
         }
     }
 
@@ -104,10 +106,12 @@ impl BotBoard {
     }
 
     fn do_bot_move(&mut self) -> Result<MoveResult, UpdateErrorReason> {
-        let incoming_garbage = self.engine_board.garbage_mgr.queue.front().unwrap_or(&IncomingDamage::default()).amount;
-        self.request_next_move(incoming_garbage as u32);
+        let incoming_garbage = self.engine_board.garbage_mgr.queue
+            .iter()
+            .map(|q| q.amount)
+            .fold(0, |acc, q| acc + q);
 
-        println!("BOT MOVES!!!");
+        self.request_next_move(incoming_garbage as u32);
 
         let res = match self.block_next_move() {
             Some((m, _info)) => {
@@ -115,30 +119,33 @@ impl BotBoard {
                 //let _plan = info.plan();
 
                 if m.hold {
-                    self.engine_board.hold_piece();
-                    // add last queue piece
-                    self.bot_interface.add_next_piece(
-                        piece_type_to_piece(
-                            *self.engine_board.piece_mgr.piece_queue.queue.back().unwrap()
-                        )
-                    );
+                    let _ = self.engine_board.hold_piece();
+                    if !self.hold_used {
+                        self.bot_interface.add_next_piece(
+                            piece_type_to_piece(
+                                *self.engine_board.piece_mgr.piece_queue.queue.back().unwrap()
+                            )
+                        );
+                        self.hold_used = true;
+                    }
                 }
 
                 for input in m.inputs.iter() {
                     self.exec_input(input);
                 }
 
-                println!("BOT MOVE SUCCESS!!!");
-
                 self.engine_board.hard_drop()
             }
             None => {
-                println!("BOT MOVE ERROR!!!");
                 Err(UpdateErrorReason::BoardDead)
             }
         };
 
-        self.bot_interface.add_next_piece(piece_type_to_piece(self.engine_board.piece_mgr.cur_piece.get_type()));
+        self.bot_interface.add_next_piece(
+            piece_type_to_piece(
+                *self.engine_board.piece_mgr.piece_queue.queue.back().unwrap()
+            )
+        );
 
         res
     }
