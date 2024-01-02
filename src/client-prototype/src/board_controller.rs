@@ -29,6 +29,12 @@ impl PieceMover {
     pub fn move_right(&self, board: &mut Board) {
         board.move_right(1);
     }
+
+    pub fn reset(&mut self) {
+        self.elapsed = 0.0;
+        self.is_left_down = false;
+        self.is_right_down = false;
+    }
 }
 
 pub struct BoardController {
@@ -140,5 +146,10 @@ impl BoardController {
         }
 
         result
+    }
+
+    pub fn reset(&mut self) {
+        self.board.reset();
+        self.piece_mover.reset();
     }
 }

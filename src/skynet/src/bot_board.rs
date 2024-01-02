@@ -85,8 +85,15 @@ impl BotBoard {
         None
     }
 
-    pub fn reset(&self, field: [[bool; 10]; 40], b2b_active: bool, combo: u32) {
+    pub fn reset(&mut self) {
+        self.reset_with_board([[true; 10]; 40], false, 0);
+    }
+
+    pub fn reset_with_board(&mut self, field: [[bool; 10]; 40], b2b_active: bool, combo: u32) {
         self.bot_interface.reset(field, b2b_active, combo);
+        self.engine_board.reset();
+        self.hold_used = false;
+        self.elapsed_secs = 0.0;
     }
 
     pub fn add_next_piece(&self, piece_type: PieceType) {
