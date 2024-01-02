@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 quader_engine = { path = "../engine" }
+quader_skynet = { path = "../skynet" }
 macroquad = "0.4.4"
 serde = "1.0.188"
 macroquad-profiler = "0.2.0"
