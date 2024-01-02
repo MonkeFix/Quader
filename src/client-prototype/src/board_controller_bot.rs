@@ -7,7 +7,6 @@ use quader_skynet::bot_board::{BotBoard, BotSettings};
 use crate::board_renderer::BoardRenderer;
 
 pub struct BoardControllerBot {
-    game_settings: GameSettings,
     pub bot_board: Box<BotBoard>,
     board_renderer: BoardRenderer
 }
@@ -15,7 +14,6 @@ pub struct BoardControllerBot {
 impl BoardControllerBot {
     pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, target_pps: f32) -> Self {
         Self {
-            game_settings,
             bot_board: Box::new(BotBoard::new(game_settings, wkd, seed, BotSettings { target_pps })),
             board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
         }

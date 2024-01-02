@@ -1,11 +1,9 @@
 use macroquad::prelude::*;
-use crate::board_controller::BoardController;
 use crate::board_manager::BoardManager;
 
 pub struct GameRoot {
     close_requested: bool,
-    board_manager: Box<BoardManager>,
-    debug_render_enabled: bool
+    board_manager: Box<BoardManager>
 }
 
 impl GameRoot {
@@ -13,8 +11,7 @@ impl GameRoot {
 
         GameRoot {
             close_requested: false,
-            board_manager: Box::new(BoardManager::new()),
-            debug_render_enabled: true
+            board_manager: Box::new(BoardManager::new())
         }
     }
 
@@ -57,10 +54,6 @@ impl GameRoot {
 
     fn render(&mut self) {
         self.board_manager.render();
-
-        /*if self.debug_render_enabled {
-            self.board.debug_render();
-        }*/
     }
 
     fn render_ui(&self) {
