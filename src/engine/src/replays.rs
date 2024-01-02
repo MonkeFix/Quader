@@ -1,4 +1,3 @@
-use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::damage_calculation::{calculate_damage, create_board_move_bits};

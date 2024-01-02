@@ -9,8 +9,6 @@ use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
 use crate::scoring::{ScoringMgr};
 use crate::time_mgr::TimeMgr;
 use crate::wall_kick_data::{WallKickData};
-use serde::ser::Serialize;
-use serde::de::Deserialize;
 
 #[derive(Debug)]
 pub struct Board {

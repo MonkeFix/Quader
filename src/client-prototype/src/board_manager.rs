@@ -10,7 +10,6 @@ pub struct BoardManager {
     pub player_board: Box<BoardController>,
     pub bot_board: Box<BoardControllerBot>,
     pub game_settings: GameSettings,
-    wkd: Arc<WallKickData>
 }
 
 impl BoardManager {
@@ -27,7 +26,6 @@ impl BoardManager {
             player_board: Box::new(player_board),
             bot_board: Box::new(bot_board),
             game_settings,
-            wkd
         }
     }
 
@@ -48,7 +46,7 @@ impl BoardManager {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
-                        &self.bot_board.bot_board.engine_board.attack(hd.attack.out_damage);
+                        let _ = &self.bot_board.bot_board.engine_board.attack(hd.attack.out_damage);
                     }
                 }
                 Err(_) => {}
@@ -58,7 +56,7 @@ impl BoardManager {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
-                        &self.player_board.board.attack(hd.attack.out_damage);
+                        let _ = &self.player_board.board.attack(hd.attack.out_damage);
                     }
                 }
                 Err(_) => {}

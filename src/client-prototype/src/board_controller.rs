@@ -8,7 +8,6 @@ use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::WallKickData;
-use quader_skynet::bot_board::{BotBoard, BotSettings};
 use crate::board_renderer::BoardRenderer;
 
 struct PieceMover {
@@ -40,7 +39,6 @@ impl PieceMover {
 pub struct BoardController {
     pub board: Board,
     piece_mover: PieceMover,
-    game_settings: GameSettings,
     board_renderer: BoardRenderer
     //wkd: Arc<WallKickData>
 }
@@ -62,7 +60,6 @@ impl BoardController {
                 is_left_down: false,
                 is_right_down: false
             },
-            game_settings,
             board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
             //wkd
         }
