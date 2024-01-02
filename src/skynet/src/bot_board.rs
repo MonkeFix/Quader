@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use cold_clear::{BotPollState, Info, Interface};
+use quader_engine::board::Board;
 use quader_engine::cell_holder::BoolArray;
 use quader_engine::game_settings::GameSettings;
-use quader_engine::garbage_mgr::IncomingDamage;
 use quader_engine::piece::{PieceType, RotationDirection};
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
@@ -41,27 +41,31 @@ pub fn piece_type_to_piece(piece_type: PieceType) -> libtetris::Piece {
     }
 }
 
+fn create_bot_interface(board: &Board) -> Box<Interface> {
+    let mut bot_board = libtetris::Board::new();
+    bot_board.add_next_piece(piece_type_to_piece(board.piece_mgr.cur_piece.get_type()));
+    for pt in &board.piece_mgr.piece_queue.queue {
+        bot_board.add_next_piece(piece_type_to_piece(*pt));
+    }
+
+    Box::new(Interface::launch(
+        bot_board,
+        cold_clear::Options::default(),
+        cold_clear::evaluation::Standard::default(),
+        None
+    ))
+}
+
 impl BotBoard {
     pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64, bot_settings: BotSettings) -> Self {
 
-        let board = quader_engine::board::Board::new(game_settings, wkd, seed);
+        let board = Board::new(game_settings, wkd, seed);
 
-        let mut bot_board = libtetris::Board::new();
-        bot_board.add_next_piece(piece_type_to_piece(board.piece_mgr.cur_piece.get_type()));
-        for pt in &board.piece_mgr.piece_queue.queue {
-            bot_board.add_next_piece(piece_type_to_piece(*pt));
-        }
-
-        let bot_interface = Interface::launch(
-            bot_board,
-            cold_clear::Options::default(),
-            cold_clear::evaluation::Standard::default(),
-            None
-        );
+        let bot_interface = create_bot_interface(&board);
 
         Self {
             engine_board: board,
-            bot_interface: Box::new(bot_interface),
+            bot_interface,
             game_settings,
             bot_settings,
             elapsed_secs: 0.0,
@@ -86,15 +90,12 @@ impl BotBoard {
         None
     }
 
-    pub fn reset(&mut self) {
-        self.reset_with_board([[false; 10]; 40], false, 0);
-    }
-
-    pub fn reset_with_board(&mut self, field: [[bool; 10]; 40], b2b_active: bool, combo: u32) {
-        self.bot_interface.reset(field, b2b_active, combo);
-        self.engine_board.reset();
+    pub fn reset(&mut self, new_seed: Option<u64>) {
+        self.engine_board.reset(new_seed);
         self.hold_used = false;
         self.elapsed_secs = 0.0;
+
+        self.bot_interface = create_bot_interface(&self.engine_board);
     }
 
     pub fn add_next_piece(&self, piece_type: PieceType) {
