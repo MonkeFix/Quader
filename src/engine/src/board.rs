@@ -195,13 +195,11 @@ impl Board {
         );
 
         // if the attack is negative, the board received damage; pushing garbage then
-        if move_result.attack < 0 {
-            self.garbage_mgr.push_garbage(
-                -move_result.attack as u32,
-                0,
-                &mut self.piece_mgr.cell_holder
-            );
-        }
+        move_result.attack.in_damage_queue
+            .iter()
+            .for_each(|dmg| {
+                self.garbage_mgr.push_garbage_at(dmg.amount as u32, dmg.hole_x, &mut self.piece_mgr.cell_holder);
+            });
 
         Ok(move_result)
     }
@@ -236,7 +234,7 @@ impl Board {
     /// is that `push_garbage()` adds garbage immediately, whereas this method
     /// adds damage into the damage queue.
     pub fn attack(&mut self, damage: i32) {
-        self.garbage_mgr.attack(damage);
+        self.garbage_mgr.attack(self.game_settings.board.width, damage);
     }
 
     pub fn get_cell_holder(&self) -> &CellHolder {

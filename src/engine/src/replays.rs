@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::AttackSettings;
-use crate::garbage_mgr::GarbageMgr;
+use crate::garbage_mgr::{GarbageHardDropResult, GarbageMgr};
 use crate::scoring::{ScoringMgr, TSpinStatus};
 use crate::time_mgr::TimeMgr;
 
@@ -57,14 +57,13 @@ pub struct MoveResult {
     pub combo: u32,
     /// False if the piece fails to spawn or apply to the cell holder. True otherwise.
     pub is_success: bool,
-    /// Positive if the board is dealing damage. Negative if it takes damage.
-    pub attack: i32,
+    pub attack: GarbageHardDropResult,
 
     pub hard_drop_info: HardDropInfo,
     pub move_queue: Vec<MoveAction>
 }
 
-impl Display for MoveResult {
+/*impl Display for MoveResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}: Mods: {}, B2B: {}, Combo: {}, Success: {}, Attack: {}",
             self.timestamp,
@@ -75,7 +74,7 @@ impl Display for MoveResult {
             self.attack
         )
     }
-}
+}*/
 
 impl Default for MoveResult {
     fn default() -> Self {
@@ -85,7 +84,7 @@ impl Default for MoveResult {
             b2b: 0,
             combo: 0,
             is_success: false,
-            attack: 0,
+            attack: GarbageHardDropResult::default(),
             move_queue: vec![],
             hard_drop_info: HardDropInfo::default()
         }
