@@ -1,11 +1,12 @@
 use macroquad::prelude::*;
 use crate::board_controller::BoardController;
+use crate::board_manager::BoardManager;
 use crate::renderable::Renderable;
 use crate::updatable::Updatable;
 
 pub struct GameRoot {
     close_requested: bool,
-    board: Box<BoardController>,
+    board_manager: Box<BoardManager>,
     debug_render_enabled: bool
 }
 
@@ -14,7 +15,7 @@ impl GameRoot {
 
         GameRoot {
             close_requested: false,
-            board: Box::new(BoardController::new(400., 128.)),
+            board_manager: Box::new(BoardManager::new()),
             debug_render_enabled: true
         }
     }
@@ -45,7 +46,7 @@ impl GameRoot {
     }
 
     async fn load_content(&mut self) {
-        self.board.load_content().await;
+        self.board_manager.load_content().await;
     }
 
     pub fn close(&mut self) {
@@ -53,15 +54,15 @@ impl GameRoot {
     }
     
     fn update(&mut self, dt: f32) {
-        self.board.update(dt);
+        self.board_manager.update(dt);
     }
 
     fn render(&mut self) {
-        self.board.render();
+        self.board_manager.render();
 
-        if self.debug_render_enabled {
+        /*if self.debug_render_enabled {
             self.board.debug_render();
-        }
+        }*/
     }
 
     fn render_ui(&self) {
