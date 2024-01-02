@@ -114,7 +114,7 @@ impl BoardController {
             }
         }
 
-        if is_key_pressed(KeyCode::Down) {
+        if is_key_down(KeyCode::Down) {
             self.board.soft_drop(self.piece_mover.sdf);
         }
         if is_key_pressed(KeyCode::Space) {
