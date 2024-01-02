@@ -1,11 +1,11 @@
 use std::sync::Arc;
 use quader_engine::game_settings::GameSettings;
+use quader_engine::piece_mgr::UpdateErrorReason;
+use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::WallKickData;
 use crate::board_controller::BoardController;
 use crate::board_controller_bot::BoardControllerBot;
-use crate::renderable::Renderable;
-use crate::updatable::Updatable;
 
 pub struct BoardManager {
     pub player_board: Box<BoardController>,
@@ -22,7 +22,7 @@ impl BoardManager {
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
 
         let player_board = BoardController::new(300., 128., game_settings, seed, Arc::clone(&wkd));
-        let bot_board = BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 4.0);
+        let bot_board = BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 1.0);
 
         Self {
             player_board: Box::new(player_board),
@@ -38,8 +38,26 @@ impl BoardManager {
     }
 
     pub fn update(&mut self, dt: f32) {
-        self.player_board.update(dt);
-        self.bot_board.update(dt);
+        if let Some(hd) = self.player_board.update(dt) {
+            match hd {
+                Ok(hd) => {
+                    if hd.attack.out_damage > 0 {
+                        &self.bot_board.bot_board.engine_board.attack(hd.attack.out_damage);
+                    }
+                }
+                Err(_) => {}
+            }
+        }
+        if let Some(hd) = self.bot_board.update(dt) {
+            match hd {
+                Ok(hd) => {
+                    if hd.attack.out_damage > 0 {
+                        &self.player_board.board.attack(hd.attack.out_damage);
+                    }
+                }
+                Err(_) => {}
+            }
+        }
     }
 
     pub fn render(&self) {

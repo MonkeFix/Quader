@@ -1,8 +1,6 @@
 use macroquad::prelude::*;
 use crate::board_controller::BoardController;
 use crate::board_manager::BoardManager;
-use crate::renderable::Renderable;
-use crate::updatable::Updatable;
 
 pub struct GameRoot {
     close_requested: bool,

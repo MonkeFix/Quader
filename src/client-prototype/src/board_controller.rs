@@ -4,13 +4,12 @@ use macroquad::prelude::*;
 use quader_engine::board::{Board};
 use quader_engine::game_settings::{GameSettings};
 use quader_engine::piece::{RotationDirection};
+use quader_engine::piece_mgr::UpdateErrorReason;
+use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::WallKickData;
 use quader_skynet::bot_board::{BotBoard, BotSettings};
 use crate::board_renderer::BoardRenderer;
-
-use crate::renderable::Renderable;
-use crate::updatable::Updatable;
 
 struct PieceMover {
     elapsed: f32,
@@ -33,10 +32,9 @@ impl PieceMover {
 }
 
 pub struct BoardController {
-    board: Board,
+    pub board: Board,
     piece_mover: PieceMover,
     game_settings: GameSettings,
-    bot_board: Box<BotBoard>,
     board_renderer: BoardRenderer
     //wkd: Arc<WallKickData>
 }
@@ -47,10 +45,6 @@ impl BoardController {
         let board = Board::new(game_settings, Arc::clone(&wkd), seed);
 
         dbg!(&game_settings);
-
-        let bot_board = Box::new(BotBoard::new(game_settings, Arc::clone(&wkd), seed, BotSettings {
-            target_pps: 1.0
-        }));
 
         BoardController {
             board,
@@ -63,7 +57,6 @@ impl BoardController {
                 is_right_down: false
             },
             game_settings,
-            bot_board,
             board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
             //wkd
         }
@@ -73,23 +66,13 @@ impl BoardController {
         self.board_renderer.load_content().await;
     }
 
-}
-
-impl Renderable for BoardController {
-
-    fn render(&self) {
+    pub fn render(&self) {
         self.board_renderer.render(&self.board);
     }
 
-    fn debug_render(&mut self) {
-    }
-}
-
-impl Updatable for BoardController {
-    fn update(&mut self, dt: f32) {
+    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
         let elapsed = dt * 1000.0; // convert to milliseconds
-
-        self.bot_board.update(dt);
+        let mut result = None;
 
         if is_key_pressed(KeyCode::Left) {
             self.piece_mover.move_left(&mut self.board);
@@ -132,15 +115,7 @@ impl Updatable for BoardController {
             self.board.soft_drop(self.piece_mover.sdf);
         }
         if is_key_pressed(KeyCode::Space) {
-            let result = self.board.hard_drop();
-            match result {
-                Ok(move_info) => {
-                    dbg!(move_info);
-                }
-                Err(reason) => {
-                    dbg!(reason);
-                }
-            }
+            result = Some(self.board.hard_drop());
         }
         if is_key_pressed(KeyCode::Z) {
             self.board.rotate(RotationDirection::CounterClockwise);
@@ -161,14 +136,9 @@ impl Updatable for BoardController {
         }
 
         if let Some(res) = self.board.update(dt) {
-            match res {
-                Ok(move_info) => {
-                    dbg!(move_info);
-                }
-                Err(reason) => {
-                    dbg!(reason);
-                }
-            }
+            result = Some(res);
         }
+
+        result
     }
 }
