@@ -15,12 +15,12 @@ pub mod replays;
 pub mod scoring;
 mod gravity_mgr;
 mod time_mgr;
-mod piece_mgr;
+pub mod piece_mgr;
 mod command_dispatcher;
 pub mod utils;
 pub mod piece_points;
 mod piece_queue;
-mod garbage_mgr;
+pub mod garbage_mgr;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

@@ -13,6 +13,7 @@ use quader_engine::primitives::Point;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::utils::{adjust_point_clone, cell_to_color, piece_type_to_cell_type, piece_type_to_color, piece_type_to_offset_type};
 use quader_engine::wall_kick_data::WallKickData;
+use quader_skynet::bot_board::{BotBoard, BotSettings};
 
 use crate::renderable::Renderable;
 use crate::updatable::Updatable;
@@ -64,7 +65,8 @@ pub struct BoardController {
     game_settings: GameSettings,
     texture_atlas: Option<Texture2D>,
     cell_rects: HashMap<CellType, Rect>,
-    board_tex: Option<Texture2D>
+    board_tex: Option<Texture2D>,
+    bot_board: Box<BotBoard>
     //wkd: Arc<WallKickData>
 }
 
@@ -76,11 +78,13 @@ impl BoardController {
 
         let game_settings = GameSettings::default();
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
-        let board = Board::new(game_settings, wkd, seed);
+        let board = Board::new(game_settings, Arc::clone(&wkd), seed);
 
         dbg!(&game_settings);
 
-
+        let bot_board = Box::new(BotBoard::new(game_settings, Arc::clone(&wkd), seed, BotSettings {
+            target_pps: 1.0
+        }));
 
         BoardController {
             board,
@@ -98,7 +102,8 @@ impl BoardController {
             game_settings,
             texture_atlas: None,
             cell_rects: create_cell_rects(),
-            board_tex: None
+            board_tex: None,
+            bot_board
             //wkd
         }
     }
@@ -343,6 +348,8 @@ impl Renderable for BoardController {
 impl Updatable for BoardController {
     fn update(&mut self, dt: f32) {
         let elapsed = dt * 1000.0; // convert to milliseconds
+
+        self.bot_board.update(dt);
 
         if is_key_down(KeyCode::Q) {
             self.y -= 1.0;
