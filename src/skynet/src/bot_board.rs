@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use cold_clear::{BotPollState, Info, Interface};
+use quader_engine::cell_holder::BoolArray;
 use quader_engine::game_settings::GameSettings;
 use quader_engine::garbage_mgr::IncomingDamage;
 use quader_engine::piece::{PieceType, RotationDirection};
@@ -86,7 +87,7 @@ impl BotBoard {
     }
 
     pub fn reset(&mut self) {
-        self.reset_with_board([[true; 10]; 40], false, 0);
+        self.reset_with_board([[false; 10]; 40], false, 0);
     }
 
     pub fn reset_with_board(&mut self, field: [[bool; 10]; 40], b2b_active: bool, combo: u32) {
@@ -145,7 +146,27 @@ impl BotBoard {
                     self.exec_input(input);
                 }
 
-                self.engine_board.hard_drop()
+                match self.engine_board.hard_drop() {
+                    Ok(hd) => {
+                        if !hd.attack.in_damage_queue.is_empty() {
+                            // update bot's board
+                            let new_board = self.engine_board.piece_mgr.cell_holder.to_bool_array();
+                            let mut field = [[false; 10]; 40];
+
+                            for (y, row) in new_board.iter().enumerate() {
+                                for (x, val) in row.iter().enumerate() {
+                                    field[39 - y][x] = *val;
+                                }
+                            }
+
+                            self.bot_interface.reset(field, hd.b2b > 0, hd.combo);
+                        }
+
+                        Ok(hd)
+                    }
+                    Err(err) => { Err(err) }
+                }
+
             }
             None => {
                 Err(UpdateErrorReason::BoardDead)
