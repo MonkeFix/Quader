@@ -32,4 +32,8 @@ impl BoardControllerBot {
     pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
         self.bot_board.update(dt)
     }
+
+    pub fn reset(&mut self) {
+        self.bot_board.reset();
+    }
 }

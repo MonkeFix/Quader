@@ -299,6 +299,14 @@ impl CellHolder {
         
         y
     }
+
+    pub fn clear(&mut self) {
+        for i in 0..self.height {
+            self.layout[i] = Row::empty(self.width);
+        }
+
+        self.occupied_cells = 0;
+    }
 }
 
 impl BoolArray for CellHolder {

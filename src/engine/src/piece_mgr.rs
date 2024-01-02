@@ -257,7 +257,8 @@ impl PieceMgr {
             occupied_cells_left: self.cell_holder.get_occupied_cell_count() as u32
         };
 
-        self.reset();
+        self.reset_cur_piece();
+        self.is_hold_used = false;
 
         let next_piece = self.piece_queue.next();
         self.create_piece(next_piece);
@@ -269,6 +270,7 @@ impl PieceMgr {
         self.is_hold_used = false;
 
         self.reset_cur_piece();
+        self.cell_holder.clear();
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {

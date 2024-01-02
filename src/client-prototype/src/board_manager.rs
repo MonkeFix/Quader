@@ -1,7 +1,5 @@
 use std::sync::Arc;
 use quader_engine::game_settings::GameSettings;
-use quader_engine::piece_mgr::UpdateErrorReason;
-use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::WallKickData;
 use crate::board_controller::BoardController;
@@ -22,7 +20,7 @@ impl BoardManager {
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
 
         let player_board = BoardController::new(300., 128., game_settings, seed, Arc::clone(&wkd));
-        let bot_board = BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 1.0);
+        let bot_board = BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 1.4);
 
         Self {
             player_board: Box::new(player_board),
