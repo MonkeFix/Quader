@@ -148,8 +148,8 @@ impl BoardController {
         result
     }
 
-    pub fn reset(&mut self) {
-        self.board.reset();
+    pub fn reset(&mut self, new_seed: Option<u64>) {
+        self.board.reset(new_seed);
         self.piece_mover.reset();
     }
 }

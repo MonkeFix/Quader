@@ -252,15 +252,16 @@ impl Board {
     }
 
     /// Completely resets the state of the board.
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, new_seed: Option<u64>) {
         self.gravity_mgr.reset();
         self.scoring_mgr.combo = 0;
         self.scoring_mgr.b2b = 0;
         self.board_stats.reset();
-        self.piece_mgr.reset();
+        self.piece_mgr.reset(new_seed);
         self.is_dead = false;
         self.time_mgr.reset();
         self.replay_mgr.reset();
+        self.garbage_mgr.reset();
     }
 
     /// Enables current board. All BoardCommands will execute normally.
