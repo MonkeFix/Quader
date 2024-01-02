@@ -6,6 +6,9 @@ mod game_root;
 mod renderable;
 mod board_controller;
 mod updatable;
+mod board_renderer;
+mod board_controller_bot;
+mod board_manager;
 
 fn window_conf() -> Conf {
     Conf {
