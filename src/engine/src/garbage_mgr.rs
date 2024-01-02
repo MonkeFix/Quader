@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::AttackSettings;
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct IncomingDamage {
     pub amount: i32,
     pub delay: u32,
