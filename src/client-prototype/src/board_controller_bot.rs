@@ -33,7 +33,7 @@ impl BoardControllerBot {
         self.bot_board.update(dt)
     }
 
-    pub fn reset(&mut self) {
-        self.bot_board.reset();
+    pub fn reset(&mut self, new_seed: Option<u64>) {
+        self.bot_board.reset(new_seed);
     }
 }

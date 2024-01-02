@@ -169,6 +169,11 @@ impl GarbageMgr {
             dmg.delay = dmg.delay.saturating_sub(elapsed_ms);
         }
     }
+
+    pub fn reset(&mut self) {
+        self.queue.clear();
+        self.last_garbage_x = None;
+    }
 }
 
 #[cfg(test)]

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use macroquad::prelude::{is_key_pressed, KeyCode};
 use quader_engine::game_settings::GameSettings;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::wall_kick_data::WallKickData;
@@ -36,6 +37,13 @@ impl BoardManager {
     }
 
     pub fn update(&mut self, dt: f32) {
+        if is_key_pressed(KeyCode::R) {
+            let seed = RngManager::from_entropy().gen::<u64>();
+
+            self.player_board.reset(Some(seed));
+            self.bot_board.reset(Some(seed));
+        }
+
         if let Some(hd) = self.player_board.update(dt) {
             match hd {
                 Ok(hd) => {

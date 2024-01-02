@@ -266,11 +266,18 @@ impl PieceMgr {
         Ok(result)
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, new_seed: Option<u64>) {
         self.is_hold_used = false;
-
-        self.reset_cur_piece();
         self.cell_holder.clear();
+        self.piece_queue.reset(new_seed);
+        
+        let next_piece = self.piece_queue.next();
+        let mut piece = Piece::new(next_piece);
+        reset_piece(&mut piece, self.board_settings.width, self.board_settings.full_height());
+        self.cur_piece = piece;
+        
+        self.last_move_type = LastMoveType::None;
+        self.hold_piece = None;
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {

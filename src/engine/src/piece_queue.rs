@@ -6,7 +6,8 @@ use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 pub struct PieceQueue {
     pub queue: VecDeque<PieceType>,
     piece_generator: Box<PieceGeneratorBag7>,
-    next_piece: PieceType
+    next_piece: PieceType,
+    seed: u64
 }
 
 impl PieceQueue {
@@ -18,7 +19,8 @@ impl PieceQueue {
         Self {
             queue,
             piece_generator,
-            next_piece: PieceType::Pixel
+            next_piece: PieceType::Pixel,
+            seed
         }
     }
 
@@ -33,5 +35,18 @@ impl PieceQueue {
         self.queue.push_back(self.next_piece);
 
         next
+    }
+
+    pub fn reset(&mut self, new_seed: Option<u64>) {
+
+        let seed = new_seed.unwrap_or_else(|| self.seed);
+
+        let mut piece_generator = Box::new(PieceGeneratorBag7::new(seed));
+        let queue = piece_generator.init();
+
+        self.queue = queue;
+        self.piece_generator = piece_generator;
+        self.next_piece = PieceType::Pixel;
+        self.seed = seed;
     }
 }
