@@ -13,14 +13,14 @@ pub enum TSpinStatus {
 }
 
 pub mod thresholds {
-    pub const COMBO_1_THRESHOLD: u32 = 1;
+    pub const COMBO_1_THRESHOLD: u32 = 2;
     pub const COMBO_2_THRESHOLD: u32 = 6;
     pub const COMBO_3_THRESHOLD: u32 = 10;
     pub const COMBO_4_THRESHOLD: u32 = 15;
     pub const COMBO_5_THRESHOLD: u32 = 18;
 
 
-    pub const B2B_1_THRESHOLD: u32 = 0;
+    pub const B2B_1_THRESHOLD: u32 = 2;
     pub const B2B_2_THRESHOLD: u32 = 5;
     pub const B2B_3_THRESHOLD: u32 = 10;
     pub const B2B_4_THRESHOLD: u32 = 30;
