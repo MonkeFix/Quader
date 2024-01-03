@@ -15,7 +15,8 @@ pub enum CellType {
     S,
     Z,
     Garbage,
-    Solid
+    Solid,
+    Ghost
 }
 
 pub trait BoolArray {
