@@ -1,5 +1,6 @@
 use crate::game_settings::{GravitySettings};
 use crate::piece_mgr::PieceMgr;
+use crate::time_mgr::{self, TimeMgr};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GravityUpdateResult {
@@ -56,14 +57,14 @@ impl GravityMgr {
         self.cur_lock = self.gravity_settings.lock_delay;
     }
 
-    pub fn update(&mut self, piece_mgr: &PieceMgr, dt: f32) -> GravityUpdateResult {
+    pub fn update(&mut self, piece_mgr: &PieceMgr, time_mgr: &TimeMgr) -> GravityUpdateResult {
         let mut res = GravityUpdateResult::None;
         
         if !self.is_enabled {
             return res;
         }
 
-        self.intermediate_y += self.cur_gravity * dt;
+        self.intermediate_y += self.cur_gravity * time_mgr.last_dt;
 
         if self.y_needs_update {
             self.y_to_check = piece_mgr.find_nearest_y();
@@ -81,7 +82,7 @@ impl GravityMgr {
 
         // If current piece "touches" any occupied cell, we decrease the lock
         if self.y_to_check == piece_mgr.get_piece().get_y() {
-            self.cur_lock -= 1.0 * dt;
+            self.cur_lock -= 1.0 * time_mgr.last_dt;
         }
 
         // If lock is zero we force hard drop the piece
@@ -92,7 +93,7 @@ impl GravityMgr {
             self.intermediate_y = 0.0;
         }
 
-        self.cur_gravity += self.gravity_settings.grav_incr * dt;
+        self.cur_gravity += self.gravity_settings.grav_incr * time_mgr.last_dt;
 
         res
     }

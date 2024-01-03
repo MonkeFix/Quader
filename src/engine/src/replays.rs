@@ -4,7 +4,7 @@ use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::AttackSettings;
 use crate::garbage_mgr::{GarbageHardDropResult, GarbageMgr};
 use crate::scoring::{ScoringMgr, TSpinStatus};
-use crate::time_mgr::TimeMgr;
+use crate::time_mgr::{TimeMgr, self};
 
 /// Represents just a move done by a player.
 /// This includes lines cleared
@@ -155,16 +155,16 @@ impl BoardStats {
     }
 
     /// Updates elapsed seconds to correctly calculate APM and PPS.
-    pub fn update(&mut self, dt: f32) {
-        self.elapsed_seconds += dt;
+    pub fn update(&mut self, time_mgr: &TimeMgr) {
+        self.elapsed_seconds = time_mgr.cur_sec;
+        self.pps = self.total_pieces as f32 / self.elapsed_seconds;
+        self.apm = self.total_pieces as f32 / (self.elapsed_seconds / 60.0);
     }
 
     /// Updates all current stats using data from `HardDropInfo` and `ScoringMgr`.
     pub fn hard_drop(&mut self, hard_drop_info: &HardDropInfo, scoring_mgr: &ScoringMgr) {
         self.total_pieces += 1;
-        self.pps = self.total_pieces as f32 / self.elapsed_seconds;
-        self.apm = self.total_pieces as f32 / (self.elapsed_seconds / 60.0);
-
+        
         match hard_drop_info.lines_cleared {
             1 => self.singles += 1,
             2 => self.doubles += 1,

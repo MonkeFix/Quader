@@ -4,6 +4,7 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::AttackSettings;
+use crate::time_mgr::{self, TimeMgr};
 
 #[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct IncomingDamage {
@@ -164,9 +165,9 @@ impl GarbageMgr {
         result
     }
 
-    pub fn update(&mut self, elapsed_ms: u32) {
+    pub fn update(&mut self, time_mgr: &TimeMgr) {
         for dmg in self.queue.iter_mut() {
-            dmg.delay = dmg.delay.saturating_sub(elapsed_ms);
+            dmg.delay = dmg.delay.saturating_sub(time_mgr.cur_ms as u32);
         }
     }
 
