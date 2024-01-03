@@ -9,3 +9,4 @@ riderModule.iml
 core/**/target
 src/**/target
 .direnv/
+src/dist
