@@ -1,5 +1,5 @@
-use std::sync::Arc;
-use quader_engine::game_settings::GameSettings;
+use std::sync::{Arc, RwLock};
+use quader_engine::{game_settings::GameSettings, time_mgr::TimeMgr};
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::wall_kick_data::WallKickData;
@@ -12,9 +12,9 @@ pub struct BoardControllerBot {
 }
 
 impl BoardControllerBot {
-    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, target_pps: f32) -> Self {
+    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, time_mgr: Arc<RwLock<TimeMgr>>, target_pps: f32) -> Self {
         Self {
-            bot_board: Box::new(BotBoard::new(game_settings, wkd, seed, BotSettings { target_pps })),
+            bot_board: Box::new(BotBoard::new(game_settings, wkd, seed, BotSettings { target_pps }, time_mgr)),
             board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
         }
     }

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use cold_clear::{BotPollState, Info, Interface};
 use libtetris::Move;
 use quader_engine::board::Board;
@@ -7,6 +7,7 @@ use quader_engine::game_settings::GameSettings;
 use quader_engine::piece::{PieceType, RotationDirection};
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
+use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
 use crate::{BotSettings, piece_type_to_piece};
 
@@ -47,9 +48,9 @@ fn create_bot_interface(board: &Board) -> Box<Interface> {
 }
 
 impl BotBoard {
-    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64, bot_settings: BotSettings) -> Self {
+    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64, bot_settings: BotSettings, time_mgr: Arc<RwLock<TimeMgr>>) -> Self {
 
-        let board = Board::new(game_settings, wkd, seed);
+        let board = Board::new(game_settings, wkd, time_mgr, seed);
 
         let bot_interface = create_bot_interface(&board);
 
