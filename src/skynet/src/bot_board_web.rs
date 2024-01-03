@@ -1,6 +1,5 @@
-use std::sync::Arc;
+/*use std::sync::Arc;
 use cold_clear::{BotPollState, Info, Interface};
-use libtetris::Move;
 use quader_engine::board::Board;
 use quader_engine::cell_holder::BoolArray;
 use quader_engine::game_settings::GameSettings;
@@ -18,8 +17,7 @@ pub struct BotBoard {
     pub bot_settings: BotSettings,
     elapsed_secs: f32,
     hold_used: bool,
-    pub is_enabled: bool,
-    move_requested: bool
+    pub is_enabled: bool
 }
 
 fn create_bot_interface(board: &Board) -> Box<Interface> {
@@ -51,8 +49,7 @@ impl BotBoard {
             bot_settings,
             elapsed_secs: 0.0,
             hold_used: false,
-            is_enabled: true,
-            move_requested: false
+            is_enabled: true
         }
     }
 
@@ -61,21 +58,20 @@ impl BotBoard {
             return None;
         }
 
-        if !self.move_requested {
-            self.request_next_move(self.calc_incoming_garbage());
-            self.move_requested = true;
-        }
-
         self.elapsed_secs += dt;
 
         if self.bot_settings.target_pps <= 0.0 {
-            return self.do_bot_move();
+            return Some(self.do_bot_move());
         } else if self.elapsed_secs >= 1.0 / self.bot_settings.target_pps {
             self.elapsed_secs = 0.0;
-            return self.do_bot_move();
+            return Some(self.do_bot_move());
         }
 
-        self.engine_board.update(dt)
+        if let Some(r) = self.engine_board.update(dt) {
+            return Some(r);
+        }
+
+        None
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {
@@ -83,7 +79,6 @@ impl BotBoard {
         self.hold_used = false;
         self.elapsed_secs = 0.0;
         self.is_enabled = true;
-        self.move_requested = false;
 
         self.bot_interface = create_bot_interface(&self.engine_board);
     }
@@ -100,18 +95,24 @@ impl BotBoard {
         self.bot_interface.poll_next_move()
     }
 
-    pub fn block_next_move(&self) -> Option<(libtetris::Move, Info)> {
-        self.bot_interface.block_next_move()
+    pub async fn block_next_move(&self) -> Option<(libtetris::Move, Info)> {
+        self.bot_interface.block_next_move().await
     }
 
     pub fn play_next_move(&self, falling_piece: libtetris::FallingPiece) {
-       self.bot_interface.play_next_move(falling_piece);
+        self.bot_interface.play_next_move(falling_piece);
     }
 
-    fn do_bot_move(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    fn do_bot_move(&mut self) -> Result<MoveResult, UpdateErrorReason> {
+        let incoming_garbage = self.engine_board.garbage_mgr.queue
+            .iter()
+            .map(|q| q.amount)
+            .fold(0, |acc, q| acc + q);
 
-        let res = match self.poll_next_move() {
-            Ok((m, _info)) => {
+        self.request_next_move(incoming_garbage as u32);
+
+        let res = match self.block_next_move() {
+            Some((m, _info)) => {
                 self.play_next_move(m.expected_location);
                 //let _plan = info.plan();
 
@@ -147,28 +148,22 @@ impl BotBoard {
                             self.bot_interface.reset(field, hd.b2b > 0, hd.combo);
                         }
 
-                        Some(Ok(hd))
+                        Ok(hd)
                     }
-                    Err(err) => { Some(Err(err)) }
+                    Err(err) => { Err(err) }
                 }
+
             }
-            Err(err) => {
-                match err {
-                    BotPollState::Waiting => None,
-                    BotPollState::Dead => Some(Err(UpdateErrorReason::BoardDead))
-                }
+            None => {
+                Err(UpdateErrorReason::BoardDead)
             }
         };
 
-        if let Some(Ok(_)) = res {
-            self.bot_interface.add_next_piece(
-                piece_type_to_piece(
-                    *self.engine_board.piece_mgr.piece_queue.queue.back().unwrap()
-                )
-            );
-
-            self.move_requested = false;
-        }
+        self.bot_interface.add_next_piece(
+            piece_type_to_piece(
+                *self.engine_board.piece_mgr.piece_queue.queue.back().unwrap()
+            )
+        );
 
         res
     }
@@ -182,11 +177,4 @@ impl BotBoard {
             libtetris::PieceMovement::SonicDrop => { self.engine_board.soft_drop(40); },
         };
     }
-
-    fn calc_incoming_garbage(&self) -> u32 {
-        self.engine_board.garbage_mgr.queue
-            .iter()
-            .map(|q| q.amount)
-            .fold(0, |acc, q| acc + q) as u32
-    }
-}
+}*/

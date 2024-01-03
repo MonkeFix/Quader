@@ -20,7 +20,14 @@ impl BoardManager {
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
 
         let player_board = BoardController::new(300., 128., game_settings, seed, Arc::clone(&wkd));
-        let bot_board = BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 1.4);
+        let bot_board = BoardControllerBot::new(
+            1200.,
+            128.,
+            game_settings,
+            seed,
+            Arc::clone(&wkd),
+            0.5
+        );
 
         Self {
             player_board: Box::new(player_board),
