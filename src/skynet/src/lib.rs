@@ -1,1 +1,34 @@
-pub mod bot_board;
+#[cfg(not(target_arch = "wasm32"))]
+mod bot_board;
+#[cfg(not(target_arch = "wasm32"))]
+pub use bot_board::BotBoard;
+
+#[cfg(target_arch = "wasm32")]
+mod bot_board_web;
+#[cfg(target_arch = "wasm32")]
+pub use bot_board_web::BotBoard;
+use quader_engine::piece::PieceType;
+
+#[derive(Debug, Copy, Clone)]
+pub struct BotSettings {
+    /// Target Pieces Per Second.
+    pub target_pps: f32
+}
+
+#[derive(Debug)]
+pub enum BotStatus {
+    Waiting, Dead
+}
+
+pub fn piece_type_to_piece(piece_type: PieceType) -> libtetris::Piece {
+    match piece_type {
+        PieceType::I => libtetris::Piece::I,
+        PieceType::O => libtetris::Piece::O,
+        PieceType::T => libtetris::Piece::T,
+        PieceType::L => libtetris::Piece::L,
+        PieceType::J => libtetris::Piece::J,
+        PieceType::S => libtetris::Piece::S,
+        PieceType::Z => libtetris::Piece::Z,
+        PieceType::Pixel => panic!("Invalid conversion from pixel")
+    }
+}

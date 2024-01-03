@@ -3,7 +3,7 @@ use quader_engine::game_settings::GameSettings;
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::wall_kick_data::WallKickData;
-use quader_skynet::bot_board::{BotBoard, BotSettings};
+use quader_skynet::{BotBoard, BotSettings};
 use crate::board_renderer::BoardRenderer;
 
 pub struct BoardControllerBot {
