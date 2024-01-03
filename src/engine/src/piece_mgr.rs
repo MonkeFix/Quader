@@ -33,6 +33,24 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
     piece.reset();
 }
 
+fn find_nearest_y(cur_piece: &Piece, cell_holder: &CellHolder) -> u32 {
+    let piece = cur_piece;
+    let mut y = piece.get_y();
+    let points = piece.get_positions();
+
+    for i in piece.get_y()..=(cell_holder.height as u32) {
+        let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
+        let new_points = adjust_positions_clone(points, offset);
+        if cell_holder.intersects_any(&new_points) {
+            break;
+        }
+
+        y = i;
+    }
+
+    y
+}
+
 #[derive(Debug)]
 pub struct PieceMgr {
     pub cur_piece: Piece,
@@ -42,7 +60,8 @@ pub struct PieceMgr {
     is_hold_used: bool,
     pub piece_queue: PieceQueue,
     pub is_enabled: bool,
-    last_move_type: LastMoveType
+    last_move_type: LastMoveType,
+    pub nearest_y: u32
 }
 
 impl PieceMgr {
@@ -55,15 +74,19 @@ impl PieceMgr {
         let mut piece = Piece::new(next_piece);
         reset_piece(&mut piece, board_settings.width, board_settings.full_height());
 
+        let cell_holder = Box::new(CellHolder::new(&board_settings));
+        let nearest_y = find_nearest_y(&piece, &cell_holder);
+
         Self {
             cur_piece: piece,
             board_settings,
-            cell_holder: Box::new(CellHolder::new(&board_settings)),
+            cell_holder,
             hold_piece: None,
             is_hold_used: false,
             piece_queue,
             is_enabled: true,
-            last_move_type: LastMoveType::None
+            last_move_type: LastMoveType::None,
+            nearest_y
         }
     }
 
@@ -122,6 +145,7 @@ impl PieceMgr {
         if self.test_movement(-1, 0) {
             self.cur_piece.move_left();
             self.last_move_type = LastMoveType::Movement;
+            self.nearest_y = self.find_nearest_y();
             return true;
         }
 
@@ -132,6 +156,7 @@ impl PieceMgr {
     pub fn move_left_force(&mut self) {
         self.cur_piece.move_left();
         self.last_move_type = LastMoveType::Movement;
+        self.nearest_y = self.find_nearest_y();
     }
 
     /// Tries to move the current piece one cell to the right `delta` times.
@@ -141,6 +166,7 @@ impl PieceMgr {
         if self.test_movement(1, 0) {
             self.cur_piece.move_right();
             self.last_move_type = LastMoveType::Movement;
+            self.nearest_y = self.find_nearest_y();
             return true;
         }
 
@@ -151,6 +177,7 @@ impl PieceMgr {
     pub fn move_right_force(&mut self) {
         self.cur_piece.move_right();
         self.last_move_type = LastMoveType::Movement;
+        self.nearest_y = self.find_nearest_y();
     }
 
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
@@ -168,6 +195,7 @@ impl PieceMgr {
         if let Some(point) = test {
             self.cur_piece.rotate(rotation, point.x, point.y);
             self.last_move_type = LastMoveType::Rotation;
+            self.nearest_y = self.find_nearest_y();
             return true;
         }
 
@@ -177,26 +205,13 @@ impl PieceMgr {
     /// Rotates the piece without performing any wall kick tests.
     pub(crate) fn rotate_force(&mut self, rotation: RotationDirection) {
         self.cur_piece.rotate_simple(rotation);
+        self.nearest_y = self.find_nearest_y();
     }
 
     /// Returns nearest Y coordinate the piece fits at.
     /// May be useful for rendering ghost piece.
     pub fn find_nearest_y(&self) -> u32 {
-        let piece = &self.cur_piece;
-        let mut y = piece.get_y();
-        let points = piece.get_positions();
-
-        for i in piece.get_y()..=(self.board_settings.full_height() as u32) {
-            let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
-            let new_points = adjust_positions_clone(points, offset);
-            if self.cell_holder.intersects_any(&new_points) {
-                break;
-            }
-
-            y = i;
-        }
-
-        y
+        find_nearest_y(&self.cur_piece, &self.cell_holder)
     }
 
     /// Tries to move the current piece one cell down `dt` times.
@@ -206,6 +221,7 @@ impl PieceMgr {
         if self.test_movement(0, 1) {
             self.cur_piece.move_down();
             self.last_move_type = LastMoveType::Movement;
+            self.nearest_y = self.find_nearest_y();
             return true;
         }
         
@@ -216,6 +232,7 @@ impl PieceMgr {
     pub fn soft_drop_force(&mut self) {
         self.cur_piece.move_down();
         self.last_move_type = LastMoveType::Movement;
+        self.nearest_y = self.find_nearest_y();
     }
 
     /// Tries to hard drop the current piece.
@@ -350,6 +367,8 @@ impl PieceMgr {
     fn reset_cur_piece(&mut self) {
         self.last_move_type = LastMoveType::None;
         reset_piece(&mut self.cur_piece, self.board_settings.width, self.board_settings.full_height());
+
+        self.nearest_y = self.find_nearest_y();
     }
 
     pub fn enable(&mut self) {

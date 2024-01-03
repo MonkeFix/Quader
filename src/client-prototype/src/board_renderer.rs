@@ -83,7 +83,7 @@ impl BoardRenderer {
             });
 
         // render ghost piece
-        let ghost_y = board.find_nearest_y();
+        let ghost_y = board.piece_mgr.nearest_y; //board.find_nearest_y();
         points
             .iter()
             .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, ghost_y as i32)))
