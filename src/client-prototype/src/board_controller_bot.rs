@@ -28,7 +28,7 @@ impl BoardControllerBot {
     }
 
     pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
-        self.bot_board.update(dt)
+        self.bot_board.update()
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {

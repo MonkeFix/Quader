@@ -40,6 +40,8 @@ impl TimeMgr {
     pub fn reset(&mut self) {
         self.cur_tick = 0.0;
         self.cur_sec = 0.0;
+        self.cur_ms = 0.0;
+        self.last_dt = 0.0;
     }
 
     pub fn enable(&mut self) {

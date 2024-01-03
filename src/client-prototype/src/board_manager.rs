@@ -61,6 +61,8 @@ impl BoardManager {
         if is_key_pressed(KeyCode::R) {
             let seed = RngManager::from_entropy().gen::<u64>();
 
+            self.time_mgr.write().unwrap().reset();
+
             self.player_board.reset(Some(seed));
             self.bot_board.reset(Some(seed));
         }

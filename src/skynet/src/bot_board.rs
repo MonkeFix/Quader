@@ -66,7 +66,7 @@ impl BotBoard {
         }
     }
 
-    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
         if !self.is_enabled {
             return None;
         }
@@ -76,7 +76,7 @@ impl BotBoard {
             self.move_requested = true;
         }
 
-        self.elapsed_secs += dt;
+        self.elapsed_secs += self.engine_board.time_mgr.as_ref().read().unwrap().last_dt;
 
         if self.bot_settings.target_pps <= 0.0 {
             return self.do_bot_move();
@@ -85,7 +85,7 @@ impl BotBoard {
             return self.do_bot_move();
         }
 
-        self.engine_board.update(dt)
+        self.engine_board.update()
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {

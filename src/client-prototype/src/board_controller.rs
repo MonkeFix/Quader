@@ -139,7 +139,7 @@ impl BoardController {
             self.board.attack(rng.gen_range(0..6));
         }
 
-        if let Some(res) = self.board.update(dt) {
+        if let Some(res) = self.board.update() {
             result = Some(res);
         }
 

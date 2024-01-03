@@ -52,7 +52,7 @@ impl Board {
 
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
-    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
         if !self.is_enabled {
             return None;
         }
