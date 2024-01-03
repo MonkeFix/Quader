@@ -32,6 +32,7 @@ pub struct BoardRenderer {
     texture_atlas: Option<Texture2D>,
     cell_rects: HashMap<CellType, Rect>,
     board_tex: Option<Texture2D>,
+    font: Option<Font>
 }
 
 impl BoardRenderer {
@@ -41,13 +42,15 @@ impl BoardRenderer {
             render_offset: board_height as f32 * CELL_SIZE,
             texture_atlas: None,
             cell_rects: create_cell_rects(),
-            board_tex: None
+            board_tex: None,
+            font: None
         }
     }
 
     pub async fn load_content(&mut self) {
         self.texture_atlas = Some(load_texture("assets/skins/default_3.png").await.unwrap());
         self.board_tex = Some(load_texture("assets/skins/board_default.png").await.unwrap());
+        self.font = Some(load_ttf_font("assets/fonts/FiraCode-Regular.ttf").await.unwrap());
     }
 
     pub fn render(&self, board: &Board) {
@@ -143,6 +146,13 @@ impl BoardRenderer {
 
             total_dmg += dmg.amount;
         }
+
+        // draw stats
+        let x_offset = -180.0;
+        let y_offset = 200.0;
+        draw_text(&format!("Time: {:.2}", board.board_stats.elapsed_seconds), x_offset + self.x, y_offset + self.y, 32., RED);
+        draw_text(&format!("APM: {:.2}", board.board_stats.apm), x_offset + self.x, y_offset + self.y + 34., 32., RED);
+        draw_text(&format!("PPS: {:.2}", board.board_stats.pps), x_offset + self.x, y_offset + self.y + 34. * 2., 32., RED);
     }
 
     pub fn point_to_coords(&self, point: &Point) -> (f32, f32) {
