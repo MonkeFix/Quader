@@ -55,7 +55,8 @@ pub fn cell_to_color(cell: CellType) -> Color {
         CellType::S => *Color::PIECE_S,
         CellType::Z => *Color::PIECE_Z,
         CellType::Garbage => *Color::PIECE_GARBAGE,
-        CellType::Solid => *Color::PIECE_GARBAGE
+        CellType::Solid => *Color::PIECE_GARBAGE,
+        CellType::Ghost => *Color::WHITE
     }
 }
 
@@ -71,6 +72,7 @@ pub fn piece_type_to_color(piece_type: PieceType) -> Color {
         PieceType::Pixel => *Color::PIECE_GARBAGE,
     }
 }
+
 
 pub fn calc_bounds(positions: &[Point], x: i32, y: i32) -> Rect {
     let mut min_x = i32::MAX;

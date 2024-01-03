@@ -58,7 +58,7 @@ impl Default for AttackSettings {
             all_clear: 10,
             b2bs: [1,2,3,4,5],
             combos: [1,2,3,4,5],
-            garbage_delay_ms: 500,
+            garbage_delay_ms: 1000,
         }
     }
 }

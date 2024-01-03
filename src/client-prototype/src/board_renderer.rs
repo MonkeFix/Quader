@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use macroquad::prelude::*;
 use quader_engine::board::Board;
 use quader_engine::cell_holder::CellType;
-use quader_engine::piece::{get_points_for_piece, OffsetType, RotationState};
+use quader_engine::piece::{get_points_for_piece, OffsetType, RotationState, PieceType};
 use quader_engine::primitives::Point;
-use quader_engine::utils::{adjust_point_clone, piece_type_to_cell_type, piece_type_to_offset_type};
+use quader_engine::utils::{adjust_point_clone, piece_type_to_cell_type, piece_type_to_offset_type, piece_type_to_color};
 
 pub const CELL_SIZE: f32 = 32.0;
 
@@ -18,7 +18,8 @@ fn create_cell_rects() -> HashMap<CellType, Rect> {
     result.insert(CellType::I, Rect::new(32. * 4., 0., 32., 32.));
     result.insert(CellType::J, Rect::new(32. * 5., 0., 32., 32.));
     result.insert(CellType::T, Rect::new(32. * 6., 0., 32., 32.));
-    result.insert(CellType::Solid, Rect::new(32. * 7., 0., 32., 32.));
+    result.insert(CellType::Ghost, Rect::new(32. * 7., 0., 32., 32.));
+    result.insert(CellType::Solid, Rect::new(32. * 8., 0., 32., 32.));
     result.insert(CellType::Garbage, Rect::new(32. * 9., 0., 32., 32.));
 
     result
@@ -88,7 +89,8 @@ impl BoardRenderer {
             .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, ghost_y as i32)))
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
-                self.render_cell_type(pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 150);
+                //self.render_cell_type(pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 150);
+                self.render_piece_ghost(pos.0, pos.1 - self.render_offset, piece.get_type(), 150);
             });
 
         // render hold piece
@@ -159,6 +161,17 @@ impl BoardRenderer {
 
         draw_texture_ex(ta, x, y, Color::from_rgba(255, 255, 255, alpha), DrawTextureParams {
             source: Some(self.cell_rects[cell_type].clone()),
+            ..Default::default()
+        });
+    }
+
+    fn render_piece_ghost(&self, x: f32, y: f32, piece_type: PieceType, alpha: u8) {
+        let ta = &self.texture_atlas.as_ref().unwrap();
+
+        let col = piece_type_to_color(piece_type);
+
+        draw_texture_ex(ta, x, y, Color::from_rgba(col.r, col.g, col.b, alpha), DrawTextureParams {
+            source: Some(self.cell_rects[&CellType::Ghost].clone()),
             ..Default::default()
         });
     }

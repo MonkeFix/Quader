@@ -26,7 +26,7 @@ impl BoardManager {
             game_settings,
             seed,
             Arc::clone(&wkd),
-            0.5
+            1.25
         );
 
         Self {
