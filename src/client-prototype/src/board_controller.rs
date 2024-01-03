@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use macroquad::prelude::*;
 
 use quader_engine::board::{Board};
@@ -7,6 +7,7 @@ use quader_engine::piece::{RotationDirection};
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
+use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
 use crate::board_renderer::BoardRenderer;
 
@@ -44,9 +45,9 @@ pub struct BoardController {
 }
 
 impl BoardController {
-    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>) -> Self {
+    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, time_mgr: Arc<RwLock<TimeMgr>>) -> Self {
 
-        let board = Board::new(game_settings, Arc::clone(&wkd), seed);
+        let board = Board::new(game_settings, Arc::clone(&wkd), time_mgr, seed);
 
         dbg!(&game_settings);
 

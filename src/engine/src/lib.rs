@@ -14,7 +14,7 @@ pub mod game_settings;
 pub mod replays;
 pub mod scoring;
 mod gravity_mgr;
-mod time_mgr;
+pub mod time_mgr;
 pub mod piece_mgr;
 mod command_dispatcher;
 pub mod utils;
