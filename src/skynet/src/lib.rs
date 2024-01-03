@@ -1,12 +1,6 @@
-#[cfg(not(target_arch = "wasm32"))]
 mod bot_board;
-#[cfg(not(target_arch = "wasm32"))]
-pub use bot_board::BotBoard;
 
-#[cfg(target_arch = "wasm32")]
-mod bot_board_web;
-#[cfg(target_arch = "wasm32")]
-pub use bot_board_web::BotBoard;
+pub use bot_board::BotBoard;
 use quader_engine::piece::PieceType;
 
 #[derive(Debug, Copy, Clone)]
