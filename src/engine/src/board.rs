@@ -197,6 +197,7 @@ impl Board {
             .iter()
             .for_each(|dmg| {
                 self.garbage_mgr.push_garbage_at(dmg.amount as u32, dmg.hole_x, &mut self.piece_mgr.cell_holder);
+                self.piece_mgr.update_nearest_y();
             });
 
         Ok(move_result)
