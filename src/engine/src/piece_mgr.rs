@@ -295,6 +295,12 @@ impl PieceMgr {
         
         self.last_move_type = LastMoveType::None;
         self.hold_piece = None;
+
+        self.nearest_y = self.find_nearest_y();
+    }
+
+    pub fn update_nearest_y(&mut self) {
+        self.nearest_y = self.find_nearest_y();
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
