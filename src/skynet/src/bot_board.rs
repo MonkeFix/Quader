@@ -22,6 +22,7 @@ pub struct BotBoard {
     move_requested: bool
 }
 
+
 fn create_bot_interface(board: &Board) -> Box<Interface> {
     let mut bot_board = libtetris::Board::new();
     bot_board.add_next_piece(piece_type_to_piece(board.piece_mgr.cur_piece.get_type()));
@@ -29,6 +30,14 @@ fn create_bot_interface(board: &Board) -> Box<Interface> {
         bot_board.add_next_piece(piece_type_to_piece(*pt));
     }
 
+    #[cfg(target_arch = "wasm32")]
+    return Box::new(futures::executor::block_on(Interface::launch(
+        "cold_clear",
+        bot_board,
+        cold_clear::Options::default(),
+        cold_clear::evaluation::Standard::default()
+    )));
+    #[cfg(not(target_arch = "wasm32"))]
     Box::new(Interface::launch(
         bot_board,
         cold_clear::Options::default(),
@@ -96,13 +105,13 @@ impl BotBoard {
         self.bot_interface.suggest_next_move(incoming_garbage);
     }
 
-    pub fn poll_next_move(&self) -> Result<(libtetris::Move, Info), BotPollState> {
+    pub fn poll_next_move(&mut self) -> Result<(Move, Info), BotPollState> {
         self.bot_interface.poll_next_move()
     }
 
-    pub fn block_next_move(&self) -> Option<(libtetris::Move, Info)> {
+    /*pub fn block_next_move(&self) -> Option<(libtetris::Move, Info)> {
         self.bot_interface.block_next_move()
-    }
+    }*/
 
     pub fn play_next_move(&self, falling_piece: libtetris::FallingPiece) {
        self.bot_interface.play_next_move(falling_piece);
