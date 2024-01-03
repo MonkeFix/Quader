@@ -62,8 +62,10 @@ impl Board {
         }
 
         self.time_mgr.update(dt);
-        self.garbage_mgr.update((dt * 1000.0) as u32);
-        match self.gravity_mgr.update(&self.piece_mgr, dt) {
+        
+        self.board_stats.update(&self.time_mgr);
+        self.garbage_mgr.update(&self.time_mgr);
+        match self.gravity_mgr.update(&self.piece_mgr, &self.time_mgr) {
             GravityUpdateResult::None => None,
             GravityUpdateResult::SoftDrop(dt) => {
                 self.soft_drop(dt);

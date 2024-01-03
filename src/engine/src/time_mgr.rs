@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 pub struct TimeMgr {
     pub cur_tick: f64,
     pub cur_sec: f32,
-    pub is_enabled: bool
+    pub cur_ms: f64,
+    pub is_enabled: bool,
+    pub last_dt: f32
 }
 
 impl Default for TimeMgr {
@@ -12,6 +14,8 @@ impl Default for TimeMgr {
         Self {
             cur_tick: 0.0,
             cur_sec: 0.0,
+            cur_ms: 0.0,
+            last_dt: 0.0,
             is_enabled: true
         }
     }
@@ -27,7 +31,9 @@ impl TimeMgr {
             return;
         }
 
+        self.last_dt = dt;
         self.cur_tick += 1.0;
+        self.cur_ms += dt as f64 * 1000.;
         self.cur_sec += dt;
     }
     
