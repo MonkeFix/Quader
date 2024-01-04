@@ -2,11 +2,7 @@
 resolver = "2"
 members = [
     "engine",
-    "client-prototype",
     "server",
-    "engine-c-api",
-    "skynet", 
-    "client", 
     "web-api"
 ]
 
