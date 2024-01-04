@@ -4,7 +4,7 @@ use crate::damage_calculation::{calculate_damage, create_board_move_bits};
 use crate::game_settings::AttackSettings;
 use crate::garbage_mgr::{GarbageHardDropResult, GarbageMgr};
 use crate::scoring::{ScoringMgr, TSpinStatus};
-use crate::time_mgr::{TimeMgr, self};
+use crate::time_mgr::{TimeMgr};
 
 /// Represents just a move done by a player.
 /// This includes lines cleared

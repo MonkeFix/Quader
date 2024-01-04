@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc};
 use macroquad::prelude::*;
 
 use quader_engine::board::{Board};
