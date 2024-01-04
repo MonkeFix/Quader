@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc};
 use cold_clear::{BotPollState, Info, Interface};
 use libtetris::Move;
 use quader_engine::board::Board;

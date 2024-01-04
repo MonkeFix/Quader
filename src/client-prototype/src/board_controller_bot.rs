@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc};
 use quader_engine::{game_settings::GameSettings, time_mgr::TimeMgr};
 use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;

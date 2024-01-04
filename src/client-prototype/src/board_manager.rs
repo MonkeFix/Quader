@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc};
 use macroquad::prelude::{is_key_pressed, KeyCode};
 use quader_engine::game_settings::GameSettings;
 use quader_engine::rng_manager::RngManager;

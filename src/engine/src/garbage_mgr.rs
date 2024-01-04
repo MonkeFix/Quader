@@ -4,7 +4,7 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::game_settings::AttackSettings;
-use crate::time_mgr::{self, TimeMgr};
+use crate::time_mgr::{TimeMgr};
 
 #[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct IncomingDamage {

@@ -1,6 +1,6 @@
 use crate::game_settings::{GravitySettings};
 use crate::piece_mgr::PieceMgr;
-use crate::time_mgr::{self, TimeMgr};
+use crate::time_mgr::{TimeMgr};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GravityUpdateResult {
