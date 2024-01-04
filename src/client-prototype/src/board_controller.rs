@@ -45,9 +45,9 @@ pub struct BoardController {
 }
 
 impl BoardController {
-    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, time_mgr: Arc<RwLock<TimeMgr>>) -> Self {
+    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>) -> Self {
 
-        let board = Board::new(game_settings, Arc::clone(&wkd), time_mgr, seed);
+        let board = Board::new(game_settings, Arc::clone(&wkd), seed);
 
         dbg!(&game_settings);
 
@@ -74,8 +74,8 @@ impl BoardController {
         self.board_renderer.render(&self.board);
     }
 
-    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
-        let elapsed = dt * 1000.0; // convert to milliseconds
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+        let elapsed = time_mgr.last_dt * 1000.0; // convert to milliseconds
         let mut result = None;
 
         if is_key_pressed(KeyCode::Left) {
@@ -139,7 +139,7 @@ impl BoardController {
             self.board.attack(rng.gen_range(0..6));
         }
 
-        if let Some(res) = self.board.update() {
+        if let Some(res) = self.board.update(time_mgr) {
             result = Some(res);
         }
 
