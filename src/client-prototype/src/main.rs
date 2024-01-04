@@ -8,6 +8,7 @@ mod board_renderer;
 mod board_controller_bot;
 mod board_manager;
 mod board_controller_remote;
+mod assets;
 
 fn window_conf() -> Conf {
     Conf {

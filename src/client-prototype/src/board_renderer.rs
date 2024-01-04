@@ -5,34 +5,13 @@ use quader_engine::cell_holder::CellType;
 use quader_engine::piece::{get_points_for_piece, OffsetType, RotationState, PieceType};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{adjust_point_clone, piece_type_to_cell_type, piece_type_to_offset_type, piece_type_to_color};
+use crate::assets::{Assets, CELL_SIZE};
 
-pub const CELL_SIZE: f32 = 32.0;
-
-
-fn create_cell_rects() -> HashMap<CellType, Rect> {
-    let mut result = HashMap::new();
-    result.insert(CellType::Z, Rect::new(32. * 0., 0., 32., 32.));
-    result.insert(CellType::L, Rect::new(32. * 1., 0., 32., 32.));
-    result.insert(CellType::O, Rect::new(32. * 2., 0., 32., 32.));
-    result.insert(CellType::S, Rect::new(32. * 3., 0., 32., 32.));
-    result.insert(CellType::I, Rect::new(32. * 4., 0., 32., 32.));
-    result.insert(CellType::J, Rect::new(32. * 5., 0., 32., 32.));
-    result.insert(CellType::T, Rect::new(32. * 6., 0., 32., 32.));
-    result.insert(CellType::Ghost, Rect::new(32. * 7., 0., 32., 32.));
-    result.insert(CellType::Solid, Rect::new(32. * 8., 0., 32., 32.));
-    result.insert(CellType::Garbage, Rect::new(32. * 9., 0., 32., 32.));
-
-    result
-}
 
 pub struct BoardRenderer {
     pub x: f32,
     pub y: f32,
-    pub render_offset: f32,
-    texture_atlas: Option<Texture2D>,
-    cell_rects: HashMap<CellType, Rect>,
-    board_tex: Option<Texture2D>,
-    font: Option<Font>
+    pub render_offset: f32
 }
 
 impl BoardRenderer {
@@ -40,22 +19,11 @@ impl BoardRenderer {
         Self {
             x, y,
             render_offset: board_height as f32 * CELL_SIZE,
-            texture_atlas: None,
-            cell_rects: create_cell_rects(),
-            board_tex: None,
-            font: None
         }
     }
 
-    pub async fn load_content(&mut self) {
-        self.texture_atlas = Some(load_texture("assets/skins/default_3.png").await.unwrap());
-        self.board_tex = Some(load_texture("assets/skins/board_default.png").await.unwrap());
-        self.font = Some(load_ttf_font("assets/fonts/FiraCode-Regular.ttf").await.unwrap());
-    }
-
-    pub fn render(&self, board: &Board) {
-        let board_tex = self.board_tex.as_ref().unwrap();
-        draw_texture(board_tex, self.x - 188., self.y - 1., WHITE);
+    pub fn render(&self, assets: &Assets, board: &Board) {
+        draw_texture(&assets.board_tex, self.x - 188., self.y - 1., WHITE);
 
         // render board layout
         let layout = board.get_cell_holder();
@@ -65,7 +33,7 @@ impl BoardRenderer {
                 let pos = self.i32_to_coords(x as i32, y as i32);
 
                 if cell != CellType::None {
-                    self.render_cell_type(pos.0, pos.1 - self.render_offset, &cell, 255);
+                    self.render_cell_type(assets, pos.0, pos.1 - self.render_offset, &cell, 255);
                 } else if y >= board.game_settings.board.height {
                     draw_rectangle(pos.0, pos.1 - self.render_offset, 32., 32., Color::from_rgba(20, 20, 20, 230));
                     draw_rectangle_lines(pos.0, pos.1 - self.render_offset, 32., 32., 1., Color::from_rgba(255, 255, 255, 25));
@@ -82,7 +50,7 @@ impl BoardRenderer {
             .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, piece.get_y() as i32)))
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
-                self.render_cell_type(pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 255);
+                self.render_cell_type(assets, pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 255);
             });
 
         // render ghost piece
@@ -93,7 +61,7 @@ impl BoardRenderer {
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
                 //self.render_cell_type(pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 150);
-                self.render_piece_ghost(pos.0, pos.1 - self.render_offset, piece.get_type(), 150);
+                self.render_piece_ghost(assets, pos.0, pos.1 - self.render_offset, piece.get_type(), 150);
             });
 
         // render hold piece
@@ -105,7 +73,7 @@ impl BoardRenderer {
                 //.map(|p| adjust_point_clone(p, Point::new(p.x, p.y)))
                 .for_each(|p| {
                     let pos = self.point_to_coords(&p);
-                    self.render_cell_type(pos.0 - 110., pos.1 + 86., &piece_type_to_cell_type(hold_piece), 255);
+                    self.render_cell_type(assets, pos.0 - 110., pos.1 + 86., &piece_type_to_cell_type(hold_piece), 255);
                 });
         }
 
@@ -129,7 +97,7 @@ impl BoardRenderer {
                         88. + pos.1 + 96. * y as f32
                     );
 
-                    self.render_cell_type(pos.0, pos.1, &piece_type_to_cell_type(*piece_type), 255)
+                    self.render_cell_type(assets, pos.0, pos.1, &piece_type_to_cell_type(*piece_type), 255)
                 });
         }
 
@@ -165,23 +133,23 @@ impl BoardRenderer {
         )
     }
 
-    fn render_cell_type(&self, x: f32, y: f32, cell_type: &CellType, alpha: u8) {
+    fn render_cell_type(&self, assets: &Assets, x: f32, y: f32, cell_type: &CellType, alpha: u8) {
 
-        let ta = &self.texture_atlas.as_ref().unwrap();
+        let ta = &assets.texture_atlas;
 
         draw_texture_ex(ta, x, y, Color::from_rgba(255, 255, 255, alpha), DrawTextureParams {
-            source: Some(self.cell_rects[cell_type].clone()),
+            source: Some(assets.source_rect(cell_type)),
             ..Default::default()
         });
     }
 
-    fn render_piece_ghost(&self, x: f32, y: f32, piece_type: PieceType, alpha: u8) {
-        let ta = &self.texture_atlas.as_ref().unwrap();
+    fn render_piece_ghost(&self, assets: &Assets, x: f32, y: f32, piece_type: PieceType, alpha: u8) {
+        let ta = &assets.texture_atlas;
 
         let col = piece_type_to_color(piece_type);
 
         draw_texture_ex(ta, x, y, Color::from_rgba(col.r, col.g, col.b, alpha), DrawTextureParams {
-            source: Some(self.cell_rects[&CellType::Ghost].clone()),
+            source: Some(assets.source_rect(&CellType::Ghost)),
             ..Default::default()
         });
     }
