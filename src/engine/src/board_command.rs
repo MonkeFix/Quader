@@ -24,6 +24,7 @@ pub enum BoardCommand {
     SoftDrop(u32),
     // amount, messiness
     SendGarbage(u32, u32),
+    Attack(i32),
     // delta
     Update(f32),
     HoldPiece,

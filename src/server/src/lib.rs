@@ -3,6 +3,7 @@ use warp::reject::Rejection;
 pub mod client;
 pub mod handler;
 pub mod filter;
+pub mod lobby;
 
 pub type Result<T> = std::result::Result<T, Rejection>;
 
