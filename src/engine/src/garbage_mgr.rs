@@ -167,7 +167,7 @@ impl GarbageMgr {
 
     pub fn update(&mut self, time_mgr: &TimeMgr) {
         for dmg in self.queue.iter_mut() {
-            dmg.delay = dmg.delay.saturating_sub(time_mgr.cur_ms as u32);
+            dmg.delay = dmg.delay.saturating_sub(time_mgr.cur_sec as u32);
         }
     }
 
