@@ -9,6 +9,7 @@ use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
+use crate::assets::Assets;
 use crate::board_renderer::BoardRenderer;
 
 struct PieceMover {
@@ -66,12 +67,8 @@ impl BoardController {
         }
     }
 
-    pub async fn load_content(&mut self) {
-        self.board_renderer.load_content().await;
-    }
-
-    pub fn render(&self) {
-        self.board_renderer.render(&self.board);
+    pub fn render(&self, assets: &Assets) {
+        self.board_renderer.render(assets, &self.board);
     }
 
     pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {

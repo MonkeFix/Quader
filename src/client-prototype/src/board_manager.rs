@@ -4,6 +4,7 @@ use quader_engine::game_settings::GameSettings;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
+use crate::assets::Assets;
 use crate::board_controller::BoardController;
 use crate::board_controller_bot::BoardControllerBot;
 
@@ -11,7 +12,8 @@ pub struct BoardManager {
     pub player_board: Box<BoardController>,
     pub bot_board: Box<BoardControllerBot>,
     pub game_settings: GameSettings,
-    pub time_mgr: TimeMgr
+    pub time_mgr: TimeMgr,
+    pub assets: Option<Assets>
 }
 
 impl BoardManager {
@@ -44,13 +46,13 @@ impl BoardManager {
             player_board: Box::new(player_board),
             bot_board: Box::new(bot_board),
             game_settings,
-            time_mgr
+            time_mgr,
+            assets: None
         }
     }
 
     pub async fn load_content(&mut self) {
-        self.player_board.load_content().await;
-        self.bot_board.load_content().await;
+        self.assets = Some(Assets::load().await);
     }
 
     pub fn update(&mut self, dt: f32) {
@@ -88,7 +90,11 @@ impl BoardManager {
     }
 
     pub fn render(&self) {
-        self.player_board.render();
-        self.bot_board.render();
+        if let Some(assets) = &self.assets {
+            self.player_board.render(assets);
+            self.bot_board.render(assets);
+        } else {
+            panic!("assets are not loaded!");
+        }
     }
 }

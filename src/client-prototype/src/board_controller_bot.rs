@@ -4,6 +4,7 @@ use quader_engine::piece_mgr::UpdateErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::wall_kick_data::WallKickData;
 use quader_skynet::{BotBoard, BotSettings};
+use crate::assets::Assets;
 use crate::board_renderer::BoardRenderer;
 
 pub struct BoardControllerBot {
@@ -19,12 +20,8 @@ impl BoardControllerBot {
         }
     }
 
-    pub async fn load_content(&mut self) {
-        self.board_renderer.load_content().await;
-    }
-
-    pub fn render(&self) {
-        self.board_renderer.render(&self.bot_board.engine_board)
+    pub fn render(&self, assets: &Assets) {
+        self.board_renderer.render(assets, &self.bot_board.engine_board)
     }
 
     pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
