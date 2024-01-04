@@ -1,8 +1,10 @@
 use std::{sync::{atomic::AtomicUsize, Arc}, collections::HashMap, time::Duration};
 use std::sync::atomic::Ordering;
+use std::time::SystemTime;
 use futures::{stream::{SplitStream, SplitSink}, StreamExt, SinkExt, TryFutureExt};
 use log::{error, debug, info};
 use tokio::{sync::{mpsc, RwLock, oneshot}, time::{timeout, sleep}, select};
+use tokio::time::Instant;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::filters::ws::{Message, WebSocket};
 
@@ -54,7 +56,18 @@ pub async fn client_connected(ws: WebSocket) {
     let client = Client::new(id, client_sender, pong_tx);
     tokio::task::spawn(receiver(client_ws_rcv, client.clone(), terminate_tx));
 
-    pinger(id, pong_rx, client, terminate_rx).await;
+
+    let (terminate_tx2, terminate_rx2) = oneshot::channel();
+    select! {
+        _ = pinger(id, pong_rx, client, terminate_rx) => {},
+        _ = board_updater(id, terminate_rx2) => {}
+    }
+    /*info!("setting up pinger");
+    .await;
+
+    info!("setting up updater");
+    let (terminate_tx, terminate_rx) = oneshot::channel();
+    .await;*/
 }
 
 async fn process_message(client: &Client, msg: &str) {
@@ -142,6 +155,40 @@ async fn pinger(client_id: ID, mut pong_rx: mpsc::UnboundedReceiver<()>, client:
         }
         _ = terminate_rx => {
             debug!("Pinger for client {} is terminated due to client closure", client_id)
+        }
+    }
+}
+
+const MS_PER_UPDATE: f64 = 1.0 / 30.0; // 30 times per second
+
+async fn board_updater(client_id: ID, terminate_rx: oneshot::Receiver<()>) {
+    let update = async move {
+        let mut prev = Instant::now();
+        let mut lag = 0.0;
+
+        loop {
+            let curr = Instant::now();
+            let elapsed = curr - prev;
+            prev = curr;
+            lag += elapsed.as_secs_f64();
+
+            // process_input();
+
+            while lag >= MS_PER_UPDATE {
+                // board.update();
+                info!("Update!");
+                lag -= MS_PER_UPDATE;
+            }
+
+            // do other stuff
+        }
+    };
+    select! {
+        _ = update => {
+            debug!("Updater for client {} is terminated due to timeout", client_id)
+        }
+        _ = terminate_rx => {
+            debug!("Updater for client {} is terminated due to client closure", client_id)
         }
     }
 }
