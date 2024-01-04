@@ -48,9 +48,14 @@ fn create_bot_interface(board: &Board) -> Box<Interface> {
 }
 
 impl BotBoard {
-    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64, bot_settings: BotSettings, time_mgr: Arc<RwLock<TimeMgr>>) -> Self {
+    pub fn new(
+        game_settings: GameSettings,
+        wkd: Arc<WallKickData>,
+        seed: u64,
+        bot_settings: BotSettings
+    ) -> Self {
 
-        let board = Board::new(game_settings, wkd, time_mgr, seed);
+        let board = Board::new(game_settings, wkd, seed);
 
         let bot_interface = create_bot_interface(&board);
 
@@ -66,7 +71,7 @@ impl BotBoard {
         }
     }
 
-    pub fn update(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
         if !self.is_enabled {
             return None;
         }
@@ -76,7 +81,7 @@ impl BotBoard {
             self.move_requested = true;
         }
 
-        self.elapsed_secs += self.engine_board.time_mgr.as_ref().read().unwrap().last_dt;
+        self.elapsed_secs += time_mgr.last_dt;
 
         if self.bot_settings.target_pps <= 0.0 {
             return self.do_bot_move();
@@ -85,7 +90,7 @@ impl BotBoard {
             return self.do_bot_move();
         }
 
-        self.engine_board.update()
+        self.engine_board.update(time_mgr)
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {

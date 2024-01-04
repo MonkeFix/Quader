@@ -98,7 +98,7 @@ impl MoveResult {
         garbage_mgr: &mut GarbageMgr,
         cell_holder: &CellHolder,
         move_queue: Vec<MoveAction>,
-        time_mgr: &TimeMgr
+        cur_sec: f32
     ) -> MoveResult {
         let mut result = MoveResult {
             is_success: true,
@@ -106,7 +106,7 @@ impl MoveResult {
             combo: scoring_mgr.combo,
             hard_drop_info,
             move_queue,
-            timestamp: time_mgr.cur_sec,
+            timestamp: cur_sec,
             ..Default::default()
         };
 
@@ -156,7 +156,7 @@ impl BoardStats {
 
     /// Updates elapsed seconds to correctly calculate APM and PPS.
     pub fn update(&mut self, time_mgr: &TimeMgr) {
-        self.elapsed_seconds = time_mgr.cur_sec;
+        self.elapsed_seconds = time_mgr.elapsed_sec;
         self.pps = self.total_pieces as f32 / self.elapsed_seconds;
         self.apm = self.total_pieces as f32 / (self.elapsed_seconds / 60.0);
     }

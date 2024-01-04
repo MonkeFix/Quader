@@ -12,9 +12,9 @@ pub struct BoardControllerBot {
 }
 
 impl BoardControllerBot {
-    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, time_mgr: Arc<RwLock<TimeMgr>>, target_pps: f32) -> Self {
+    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>, target_pps: f32) -> Self {
         Self {
-            bot_board: Box::new(BotBoard::new(game_settings, wkd, seed, BotSettings { target_pps }, time_mgr)),
+            bot_board: Box::new(BotBoard::new(game_settings, wkd, seed, BotSettings { target_pps })),
             board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
         }
     }
@@ -27,8 +27,8 @@ impl BoardControllerBot {
         self.board_renderer.render(&self.bot_board.engine_board)
     }
 
-    pub fn update(&mut self, dt: f32) -> Option<Result<MoveResult, UpdateErrorReason>> {
-        self.bot_board.update()
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+        self.bot_board.update(time_mgr)
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {

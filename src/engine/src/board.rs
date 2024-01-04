@@ -23,14 +23,14 @@ pub struct Board {
     pub board_stats: BoardStats,
     pub is_dead: bool,
     pub garbage_mgr: GarbageMgr,
+    pub replay_mgr: ReplayMgr,
 
-    pub time_mgr: Arc<RwLock<TimeMgr>>,
-    pub replay_mgr: ReplayMgr
+    cur_sec: f32
 }
 
 impl Board {
 
-    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, time_mgr: Arc<RwLock<TimeMgr>>, seed: u64) -> Self {
+    pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64) -> Self {
 
         let gravity_mgr = GravityMgr::new(&game_settings.gravity);
         let piece_mgr = Box::new(PieceMgr::new(&game_settings, seed));
@@ -45,14 +45,14 @@ impl Board {
             board_stats: BoardStats::default(),
             is_dead: false,
             garbage_mgr: GarbageMgr::new(&game_settings.attack),
-            time_mgr,
-            replay_mgr: ReplayMgr::default()
+            replay_mgr: ReplayMgr::default(),
+            cur_sec: 0.0
         }
     }
 
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
-    pub fn update(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
         if !self.is_enabled {
             return None;
         }
@@ -61,14 +61,12 @@ impl Board {
             return Some(Err(UpdateErrorReason::BoardDead));
         }
 
-        // self.time_mgr.update(dt);
+        self.cur_sec = time_mgr.elapsed_sec;
 
-        //let time_mgr: &TimeMgr = &self.time_mgr.as_ref().read().unwrap();
+        self.board_stats.update(time_mgr);
+        self.garbage_mgr.update(time_mgr);
 
-        self.board_stats.update(&self.time_mgr.as_ref().read().unwrap());
-        self.garbage_mgr.update(&self.time_mgr.as_ref().read().unwrap());
-
-        let res = self.gravity_mgr.update(&self.piece_mgr, &self.time_mgr.as_ref().read().unwrap());
+        let res = self.gravity_mgr.update(&self.piece_mgr, time_mgr);
         match res {
             GravityUpdateResult::None => None,
             GravityUpdateResult::SoftDrop(dt) => {
@@ -87,7 +85,7 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_left() {
-                self.replay_mgr.push_move(self.time_mgr.as_ref().read().unwrap().cur_sec, MoveAction::MoveLeft);
+                self.replay_mgr.push_move(self.cur_sec, MoveAction::MoveLeft);
                 moves_count += 1;
             }
         }
@@ -101,7 +99,7 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_right() {
-                self.replay_mgr.push_move(self.time_mgr.as_ref().read().unwrap().cur_sec, MoveAction::MoveRight);
+                self.replay_mgr.push_move(self.cur_sec, MoveAction::MoveRight);
                 moves_count += 1;
             }
         }
@@ -120,7 +118,7 @@ impl Board {
                 RotationDirection::CounterClockwise => MoveAction::RotateCCW,
                 RotationDirection::Deg180 => MoveAction::RotateDeg180
             };
-            self.replay_mgr.push_move(self.time_mgr.as_ref().read().unwrap().cur_sec, action);
+            self.replay_mgr.push_move(self.cur_sec, action);
 
             return Some(self.piece_mgr.cur_piece.current_rotation)
         }
@@ -135,7 +133,7 @@ impl Board {
         let result = self.piece_mgr.hold_piece();
 
         if let Some(_) = result {
-            self.replay_mgr.push_move(self.time_mgr.as_ref().read().unwrap().cur_sec, MoveAction::HoldPiece);
+            self.replay_mgr.push_move(self.cur_sec, MoveAction::HoldPiece);
         }
 
         result
@@ -175,8 +173,6 @@ impl Board {
             return Err(UpdateErrorReason::BoardDead);
         }
 
-        let time_mgr: &TimeMgr = &self.time_mgr.as_ref().read().unwrap();
-
         let piece_mgr = &mut self.piece_mgr;
         // apply the piece onto board
         let hard_drop_info = piece_mgr.hard_drop()?;
@@ -185,7 +181,7 @@ impl Board {
         // update board stats (apm, pps, etc.)
         self.board_stats.hard_drop(&hard_drop_info, &self.scoring_mgr);
         // add the move to the replay manager
-        self.replay_mgr.push_move(time_mgr.cur_sec, MoveAction::HardDrop);
+        self.replay_mgr.push_move(self.cur_sec, MoveAction::HardDrop);
 
         let move_queue = self.replay_mgr.end_move();
 
@@ -197,7 +193,7 @@ impl Board {
             &mut self.garbage_mgr,
             &self.piece_mgr.cell_holder,
             move_queue,
-            time_mgr
+            self.cur_sec
         );
 
         // if the attack is negative, the board received damage; pushing garbage then
@@ -221,7 +217,7 @@ impl Board {
         for _ in 0..dt {
             if self.piece_mgr.soft_drop() {
                 self.gravity_mgr.reset_lock();
-                self.replay_mgr.push_move(self.time_mgr.as_ref().read().unwrap().cur_sec, MoveAction::SoftDrop);
+                self.replay_mgr.push_move(self.cur_sec, MoveAction::SoftDrop);
                 amount_moved += 1;
             }
         }

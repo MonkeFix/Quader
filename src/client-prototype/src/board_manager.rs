@@ -11,7 +11,7 @@ pub struct BoardManager {
     pub player_board: Box<BoardController>,
     pub bot_board: Box<BoardControllerBot>,
     pub game_settings: GameSettings,
-    pub time_mgr: Arc<RwLock<TimeMgr>>
+    pub time_mgr: TimeMgr
 }
 
 impl BoardManager {
@@ -21,15 +21,14 @@ impl BoardManager {
         let seed = RngManager::from_entropy().gen();
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
 
-        let time_mgr = Arc::new(RwLock::new(TimeMgr::new()));
+        let time_mgr = TimeMgr::new();
 
         let player_board = BoardController::new(
             300., 
             128., 
             game_settings, 
             seed, 
-            Arc::clone(&wkd),
-            Arc::clone(&time_mgr)
+            Arc::clone(&wkd)
         );
 
         let bot_board = BoardControllerBot::new(
@@ -38,7 +37,6 @@ impl BoardManager {
             game_settings,
             seed,
             Arc::clone(&wkd),
-            Arc::clone(&time_mgr),
             1.25
         );
 
@@ -56,18 +54,18 @@ impl BoardManager {
     }
 
     pub fn update(&mut self, dt: f32) {
-        self.time_mgr.write().unwrap().update(dt);
+        self.time_mgr.update(dt);
 
         if is_key_pressed(KeyCode::R) {
             let seed = RngManager::from_entropy().gen::<u64>();
 
-            self.time_mgr.write().unwrap().reset();
+            self.time_mgr.reset();
 
             self.player_board.reset(Some(seed));
             self.bot_board.reset(Some(seed));
         }
 
-        if let Some(hd) = self.player_board.update(dt) {
+        if let Some(hd) = self.player_board.update(&self.time_mgr) {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
@@ -77,7 +75,7 @@ impl BoardManager {
                 Err(_) => {}
             }
         }
-        if let Some(hd) = self.bot_board.update(dt) {
+        if let Some(hd) = self.bot_board.update(&self.time_mgr) {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
