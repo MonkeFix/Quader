@@ -8,7 +8,7 @@ members = [
     "skynet", 
     #"client",
     "web-api"
-]
+, "server-prototype"]
 
 [profile.release]
 lto = true
