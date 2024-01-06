@@ -1,5 +1,6 @@
 use std::sync::{Arc};
-use macroquad::prelude::{is_key_pressed, KeyCode};
+use macroquad::miniquad::log;
+use macroquad::prelude::{info, is_key_pressed, KeyCode};
 use quader_engine::game_settings::GameSettings;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::time_mgr::TimeMgr;
@@ -74,7 +75,9 @@ impl BoardManager {
                         let _ = &self.bot_board.bot_board.engine_board.attack(hd.attack.out_damage);
                     }
                 }
-                Err(_) => {}
+                Err(_) => {
+                    info!("Player is dead.");
+                }
             }
         }
         if let Some(hd) = self.bot_board.update(&self.time_mgr) {
@@ -84,7 +87,9 @@ impl BoardManager {
                         let _ = &self.player_board.board.attack(hd.attack.out_damage);
                     }
                 }
-                Err(_) => {}
+                Err(_) => {
+                    info!("Bot is dead.")
+                }
             }
         }
     }
