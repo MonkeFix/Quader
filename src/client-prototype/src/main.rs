@@ -9,6 +9,9 @@ mod board_controller_bot;
 mod board_manager;
 mod board_controller_remote;
 mod assets;
+mod scene;
+mod entity;
+mod state_machine;
 
 fn window_conf() -> Conf {
     Conf {
