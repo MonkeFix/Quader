@@ -2,7 +2,7 @@
 
 [![.NET Client Application](https://github.com/lunacys/Quader/actions/workflows/client-app.yml/badge.svg?branch=master)](https://github.com/lunacys/Quader/actions/workflows/client-app.yml)
 
-A Cross-Platform Online stacker puzzle game written in C# using MonoGame Framework.
+A Cross-Platform Online stacker puzzle game written in Rust. Includes client and server.
 
 
 ## Features/Ideas
@@ -15,6 +15,5 @@ A Cross-Platform Online stacker puzzle game written in C# using MonoGame Framewo
 ## Docs
 
  - [TODO List](/docs/TODO.md)
- - [Games Comparison](/docs/GAMES_COMP.md)
  - [Server Architecture](/docs/SERVER_ARCH.md)
  - [Quader Architecture](/docs/GAME_ARCH.md)
