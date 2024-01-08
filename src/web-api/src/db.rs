@@ -21,6 +21,8 @@ impl DBClient {
             .await
             .expect("Failed to initialize database connection pool.");
 
+        sqlx::migrate!().run(&pool).await.expect("Failed to execute migrations.");
+
         DBClient { pool }
     }
 }
