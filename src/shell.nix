@@ -17,7 +17,7 @@ pkgs.mkShell rec {
   RUSTFLAGS = (builtins.map (a: ''-L ${a}/lib'') [
     # add libraries here (e.g. pkgs.libvmi)
   ]);
-  PKG_CONFIG_PATH="${pkgs.alsa-lib.dev}/lib/pkgconfig:${pkgs.udev.dev}/lib/pkgconfig";
+  PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.alsa-lib.dev}/lib/pkgconfig:${pkgs.udev.dev}/lib/pkgconfig";
   # Add glibc, clang, glib and other headers to bindgen search path
   BINDGEN_EXTRA_CLANG_ARGS =
   # Includes with normal include path
