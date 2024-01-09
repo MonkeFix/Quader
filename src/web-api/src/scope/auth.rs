@@ -82,4 +82,17 @@ pub mod handler {
             Err(HttpError::unauthorized(crate::Error::WrongCredentials))
         }
     }
+
+    #[post("/logout")]
+    pub async fn logout() -> impl Responder {
+        let cookie = Cookie::build("token", "")
+            .path("/")
+            .max_age(cookie::time::Duration::new(-1, 0))
+            .http_only(true)
+            .finish();
+
+        HttpResponse::Ok()
+            .cookie(cookie)
+            .json(json!({"status": "success"}))
+    }
 }
