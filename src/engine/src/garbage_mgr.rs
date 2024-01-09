@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::collections::VecDeque;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;

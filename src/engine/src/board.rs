@@ -1,4 +1,9 @@
-﻿use std::sync::{Arc};
+﻿/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
+use std::sync::{Arc};
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;

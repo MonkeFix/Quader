@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::collections::HashMap;
 use macroquad::math::Rect;
 use macroquad::prelude::{Font, load_texture, load_ttf_font, Texture2D};

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use crate::game_settings::{GravitySettings};
 use crate::piece_mgr::PieceMgr;
 use crate::time_mgr::{TimeMgr};

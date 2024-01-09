@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use crate::cell_holder::{CellHolder, CellType};
 use crate::damage_calculation::check_t_overhang;
 use crate::game_settings::{BoardSettings, GameSettings};

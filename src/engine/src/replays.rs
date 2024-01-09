@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use serde::{Deserialize, Serialize};
 use crate::cell_holder::CellHolder;
 use crate::damage_calculation::{calculate_damage, create_board_move_bits};

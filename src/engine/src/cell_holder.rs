@@ -1,4 +1,9 @@
-﻿use std::slice::Iter;
+﻿/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
+use std::slice::Iter;
 use serde::{Deserialize, Serialize};
 use crate::game_settings::{BoardSettings};
 use crate::primitives::{Point, Rect};

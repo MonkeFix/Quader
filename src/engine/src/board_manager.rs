@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 /*use std::cell::{RefCell};
 use std::collections::HashMap;
 use std::ops::DerefMut;

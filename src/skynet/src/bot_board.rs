@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::sync::{Arc};
 use cold_clear::{BotPollState, Info, Interface};
 use libtetris::Move;
