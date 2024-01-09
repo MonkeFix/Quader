@@ -24,7 +24,8 @@ async fn main() -> anyhow::Result<()> {
             .app_data(web::Data::new(app_state.clone()))
             .wrap(Logger::default())
             .service(web::scope("/api")
-                        .service(health_handler))
+                        .service(health_handler)
+                        .service(web_api::scope::auth()))
     })
     .bind(("0.0.0.0", config.port))?
     .run()
