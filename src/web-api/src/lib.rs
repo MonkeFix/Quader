@@ -8,5 +8,6 @@ pub mod model;
 pub mod utils;
 pub mod scope;
 pub mod dto;
+pub mod middleware;
 
 pub use crate::error::Error as Error; // lets address it as `web_api::Error` or `crate::Error`
