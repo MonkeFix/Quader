@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::ops::{Add, AddAssign};
 use crate::cell_holder::CellType;
 use crate::piece::{OffsetType, PieceType};

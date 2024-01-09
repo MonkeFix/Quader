@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::{sync::{atomic::AtomicUsize, Arc}, collections::HashMap, time::Duration};
 use std::sync::atomic::Ordering;
 use std::time::SystemTime;

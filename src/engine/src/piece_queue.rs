@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
+ * See the LICENCE file in the repository root for full licence text.
+ */
+
 use std::collections::VecDeque;
 use crate::piece::PieceType;
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
