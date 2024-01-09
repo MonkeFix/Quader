@@ -99,8 +99,8 @@ async fn run(
     wkd: Arc<WallKickData>,
     seed: u64
 ) {
-    let time_mgr = Arc::new(RwLock::new(TimeMgr::new()));
-    let mut board = Board::new(game_settings, wkd, time_mgr, seed);
+    let time_mgr = TimeMgr::new();
+    let mut board = Board::new(game_settings, wkd, seed);
 
     while !board.is_dead {
         match recv.recv().await {
@@ -117,7 +117,7 @@ async fn run(
                     BoardCommand::SoftDrop(dt) => { board.soft_drop(dt); None }
                     BoardCommand::SendGarbage(amount, messiness) => { board.push_garbage(amount, messiness); None }
                     BoardCommand::Attack(damage) => { board.attack(damage); None }
-                    BoardCommand::Update(dt) => { board.update() }
+                    BoardCommand::Update(dt) => { board.update(&time_mgr) }
                     BoardCommand::HoldPiece => { board.hold_piece(); None }
                     BoardCommand::RequestBoardLayout => { None }
                 };
