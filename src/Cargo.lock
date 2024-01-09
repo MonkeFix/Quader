@@ -1247,13 +1247,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quader_engine_c_api"
-version = "0.1.0"
-dependencies = [
- "quader_engine",
-]
-
-[[package]]
 name = "quader_skynet"
 version = "0.1.0"
 dependencies = [
