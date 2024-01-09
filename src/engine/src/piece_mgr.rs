@@ -15,10 +15,11 @@ use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
 use crate::wall_kick_data::WallKickData;
 
 #[derive(Debug, Copy, Clone)]
-pub enum UpdateErrorReason {
+pub enum BoardErrorReason {
     CannotApplyPiece,
     BoardDead,
-    BoardDisabled
+    BoardDisabled,
+    CannotSpawnPiece
 }
 
 fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
@@ -95,18 +96,24 @@ impl PieceMgr {
         }
     }
 
-    pub fn create_piece(&mut self, piece_type: PieceType) -> &Piece {
+    pub fn try_create_piece(&mut self, piece_type: PieceType) -> Result<&Piece, BoardErrorReason> {
         let piece = Piece::new(piece_type);
 
         self.cur_piece = piece;
         self.reset_cur_piece();
 
-        self.get_piece()
-    }
+        let adjusted = adjust_positions_clone(
+            self.cur_piece.get_positions(),
+            Point::new(
+                self.cur_piece.get_x() as i32,
+                self.cur_piece.get_y() as i32
+            )
+        );
+        if self.cell_holder.intersects_any(&adjusted) {
+            return Err(BoardErrorReason::CannotSpawnPiece);
+        }
 
-    pub fn set_piece(&mut self, piece: Piece) {
-        self.cur_piece = piece;
-        self.reset_cur_piece();
+        Ok(self.get_piece())
     }
 
     pub fn get_piece(&self) -> &Piece {
@@ -118,7 +125,7 @@ impl PieceMgr {
     }
 
     /// Holds current piece if possible. If success, returns `Some(&Piece)`, otherwise `None`.
-    pub fn hold_piece(&mut self) -> Option<&Piece> {
+    pub fn try_hold_piece(&mut self) -> Option<Result<&Piece, BoardErrorReason>> {
         // we can hold piece once per turn
         if self.is_hold_used {
             return None;
@@ -132,14 +139,14 @@ impl PieceMgr {
             let curr_piece = self.get_piece();
             self.hold_piece = Some(curr_piece.get_type());
 
-            Some(self.create_piece(piece))
+            Some(self.try_create_piece(piece))
         } else {
             // otherwise put current piece to hold and set a new piece
             self.hold_piece = Some(self.get_piece().get_type());
 
             let new_piece = self.piece_queue.next();
 
-            Some(self.create_piece(new_piece))
+            Some(self.try_create_piece(new_piece))
         }
     }
 
@@ -243,7 +250,7 @@ impl PieceMgr {
     /// Tries to hard drop the current piece.
     /// The method checks if the piece could fit in the desired cells.
     /// If it fails, returns `Err(UpdateErrorReason)`.
-    pub fn hard_drop(&mut self) -> Result<HardDropInfo, UpdateErrorReason> {
+    pub fn hard_drop(&mut self) -> Result<HardDropInfo, BoardErrorReason> {
         let nearest_y = self.find_nearest_y();
 
         let tspin_status = if self.cur_piece.get_type() == PieceType::T {
@@ -259,13 +266,13 @@ impl PieceMgr {
 
         // failed to apply piece as the cells are occupied
         if !self.try_apply_piece(nearest_y) {
-            return Err(UpdateErrorReason::CannotApplyPiece);
+            return Err(BoardErrorReason::CannotApplyPiece);
         }
 
         let lines_cleared = self.cell_holder.check_row_clears(None);
 
         if nearest_y <= self.board_settings.height as u32 && lines_cleared.is_empty() {
-            return Err(UpdateErrorReason::CannotApplyPiece);
+            return Err(BoardErrorReason::CannotApplyPiece);
         }
 
         self.cell_holder.clear_rows(&lines_cleared);
@@ -283,7 +290,7 @@ impl PieceMgr {
         self.is_hold_used = false;
 
         let next_piece = self.piece_queue.next();
-        self.create_piece(next_piece);
+        self.try_create_piece(next_piece)?;
 
         Ok(result)
     }

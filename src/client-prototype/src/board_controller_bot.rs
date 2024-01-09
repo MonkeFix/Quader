@@ -5,7 +5,7 @@
 
 use std::sync::{Arc};
 use quader_engine::{game_settings::GameSettings, time_mgr::TimeMgr};
-use quader_engine::piece_mgr::UpdateErrorReason;
+use quader_engine::piece_mgr::BoardErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::wall_kick_data::WallKickData;
 use quader_skynet::{BotBoard, BotSettings};
@@ -29,7 +29,7 @@ impl BoardControllerBot {
         self.board_renderer.render(assets, &self.bot_board.engine_board)
     }
 
-    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
         self.bot_board.update(time_mgr)
     }
 
