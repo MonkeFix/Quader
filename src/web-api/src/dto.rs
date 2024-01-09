@@ -26,6 +26,20 @@ pub struct RegisterUser {
     pub password_confirm: String,
 }
 
+#[derive(Validate, Debug, Default, Clone, Deserialize)]
+pub struct LoginUser {
+    #[validate(
+        length(min = 1, message = "Email is required"),
+        email(message = "Email is invalid")
+    )]
+    pub email: String,
+    #[validate(
+        length(min = 1, message = "Password is required"),
+        length(min = 6, message = "Password must be at least 6 characters")
+    )]
+    pub password: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
@@ -64,4 +78,10 @@ pub struct UserData {
 pub struct RegisterResponse {
     pub status: error::Status,
     pub data: UserData,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginResponse {
+    pub status: error::Status,
+    pub token: String,
 }
