@@ -9,7 +9,7 @@ use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;
 use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
 use crate::piece::{Piece, PieceType, RotationDirection, RotationState};
-use crate::piece_mgr::{PieceMgr, UpdateErrorReason};
+use crate::piece_mgr::{PieceMgr, BoardErrorReason};
 use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
 use crate::scoring::{ScoringMgr};
 use crate::time_mgr::TimeMgr;
@@ -57,13 +57,13 @@ impl Board {
 
     /// Updates `GravityMgr` by sending delta time `dt` and updating its current variables:
     /// lock, gravity. Force hard drops the piece if `GravityMgr` requests it to.
-    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
         if !self.is_enabled {
             return None;
         }
 
         if self.is_dead {
-            return Some(Err(UpdateErrorReason::BoardDead));
+            return Some(Err(BoardErrorReason::BoardDead));
         }
 
         self.cur_sec = time_mgr.elapsed_sec;
@@ -133,9 +133,9 @@ impl Board {
 
     /// Tries to hold current piece. Doesn't do anything if it fails.
     /// It may fail if the player has already held the piece during his turn.
-    pub fn hold_piece(&mut self) -> Option<&Piece> {
+    pub fn try_hold_piece(&mut self) -> Option<Result<&Piece, BoardErrorReason>> {
         
-        let result = self.piece_mgr.hold_piece();
+        let result = self.piece_mgr.try_hold_piece();
 
         if let Some(_) = result {
             self.replay_mgr.push_move(self.cur_sec, MoveAction::HoldPiece);
@@ -151,7 +151,7 @@ impl Board {
 
     /// Executes specified `MoveAction` once. Returns `None` if a simple action occurs,
     /// for example, `MoveLeft` or `MoveRight`.
-    pub fn exec_action(&mut self, action: MoveAction) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn exec_action(&mut self, action: MoveAction) -> Option<Result<MoveResult, BoardErrorReason>> {
         match action {
             MoveAction::MoveLeft => { self.move_left(1); },
             MoveAction::MoveRight => { self.move_right(1); },
@@ -160,7 +160,7 @@ impl Board {
             MoveAction::RotateDeg180 => { self.rotate(RotationDirection::Deg180); },
             MoveAction::SoftDrop => { self.soft_drop(1); },
             MoveAction::HardDrop => { return Some(self.hard_drop()); }
-            MoveAction::HoldPiece => { self.hold_piece(); }
+            MoveAction::HoldPiece => { self.try_hold_piece(); }
         }
 
         None
@@ -170,12 +170,12 @@ impl Board {
     /// That includes applying piece onto the board, updating current combo and b2b,
     /// updating player's statistics, pushing the move to the replay manager, 
     /// and composing the final `MoveResult`.
-    pub fn hard_drop(&mut self) -> Result<MoveResult, UpdateErrorReason> {
+    pub fn hard_drop(&mut self) -> Result<MoveResult, BoardErrorReason> {
         if !self.is_enabled {
-            return Err(UpdateErrorReason::BoardDisabled);
+            return Err(BoardErrorReason::BoardDisabled);
         }
         if self.is_dead {
-            return Err(UpdateErrorReason::BoardDead);
+            return Err(BoardErrorReason::BoardDead);
         }
 
         let piece_mgr = &mut self.piece_mgr;
@@ -331,7 +331,7 @@ impl BoardSimple {
                 self.piece_mgr.hard_drop().ok();
             }
             MoveAction::HoldPiece => {
-                self.piece_mgr.hold_piece();
+                self.piece_mgr.try_hold_piece();
             }
         }
     }

@@ -10,7 +10,7 @@ use quader_engine::board::Board;
 use quader_engine::cell_holder::BoolArray;
 use quader_engine::game_settings::GameSettings;
 use quader_engine::piece::{PieceType, RotationDirection};
-use quader_engine::piece_mgr::UpdateErrorReason;
+use quader_engine::piece_mgr::BoardErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
@@ -76,7 +76,7 @@ impl BotBoard {
         }
     }
 
-    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
         if !self.is_enabled {
             return None;
         }
@@ -128,7 +128,7 @@ impl BotBoard {
        self.bot_interface.play_next_move(falling_piece);
     }
 
-    fn do_bot_move(&mut self) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    fn do_bot_move(&mut self) -> Option<Result<MoveResult, BoardErrorReason>> {
 
         let res = match self.poll_next_move() {
             Ok((m, _info)) => {
@@ -136,7 +136,7 @@ impl BotBoard {
                 //let _plan = info.plan();
 
                 if m.hold {
-                    let _ = self.engine_board.hold_piece();
+                    let _ = self.engine_board.try_hold_piece();
                     if !self.hold_used {
                         self.bot_interface.add_next_piece(
                             piece_type_to_piece(
@@ -175,7 +175,7 @@ impl BotBoard {
             Err(err) => {
                 match err {
                     BotPollState::Waiting => None,
-                    BotPollState::Dead => Some(Err(UpdateErrorReason::BoardDead))
+                    BotPollState::Dead => Some(Err(BoardErrorReason::BoardDead))
                 }
             }
         };

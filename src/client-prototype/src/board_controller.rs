@@ -9,7 +9,7 @@ use macroquad::prelude::*;
 use quader_engine::board::{Board};
 use quader_engine::game_settings::{GameSettings};
 use quader_engine::piece::{RotationDirection};
-use quader_engine::piece_mgr::UpdateErrorReason;
+use quader_engine::piece_mgr::BoardErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;
 use quader_engine::time_mgr::TimeMgr;
@@ -76,7 +76,7 @@ impl BoardController {
         self.board_renderer.render(assets, &self.board);
     }
 
-    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, UpdateErrorReason>> {
+    pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
         let elapsed = time_mgr.last_dt * 1000.0; // convert to milliseconds
         let mut result = None;
 
@@ -133,7 +133,7 @@ impl BoardController {
             self.board.rotate(RotationDirection::Deg180);
         }
         if is_key_pressed(KeyCode::C) {
-            self.board.hold_piece();
+            self.board.try_hold_piece();
         }
 
         if is_key_pressed(KeyCode::T) {
