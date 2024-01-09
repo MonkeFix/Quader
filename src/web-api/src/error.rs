@@ -47,6 +47,8 @@ pub enum Error {
     EmailExist,
     #[display(fmt = "User belonging to this token no longer exists")]
     UserNoLongerExist,
+    #[display(fmt = "User with this id does not exist")]
+    UserDoesNotExist,
     #[display(fmt = "Password cannot be empty")]
     EmptyPassword,
     #[display(fmt = "Password must not be more than {} characters", _0)]

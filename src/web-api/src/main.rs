@@ -20,7 +20,9 @@ async fn main() -> anyhow::Result<()> {
             .wrap(Logger::default())
             .service(web::scope("/api")
                         .service(health_handler)
-                        .service(web_api::scope::auth()))
+                        .service(web_api::scope::auth())
+                        .service(web_api::scope::user())
+            )
     })
     .bind(("0.0.0.0", config.port))?
     .run()
