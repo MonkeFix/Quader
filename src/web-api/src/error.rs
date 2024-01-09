@@ -110,6 +110,13 @@ impl HttpError {
     }
 }
 
+// for simple cases
+impl From<sqlx::Error> for HttpError {
+    fn from(e: sqlx::Error) -> Self {
+        HttpError::server_error(crate::Error::from_str(e))
+    }
+}
+
 impl ResponseError for HttpError {
     fn error_response(&self) -> HttpResponse<actix_web::body::BoxBody> {
         let err = self.clone();
