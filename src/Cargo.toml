@@ -5,7 +5,7 @@ members = [
     "client-prototype",
     "server",
     "skynet", 
-    #"client",
+    #"client", 
     "web-api"
 , "server-prototype"]
 
