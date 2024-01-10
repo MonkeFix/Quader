@@ -64,7 +64,7 @@ pub struct MoveResult {
     pub attack: GarbageHardDropResult,
 
     pub hard_drop_info: HardDropInfo,
-    pub move_queue: Vec<MoveAction>
+    pub move_queue: Vec<(f32, MoveAction)>
 }
 
 /*impl Display for MoveResult {
@@ -102,7 +102,7 @@ impl MoveResult {
         attack_settings: &AttackSettings,
         garbage_mgr: &mut GarbageMgr,
         cell_holder: &CellHolder,
-        move_queue: Vec<MoveAction>,
+        move_queue: Vec<(f32, MoveAction)>,
         cur_sec: f32
     ) -> MoveResult {
         let mut result = MoveResult {
@@ -237,7 +237,7 @@ pub struct ReplayMove {
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ReplayMgr {
     pub moves: Vec<ReplayMove>,
-    pub cur_move_queue: Vec<MoveAction>
+    pub cur_move_queue: Vec<(f32, MoveAction)>
 }
 
 impl ReplayMgr {
@@ -250,10 +250,10 @@ impl ReplayMgr {
             action: move_action,
             timestamp
         });
-        self.cur_move_queue.push(move_action);
+        self.cur_move_queue.push((timestamp, move_action));
     }
 
-    pub fn end_move(&mut self) -> Vec<MoveAction> {
+    pub fn end_move(&mut self) -> Vec<(f32, MoveAction)> {
         let res = self.cur_move_queue.clone();
         self.cur_move_queue.clear();
 
