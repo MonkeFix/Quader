@@ -270,6 +270,8 @@ impl Board {
         //self.time_mgr.reset();
         self.replay_mgr.reset();
         self.garbage_mgr.reset();
+
+        self.enable();
     }
 
     /// Enables current board. All BoardCommands will execute normally.
