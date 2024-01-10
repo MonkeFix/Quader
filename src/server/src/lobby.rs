@@ -3,9 +3,12 @@
  * See the LICENCE file in the repository root for full licence text.
  */
 
+use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
+use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
+use uuid::Uuid;
 use quader_engine::board::Board;
 use quader_engine::board_command::{BoardCommand, BoardMoveDir};
 use quader_engine::game_settings::GameSettings;
@@ -15,14 +18,37 @@ use quader_engine::replays::{HardDropInfo, MoveResult};
 use quader_engine::time_mgr::TimeMgr;
 use quader_engine::wall_kick_data::WallKickData;
 
+pub type Lobbies = Arc<RwLock<HashMap<String, Lobby>>>;
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct LobbySettings {
+    pub name: String
+}
+
+#[derive(Clone)]
+pub struct LobbyContainer {
+    pub lobby_list: Lobbies
+}
+
+impl LobbyContainer {
+    pub fn new() -> Self {
+        Self {
+            lobby_list: Arc::new(RwLock::new(HashMap::new()))
+        }
+    }
+}
+
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Lobby {
-    player_list: Vec<usize>
+    pub lobby_name: String,
+    pub player_list: Vec<String>
 }
 
 impl Lobby {
-    pub fn new(creator: usize) -> Self {
+    pub fn new(lobby_name: String) -> Self {
         Self {
-            player_list: vec![creator]
+            lobby_name,
+            player_list: vec![]
         }
     }
 }

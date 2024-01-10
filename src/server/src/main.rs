@@ -7,6 +7,9 @@ use log::info;
 use server::{handler, index_html};
 use warp::Filter;
 use server::config::Config;
+use server::filter::{get_lobby_list, update_lobby, with_lobby_filter, with_lobby_settings};
+use server::lobby::{Lobby, LobbyContainer};
+
 
 #[tokio::main]
 async fn main() -> Result<(), dotenvy::Error> {
@@ -22,16 +25,23 @@ async fn main() -> Result<(), dotenvy::Error> {
         .and_then(handler::ws);
 
     let index = warp::path::end().map(|| warp::reply::html(index_html));
-    let lobby = warp::path!("lobby" / String)
-        .map(|name| {
-            //format!("Hello, {}", name)
-            let arr = vec![1,2,3,4];
-            warp::reply::json(&arr)
-        }); 
+    let lobby_container = LobbyContainer::new();
+    let create_lobby = warp::post()
+        .and(warp::path("v1"))
+        .and(warp::path("lobby"))
+        .and(warp::path::end())
+        .and(with_lobby_settings())
+        .and(with_lobby_filter(lobby_container.clone()))
+        .and_then(update_lobby);
 
-    
+    let get_lobbies = warp::get()
+        .and(warp::path("v1"))
+        .and(warp::path("lobby"))
+        .and(warp::path::end())
+        .and(with_lobby_filter(lobby_container.clone()))
+        .and_then(get_lobby_list);
 
-    let routes = index.or(chat).or(lobby);
+    let routes = index.or(chat).or(create_lobby).or(get_lobbies);
 
     warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 
