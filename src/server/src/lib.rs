@@ -9,6 +9,7 @@ pub mod client;
 pub mod handler;
 pub mod filter;
 pub mod lobby;
+pub mod config;
 
 pub type Result<T> = std::result::Result<T, Rejection>;
 
