@@ -82,6 +82,8 @@ impl BoardManager {
                 }
                 Err(_) => {
                     info!("Player is dead.");
+                    self.player_board.board.disable();
+                    self.bot_board.bot_board.engine_board.disable();
                 }
             }
         }
@@ -93,7 +95,9 @@ impl BoardManager {
                     }
                 }
                 Err(_) => {
-                    info!("Bot is dead.")
+                    info!("Bot is dead.");
+                    self.player_board.board.disable();
+                    self.bot_board.bot_board.engine_board.disable();
                 }
             }
         }
