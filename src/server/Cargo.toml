@@ -16,3 +16,4 @@ futures = { version = "0.3", default-features = false }
 uuid = { version = "1.6.1", features = ["serde", "v4"] }
 log = "0.4.20"
 env_logger = "0.10.1"
+dotenvy = "0.15.7"
