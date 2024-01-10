@@ -131,6 +131,10 @@ impl PieceMgr {
             return None;
         }
 
+        if !self.is_enabled {
+            return Some(Err(BoardErrorReason::BoardDisabled));
+        }
+
         self.is_hold_used = true;
 
         // if we have hold piece, then replace the current piece with the hold one
@@ -154,6 +158,10 @@ impl PieceMgr {
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
     pub fn move_left(&mut self) -> bool {
+        if !self.is_enabled {
+            return false;
+        }
+
         if self.test_movement(-1, 0) {
             self.cur_piece.move_left();
             self.last_move_type = LastMoveType::Movement;
@@ -175,6 +183,10 @@ impl PieceMgr {
     /// If it fails, nothing happens, as the piece collides with either board's bounds
     /// or occupied cells.
     pub fn move_right(&mut self) -> bool {
+        if !self.is_enabled {
+            return false;
+        }
+
         if self.test_movement(1, 0) {
             self.cur_piece.move_right();
             self.last_move_type = LastMoveType::Movement;
@@ -195,6 +207,10 @@ impl PieceMgr {
     /// Rotates the current piece using specified `WallKickData` and specified `RotationDirection`.
     /// Returns `true` if rotation was successful.
     pub fn rotate(&mut self, wkd: &WallKickData, rotation: RotationDirection) -> bool {
+        if !self.is_enabled {
+            return false;
+        }
+
         let piece = &self.cur_piece;
         let rot_type = piece.get_rotation_type(rotation);
         let tests = &wkd.get(piece.get_wall_kick_type())[&rot_type.0];
@@ -230,6 +246,10 @@ impl PieceMgr {
     /// If it fails, then nothing happens as the piece collides with other cells.
     /// Returns `true` if piece successfully moved down.
     pub fn soft_drop(&mut self) -> bool {
+        if !self.is_enabled {
+            return false;
+        }
+
         if self.test_movement(0, 1) {
             self.cur_piece.move_down();
             self.last_move_type = LastMoveType::Movement;
@@ -251,6 +271,10 @@ impl PieceMgr {
     /// The method checks if the piece could fit in the desired cells.
     /// If it fails, returns `Err(UpdateErrorReason)`.
     pub fn hard_drop(&mut self) -> Result<HardDropInfo, BoardErrorReason> {
+        if !self.is_enabled {
+            return Err(BoardErrorReason::BoardDisabled);
+        }
+
         let nearest_y = self.find_nearest_y();
 
         let tspin_status = if self.cur_piece.get_type() == PieceType::T {
@@ -307,6 +331,8 @@ impl PieceMgr {
         
         self.last_move_type = LastMoveType::None;
         self.hold_piece = None;
+
+        self.enable();
 
         self.nearest_y = self.find_nearest_y();
     }

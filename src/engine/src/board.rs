@@ -282,6 +282,7 @@ impl Board {
 
         self.is_enabled = true;
         self.gravity_mgr.enable();
+        self.piece_mgr.enable();
         //self.time_mgr.enable();
     }
 
@@ -293,6 +294,7 @@ impl Board {
 
         self.is_enabled = false;
         self.gravity_mgr.disable();
+        self.piece_mgr.disable();
         //self.time_mgr.disable();
     }
 }
