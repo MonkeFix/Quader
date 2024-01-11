@@ -1,13 +1,14 @@
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::error::{ErrorForbidden, ErrorInternalServerError, ErrorUnauthorized};
-use actix_web::{http, web, HttpMessage};
+use actix_web::{web, HttpMessage};
 use futures_util::future::{ready, LocalBoxFuture, Ready};
 use futures_util::FutureExt;
 use std::rc::Rc;
 use std::task::{Context, Poll};
 
+use crate::{Error, http};
 use crate::db::UserExt;
-use crate::error::{ErrorResponse, HttpError, Status};
+use crate::error::{self, Status};
 use crate::model::{User, UserRole};
 use crate::{utils, app::AppState};
 
@@ -70,12 +71,12 @@ where
             .map(|c| c.value().to_string())
             .or_else(|| {
                 req.headers()
-                    .get(http::header::AUTHORIZATION)
+                    .get(actix_web::http::header::AUTHORIZATION)
                     .map(|h| h.to_str().unwrap().split_at(7).1.to_string())
             });
 
         if token.is_none() {
-            let json_error = ErrorResponse {
+            let json_error = error::Response {
                 status: Status::Failure,
                 message: crate::Error::TokenNotProvided,
             };
@@ -92,7 +93,7 @@ where
         ) {
             Ok(id) => id,
             Err(message) => {
-                return Box::pin(ready(Err(ErrorUnauthorized(ErrorResponse {
+                return Box::pin(ready(Err(ErrorUnauthorized(error::Response {
                     status: Status::Failure,
                     message,
                 }))))
@@ -109,9 +110,9 @@ where
                 .db_client
                 .get_user(Some(user_id.clone()), None, None)
                 .await
-                .map_err(|e| ErrorInternalServerError(HttpError::server_error(crate::Error::from_str(e))))?;
+                .map_err(|e| ErrorInternalServerError(http::Error::server_error(Error::from_str(e))))?;
 
-            let user = result.ok_or(ErrorUnauthorized(ErrorResponse {
+            let user = result.ok_or(ErrorUnauthorized(error::Response {
                 status: Status::Failure,
                 message: crate::Error::UserNoLongerExist,
             }))?;
@@ -122,7 +123,7 @@ where
                 let res = srv.call(req).await?;
                 Ok(res)
             } else {
-                let json_error = ErrorResponse {
+                let json_error = error::Response {
                     status: Status::Failure,
                     message: crate::Error::PermissionDenied,
                 };

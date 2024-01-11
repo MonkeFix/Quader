@@ -9,23 +9,22 @@ pub mod handler {
     use crate::{
         app::AppState,
         db::UserExt,
-        dto::{self, Created, Response},
-        error::HttpError,
+        http::{self, Created, Response},
         middleware::RequireAuth,
         model::UserRole,
-        utils::{password, token},
+        utils::{password, token}, Error, dto,
     };
 
     #[post("/register")]
     pub async fn register(
         app_state: web::Data<AppState>,
         body: web::Json<dto::RegisterUser>,
-    ) -> Result<Response<dto::User, Created>, HttpError> {
+    ) -> Result<http::Response<dto::User, Created>, http::Error> {
         body.validate()
-            .map_err(|e| HttpError::bad_request(crate::Error::from_str(e)))?;
+            .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
 
         let hashed_password = password::hash(&body.password)
-            .map_err(|e| HttpError::server_error(crate::Error::from_str(e)))?;
+            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
 
         let result = app_state
             .db_client
@@ -33,17 +32,17 @@ pub mod handler {
             .await;
 
         match result {
-            Ok(user) => Ok(dto::Response::created(dto::User::from_model(&user))),
+            Ok(user) => Ok(http::Response::created(dto::User::from_model(&user))),
             Err(sqlx::Error::Database(db_err)) => {
                 if db_err.is_unique_violation() {
-                    Err(HttpError::unique_constraint_voilation(
-                        crate::Error::EmailExist,
+                    Err(http::Error::unique_constraint_voilation(
+                        Error::EmailExist,
                     ))
                 } else {
-                    Err(HttpError::server_error(crate::Error::from_str(db_err)))
+                    Err(http::Error::server_error(Error::from_str(db_err)))
                 }
             }
-            Err(e) => Err(HttpError::server_error(crate::Error::from_str(e))),
+            Err(e) => Err(http::Error::server_error(Error::from_str(e))),
         }
     }
 
@@ -51,20 +50,20 @@ pub mod handler {
     pub async fn login(
         app_state: web::Data<AppState>,
         body: web::Json<dto::LoginUser>,
-    ) -> Result<HttpResponse, HttpError> {
+    ) -> Result<HttpResponse, http::Error> {
         body.validate()
-            .map_err(|e| HttpError::bad_request(crate::Error::from_str(e)))?;
+            .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
 
         let result = app_state
             .db_client
             .get_user(None, None, Some(&body.email))
             .await
-            .map_err(|e| HttpError::server_error(crate::Error::from_str(e)))?;
+            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
 
-        let user = result.ok_or(HttpError::unauthorized(crate::Error::WrongCredentials))?;
+        let user = result.ok_or(http::Error::unauthorized(Error::WrongCredentials))?;
 
         let password_matches = password::compare(&body.password, &user.password_hash)
-            .map_err(|_| HttpError::unauthorized(crate::Error::WrongCredentials))?;
+            .map_err(|_| http::Error::unauthorized(Error::WrongCredentials))?;
 
         if password_matches {
             let token = token::create_jwt(
@@ -72,7 +71,7 @@ pub mod handler {
                 &app_state.config.jwt_secret.as_bytes(),
                 app_state.config.jwt_maxage,
             )
-            .map_err(|e| HttpError::server_error(crate::Error::from_str(e)))?;
+            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
             let cookie = Cookie::build("token", token.to_owned())
                 .path("/")
                 .max_age(cookie::time::Duration::new(
@@ -86,7 +85,7 @@ pub mod handler {
                 .cookie(cookie)
                 .json(Response::ok(json!({"token": token}))))
         } else {
-            Err(HttpError::unauthorized(crate::Error::WrongCredentials))
+            Err(http::Error::unauthorized(Error::WrongCredentials))
         }
     }
 

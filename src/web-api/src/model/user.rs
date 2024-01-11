@@ -4,7 +4,7 @@ use derive_more::Display;
 use futures_util::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
 
-use crate::error::HttpError;
+use crate::{Error, http};
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
@@ -61,8 +61,8 @@ impl FromRequest for Authenticated {
 
         let result = match value {
             Some(user) => Ok(Authenticated(user)),
-            None => Err(ErrorInternalServerError(HttpError::server_error(
-                crate::Error::from_str("Authentication Error"),
+            None => Err(ErrorInternalServerError(http::Error::server_error(
+                Error::from_str("Authentication Error"),
             ))),
         };
 

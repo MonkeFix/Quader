@@ -4,6 +4,7 @@ pub mod db;
 pub mod config;
 pub mod app;
 pub mod error;
+pub mod http;
 pub mod model;
 pub mod utils;
 pub mod scope;
