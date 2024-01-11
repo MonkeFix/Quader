@@ -7,7 +7,6 @@ use warp::Filter;
 use crate::lobby::filters::{lobby_create, lobby_delete, lobby_list, lobby_update};
 use crate::lobby::models::LobbyContainer;
 
-pub mod board;
 pub mod filters;
 pub mod models;
 pub mod handlers;

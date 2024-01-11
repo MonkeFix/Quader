@@ -1,15 +1,14 @@
 /*
  * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
- * See the LICENSE file in the repository root for full licence text.
+ * See the LICENSE file in the repository root for full license text.
  */
 
 use warp::{filters::ws::Ws, reject, reply::Reply};
-use warp::reject::Reject;
 use crate::auth::UserInfo;
 
-use crate::client::client_connected;
 use crate::lobby::models::LobbyContainer;
 use crate::Result;
+use crate::ws::models::client_connected;
 
 pub async fn ws(uuid: String, user: UserInfo, ws: Ws, lobby_container: LobbyContainer) -> Result<impl Reply> {
     log::debug!("connecting to lobby with uuid={:?}, UserInfo={:?}", uuid, user);
@@ -25,9 +24,3 @@ pub async fn ws(uuid: String, user: UserInfo, ws: Ws, lobby_container: LobbyCont
 
     Ok(ws.on_upgrade(move |socket| client_connected(socket)))
 }
-
-
-#[derive(Debug)]
-struct LobbyNotFound;
-
-impl Reject for LobbyNotFound { }

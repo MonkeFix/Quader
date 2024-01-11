@@ -8,9 +8,6 @@ use std::sync::{Arc, Mutex};
 use warp::reject::Rejection;
 use crate::auth::UserInfo;
 
-pub mod client;
-pub mod handler;
-pub mod filter;
 pub mod lobby;
 pub mod config;
 pub mod ws;
