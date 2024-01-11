@@ -1,16 +1,26 @@
 pub mod handler {
-    use actix_web::{post, web, HttpResponse, cookie::{Cookie, self}, Responder};
+    use actix_web::{
+        cookie::{self, Cookie},
+        post, web, HttpResponse, Responder,
+    };
     use serde_json::json;
     use validator::Validate;
 
-    use crate::{app::AppState, dto, error::{HttpError, Status}, utils::{password, token}, db::UserExt, middleware::RequireAuth, model::UserRole};
+    use crate::{
+        app::AppState,
+        db::UserExt,
+        dto::{self, Created, Response},
+        error::HttpError,
+        middleware::RequireAuth,
+        model::UserRole,
+        utils::{password, token},
+    };
 
     #[post("/register")]
     pub async fn register(
         app_state: web::Data<AppState>,
         body: web::Json<dto::RegisterUser>,
-    ) -> Result<HttpResponse, HttpError> {
-
+    ) -> Result<Response<dto::User, Created>, HttpError> {
         body.validate()
             .map_err(|e| HttpError::bad_request(crate::Error::from_str(e)))?;
 
@@ -23,15 +33,12 @@ pub mod handler {
             .await;
 
         match result {
-            Ok(user) => Ok(HttpResponse::Created().json(dto::RegisterResponse {
-                status: Status::Success,
-                data: dto::UserData {
-                    user: dto::User::from_model(&user),
-                },
-            })),
+            Ok(user) => Ok(dto::Response::created(dto::User::from_model(&user))),
             Err(sqlx::Error::Database(db_err)) => {
                 if db_err.is_unique_violation() {
-                    Err(HttpError::unique_constraint_voilation(crate::Error::EmailExist))
+                    Err(HttpError::unique_constraint_voilation(
+                        crate::Error::EmailExist,
+                    ))
                 } else {
                     Err(HttpError::server_error(crate::Error::from_str(db_err)))
                 }
@@ -68,16 +75,16 @@ pub mod handler {
             .map_err(|e| HttpError::server_error(crate::Error::from_str(e)))?;
             let cookie = Cookie::build("token", token.to_owned())
                 .path("/")
-                .max_age(cookie::time::Duration::new(60 * &app_state.config.jwt_maxage, 0))
+                .max_age(cookie::time::Duration::new(
+                    60 * &app_state.config.jwt_maxage,
+                    0,
+                ))
                 .http_only(true)
                 .finish();
 
             Ok(HttpResponse::Ok()
                 .cookie(cookie)
-                .json(dto::LoginResponse {
-                    status: Status::Success,
-                    token,
-                }))
+                .json(Response::ok(json!({"token": token}))))
         } else {
             Err(HttpError::unauthorized(crate::Error::WrongCredentials))
         }

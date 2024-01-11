@@ -39,5 +39,5 @@ async fn main() -> anyhow::Result<()> {
 #[get("/health")]
 async fn health_handler() -> impl Responder {
     let msg = "Web API Server";
-    HttpResponse::Ok().json(serde_json::json!({"status": "success", "message": msg}))
+    web_api::http::Response::ok(msg)
 }
