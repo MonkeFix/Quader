@@ -1,5 +1,5 @@
 [package]
-name = "quader_client_prototype"
+name = "quader"
 version = "0.1.0"
 edition = "2021"
 
