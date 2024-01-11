@@ -105,7 +105,7 @@ async fn run(
                     BoardCommand::SoftDrop(dt) => { board.soft_drop(dt); None }
                     BoardCommand::SendGarbage(amount, messiness) => { board.push_garbage(amount, messiness); None }
                     BoardCommand::Attack(damage) => { board.attack(damage); None }
-                    BoardCommand::Update(dt) => { board.update(&time_mgr) }
+                    BoardCommand::Update(_dt) => { board.update(&time_mgr) }
                     BoardCommand::HoldPiece => { board.try_hold_piece(); None }
                     BoardCommand::RequestBoardLayout => { None }
                 };

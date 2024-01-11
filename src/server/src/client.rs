@@ -5,11 +5,9 @@
 
 use std::{sync::{atomic::AtomicUsize, Arc}, collections::HashMap, time::Duration};
 use std::sync::atomic::Ordering;
-use std::time::SystemTime;
 use futures::{stream::{SplitStream, SplitSink}, StreamExt, SinkExt, TryFutureExt};
 use log::{error, debug, info};
 use tokio::{sync::{mpsc, RwLock, oneshot}, time::{timeout, sleep}, select};
-use tokio::time::Instant;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::filters::ws::{Message, WebSocket};
 
@@ -57,7 +55,7 @@ pub async fn client_connected(ws: WebSocket) {
     tokio::task::spawn(sender(id, client_rcv, client_ws_sender));
 
     let (pong_tx, pong_rx) = mpsc::unbounded_channel();
-    let (terminate_tx, terminate_rx) = oneshot::channel();
+    let (terminate_tx, _terminate_rx) = oneshot::channel();
     let client = Client::new(id, client_sender, pong_tx);
     tokio::task::spawn(receiver(client_ws_rcv, client.clone(), terminate_tx));
 
@@ -72,7 +70,7 @@ pub async fn client_connected(ws: WebSocket) {
      */
 
     info!("setting up updater");
-    let (terminate_tx, terminate_rx) = oneshot::channel();
+    let (_terminate_tx, terminate_rx) = oneshot::channel();
     pinger(id, pong_rx, client, terminate_rx).await;
 }
 

@@ -3,8 +3,7 @@
  * See the LICENCE file in the repository root for full licence text.
  */
 
-use warp::{filters::ws::Ws, reject, Rejection, reply::Reply};
-use warp::http::StatusCode;
+use warp::{filters::ws::Ws, reject, reply::Reply};
 use warp::reject::Reject;
 use crate::auth::UserInfo;
 
@@ -21,7 +20,7 @@ pub async fn ws(uuid: String, user: UserInfo, ws: Ws, lobby_container: LobbyCont
         return Err(reject::not_found());
     }
 
-    let mut lobby = lobby_container.get_mut(&uuid).unwrap();
+    let lobby = lobby_container.get_mut(&uuid).unwrap();
     lobby.player_list.push("test".into());
 
     Ok(ws.on_upgrade(move |socket| client_connected(socket)))
