@@ -91,7 +91,7 @@ async fn sender(client_id: ID, mut client_rcv: UnboundedReceiverStream<Message>,
             })
             .await;
         if is_close { // nothing to do anymore, server closes the connection
-            debug!("Closed the connection with user {}", client_id);
+        debug!("Closed the connection with user {}", client_id);
             break;
         }
     }
@@ -151,7 +151,7 @@ async fn pinger(client_id: ID, mut pong_rx: mpsc::UnboundedReceiver<()>, client:
                     break;
                 },
             }
-       }
+        }
     };
     select! {
         _ = ping => {

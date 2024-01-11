@@ -4,16 +4,14 @@
  */
 
 use std::convert::Infallible;
-use server::{handler, index_html};
+use server::{index_html};
 use warp::Filter;
 use warp::http::StatusCode;
-use server::auth::{ApiErrorResult, ApiErrors, ensure_auth};
+use server::auth::{ApiErrorResult, ApiErrors};
 use server::config::Config;
-//use server::lobby::{lobbies};
-use server::lobby::filters::{with_lobby_container};
 use server::lobby::lobbies;
 use server::lobby::models::LobbyContainer;
-
+use server::ws::ws_lobby;
 
 
 #[tokio::main]
@@ -28,11 +26,7 @@ async fn main() -> Result<(), dotenvy::Error> {
     let lobby_container = LobbyContainer::new();
 
     // lobby/:uuid
-    let lobby_ws = warp::path!("lobby" / String)
-        .and(ensure_auth().await)
-        .and(warp::ws())
-        .and(with_lobby_container(lobby_container.clone()))
-        .and_then(handler::ws);
+    let lobby_ws = ws_lobby(lobby_container.clone()).await;
 
     let index = warp::path::end().map(|| warp::reply::html(index_html));
 
