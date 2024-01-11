@@ -47,7 +47,8 @@ pub struct Lobby {
     pub lobby_name: String,
     pub player_limit: usize,
     pub player_list: Vec<String>,
-    pub creator_username: String
+    pub creator_username: String,
+    pub is_started: bool
 }
 
 impl Lobby {
@@ -56,8 +57,13 @@ impl Lobby {
             uuid,
             lobby_name,
             player_limit,
-            player_list: vec![],
-            creator_username
+            player_list: vec![creator_username.clone()],
+            creator_username,
+            is_started: false
         }
+    }
+
+    pub fn player_count(&self) -> usize {
+        self.player_list.len()
     }
 }

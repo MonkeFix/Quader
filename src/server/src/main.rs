@@ -45,6 +45,10 @@ async fn main() -> Result<(), dotenvy::Error> {
     Ok(())
 }
 
+fn with_session_storage() {
+
+}
+
 async fn handle_rejection(err: warp::reject::Rejection) -> Result<impl warp::reply::Reply, Infallible> {
     let code;
     let message;
