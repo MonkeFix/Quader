@@ -2461,7 +2461,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "658fa1faf7a4cc5f057c9ee5ef560f717ad9d8dc66d975267f709624d6e1ab88"
 
 [[package]]
-name = "quader_client_prototype"
+name = "quader"
 version = "0.1.0"
 dependencies = [
  "getrandom 0.2.12",
@@ -2914,23 +2914,6 @@ dependencies = [
  "log",
  "quader_engine",
  "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "uuid",
- "warp",
-]
-
-[[package]]
-name = "server-prototype"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "futures",
- "log",
- "quader_engine",
- "quader_skynet",
  "serde",
  "serde_json",
  "tokio",
