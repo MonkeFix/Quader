@@ -4,30 +4,16 @@
  */
 
 use std::convert::Infallible;
-use log::info;
-use serde::Serialize;
 use server::{handler, index_html};
 use warp::Filter;
 use warp::http::StatusCode;
+use server::auth::{ApiErrorResult, ApiErrors, ensure_auth};
 use server::config::Config;
-use server::lobby::{lobbies};
-use server::lobby::filters::with_lobby_container;
+//use server::lobby::{lobbies};
+use server::lobby::filters::{with_lobby_container};
+use server::lobby::lobbies;
 use server::lobby::models::LobbyContainer;
 
-#[derive(Debug)]
-enum ApiErrors {
-    NotAuthorized(String)
-}
-
-impl warp::reject::Reject for ApiErrors { }
-
-#[derive(Debug, Serialize)]
-struct ApiErrorResult {
-    details: String
-}
-
-const API_TOKEN_USER: &'static str = "loonacuse";
-const API_TOKEN: &'static str = "12345";
 
 
 #[tokio::main]
@@ -37,7 +23,7 @@ async fn main() -> Result<(), dotenvy::Error> {
 
     let config = Config::init();
 
-    info!("Using config {:?}", config);
+    log::info!("Using config {:?}", config);
 
     let lobby_container = LobbyContainer::new();
 
@@ -50,7 +36,7 @@ async fn main() -> Result<(), dotenvy::Error> {
 
     let index = warp::path::end().map(|| warp::reply::html(index_html));
 
-    let lobby_api = lobbies(lobby_container);
+    let lobby_api = lobbies(lobby_container).await;
 
     let routes = index.or(lobby_ws).or(lobby_api).recover(handle_rejection);
 
@@ -90,28 +76,5 @@ async fn handle_rejection(err: warp::reject::Rejection) -> Result<impl warp::rep
     Ok(warp::reply::with_status(json, code))
 }
 
-fn check_token(header: String) -> Option<String> {
-    let parts: Vec<&str> = header.split(" ").collect();
-    if parts.len() == 2 && parts[0] == "Token" && parts[1] == API_TOKEN {
-        return Some(API_TOKEN_USER.to_string());
-    }
 
-    None
-}
 
-async fn ensure_auth() -> impl Filter<Extract = (String,), Error = warp::reject::Rejection> + Clone {
-    warp::header::optional::<String>("Authorization").and_then(|auth_header: Option<String>| async move {
-        log::info!("doing dummy validation of auth header");
-
-        if let Some(header) = auth_header {
-            log::info!("got auth header, verifying: {}", header);
-            if let Some(user) = check_token(header) {
-                return Ok(user);
-            }
-        }
-
-        Err(warp::reject::custom(ApiErrors::NotAuthorized(
-            "Not Authorized".to_string()
-        )))
-    })
-}

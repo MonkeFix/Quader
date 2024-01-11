@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use quader_engine::game_settings::GameSettings;
+//use quader_engine::game_settings::GameSettings;
 
 pub type Lobbies = Arc<RwLock<HashMap<String, Lobby>>>;
 
@@ -46,16 +46,18 @@ pub struct Lobby {
     pub uuid: Uuid,
     pub lobby_name: String,
     pub player_limit: usize,
-    pub player_list: Vec<String>
+    pub player_list: Vec<String>,
+    pub creator_username: String
 }
 
 impl Lobby {
-    pub fn new(uuid: Uuid, lobby_name: String, player_limit: usize) -> Self {
+    pub fn new(creator_username: String, uuid: Uuid, lobby_name: String, player_limit: usize) -> Self {
         Self {
             uuid,
             lobby_name,
             player_limit,
-            player_list: vec![]
+            player_list: vec![],
+            creator_username
         }
     }
 }

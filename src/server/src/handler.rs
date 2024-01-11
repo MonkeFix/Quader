@@ -6,13 +6,14 @@
 use warp::{filters::ws::Ws, reject, Rejection, reply::Reply};
 use warp::http::StatusCode;
 use warp::reject::Reject;
+use crate::auth::UserInfo;
 
 use crate::client::client_connected;
 use crate::lobby::models::LobbyContainer;
 use crate::Result;
 
-pub async fn ws(uuid: String, username: String, ws: Ws, lobby_container: LobbyContainer) -> Result<impl Reply> {
-    log::debug!("connecting to lobby with uuid={:?}, username={:?}", uuid, username);
+pub async fn ws(uuid: String, user: UserInfo, ws: Ws, lobby_container: LobbyContainer) -> Result<impl Reply> {
+    log::debug!("connecting to lobby with uuid={:?}, UserInfo={:?}", uuid, user);
 
     let mut lobby_container = lobby_container.lobby_list.write().unwrap();
     if !lobby_container.contains_key(&uuid) {
