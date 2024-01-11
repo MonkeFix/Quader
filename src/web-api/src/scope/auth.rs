@@ -3,7 +3,7 @@ pub mod handler {
     use serde_json::json;
     use validator::Validate;
 
-    use crate::{app::AppState, dto, error::{HttpError, Status}, utils::{password, token}, db::UserExt};
+    use crate::{app::AppState, dto, error::{HttpError, Status}, utils::{password, token}, db::UserExt, middleware::RequireAuth, model::UserRole};
 
     #[post("/register")]
     pub async fn register(
@@ -83,7 +83,7 @@ pub mod handler {
         }
     }
 
-    #[post("/logout")]
+    #[post("/logout", wrap = "RequireAuth::new(UserRole::all())")]
     pub async fn logout() -> impl Responder {
         let cookie = Cookie::build("token", "")
             .path("/")
