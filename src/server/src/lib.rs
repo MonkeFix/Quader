@@ -10,6 +10,7 @@ pub mod handler;
 pub mod filter;
 pub mod lobby;
 pub mod config;
+pub mod ws;
 
 pub type Result<T> = std::result::Result<T, Rejection>;
 
