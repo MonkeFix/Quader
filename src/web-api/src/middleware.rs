@@ -11,7 +11,15 @@ use crate::error::{ErrorResponse, HttpError, Status};
 use crate::model::{User, UserRole};
 use crate::{utils, app::AppState};
 
-pub struct RequireAuth;
+pub struct RequireAuth {
+    allowed_roles: Vec<UserRole>,
+}
+
+impl RequireAuth {
+    pub fn new(allowed_roles: Vec<UserRole>) -> Self {
+        RequireAuth { allowed_roles }
+    }
+}
 
 impl<S> Transform<S, ServiceRequest> for RequireAuth
 where
@@ -30,31 +38,7 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(AuthMiddleware {
             service: Rc::new(service),
-            allowed_roles: vec![UserRole::User, UserRole::Moderator, UserRole::Admin],
-        }))
-    }
-}
-
-pub struct RequireOnlyAdmin;
-
-impl<S> Transform<S, ServiceRequest> for RequireOnlyAdmin
-where
-    S: Service<
-            ServiceRequest,
-            Response = ServiceResponse<actix_web::body::BoxBody>,
-            Error = actix_web::Error,
-        > + 'static,
-{
-    type Response = ServiceResponse<actix_web::body::BoxBody>;
-    type Error = actix_web::Error;
-    type Transform = AuthMiddleware<S>;
-    type InitError = ();
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AuthMiddleware {
-            service: Rc::new(service),
-            allowed_roles: vec![UserRole::Admin],
+            allowed_roles: self.allowed_roles.clone(),
         }))
     }
 }
@@ -98,6 +82,9 @@ where
             return Box::pin(ready(Err(ErrorUnauthorized(json_error))));
         }
 
+        // TODO make it possible to wrap endpoint several times,
+        // but if user extension is included already
+        // don't do any decoding work
         let app_state = req.app_data::<web::Data<AppState>>().unwrap();
         let user_id = match utils::token::decode_jwt(
             &token.unwrap(),
