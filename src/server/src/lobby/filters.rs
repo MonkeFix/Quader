@@ -58,7 +58,7 @@ fn json_body() -> impl Filter<Extract = (LobbySettings,), Error = warp::Rejectio
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
-fn with_lobby_container(
+pub fn with_lobby_container(
     lobby_container: LobbyContainer
 ) -> impl Filter<Extract=(LobbyContainer,), Error=Infallible> + Clone
 {

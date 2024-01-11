@@ -62,17 +62,18 @@ pub async fn client_connected(ws: WebSocket) {
     tokio::task::spawn(receiver(client_ws_rcv, client.clone(), terminate_tx));
 
 
-    let (terminate_tx2, terminate_rx2) = oneshot::channel();
-    select! {
-        _ = pinger(id, pong_rx, client, terminate_rx) => {},
-        _ = board_updater(id, terminate_rx2) => {}
-    }
+    //let (terminate_tx2, terminate_rx2) = oneshot::channel();
+    //select! {
+    //    _ = pinger(id, pong_rx, client, terminate_rx) => {},
+    //    _ = board_updater(id, terminate_rx2) => {}
+    //}
     /*info!("setting up pinger");
     .await;
+     */
 
     info!("setting up updater");
     let (terminate_tx, terminate_rx) = oneshot::channel();
-    .await;*/
+    pinger(id, pong_rx, client, terminate_rx).await;
 }
 
 async fn process_message(client: &Client, msg: &str) {
@@ -164,7 +165,7 @@ async fn pinger(client_id: ID, mut pong_rx: mpsc::UnboundedReceiver<()>, client:
     }
 }
 
-const MS_PER_UPDATE: f64 = 1.0 / 30.0; // 30 times per second
+/*const MS_PER_UPDATE: f64 = 1.0 / 30.0; // 30 times per second
 
 async fn board_updater(client_id: ID, terminate_rx: oneshot::Receiver<()>) {
     let update = async move {
@@ -196,4 +197,4 @@ async fn board_updater(client_id: ID, terminate_rx: oneshot::Receiver<()>) {
             debug!("Updater for client {} is terminated due to client closure", client_id)
         }
     }
-}
+}*/
