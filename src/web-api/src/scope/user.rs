@@ -1,5 +1,5 @@
 pub mod handler {
-    use actix_web::{get, web, HttpMessage, HttpRequest, HttpResponse};
+    use actix_web::{get, web, HttpResponse};
     use uuid::Uuid;
 
     use crate::{
@@ -8,13 +8,12 @@ pub mod handler {
         dto,
         error::HttpError,
         middleware::RequireAuth,
-        model::{self, UserRole},
+        model::{Authenticated, UserRole},
     };
 
     #[get("/me", wrap = "RequireAuth::new(UserRole::all())")]
-    pub async fn get_me(req: HttpRequest) -> Result<HttpResponse, HttpError> {
-        let user = dto::User::from_model(req.extensions().get::<model::User>().unwrap());
-        Ok(HttpResponse::Ok().json(user))
+    pub async fn get_me(user: Authenticated) -> Result<HttpResponse, HttpError> {
+        Ok(HttpResponse::Ok().json(dto::User::from_model(&user)))
     }
 
     #[get("/{user_id}", wrap = "RequireAuth::new(UserRole::only_admin())")]

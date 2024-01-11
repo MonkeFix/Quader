@@ -1,6 +1,10 @@
+use actix_web::{error::ErrorInternalServerError, FromRequest, HttpMessage};
 use chrono::prelude::*;
 use derive_more::Display;
+use futures_util::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
+
+use crate::error::HttpError;
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
@@ -40,4 +44,36 @@ pub struct User {
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Serialize)]
+pub struct Authenticated(User);
+
+impl FromRequest for Authenticated {
+    type Error = actix_web::Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(
+        req: &actix_web::HttpRequest,
+        _payload: &mut actix_web::dev::Payload,
+    ) -> Self::Future {
+        let value = req.extensions().get::<User>().cloned();
+
+        let result = match value {
+            Some(user) => Ok(Authenticated(user)),
+            None => Err(ErrorInternalServerError(HttpError::server_error(
+                crate::Error::from_str("Authentication Error"),
+            ))),
+        };
+
+        ready(result)
+    }
+}
+
+impl std::ops::Deref for Authenticated {
+    type Target = User;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
