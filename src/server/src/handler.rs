@@ -11,8 +11,8 @@ use crate::client::client_connected;
 use crate::lobby::models::LobbyContainer;
 use crate::Result;
 
-pub async fn ws(uuid: String, ws: Ws, lobby_container: LobbyContainer) -> Result<impl Reply> {
-    log::debug!("connecting to lobby with uuid={:?}", uuid);
+pub async fn ws(uuid: String, username: String, ws: Ws, lobby_container: LobbyContainer) -> Result<impl Reply> {
+    log::debug!("connecting to lobby with uuid={:?}, username={:?}", uuid, username);
 
     let mut lobby_container = lobby_container.lobby_list.write().unwrap();
     if !lobby_container.contains_key(&uuid) {

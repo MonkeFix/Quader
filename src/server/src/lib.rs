@@ -11,6 +11,7 @@ pub mod filter;
 pub mod lobby;
 pub mod config;
 pub mod ws;
+pub mod auth;
 
 pub type Result<T> = std::result::Result<T, Rejection>;
 
