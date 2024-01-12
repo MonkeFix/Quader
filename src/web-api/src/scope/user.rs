@@ -5,28 +5,27 @@ pub mod handler {
     use crate::{
         app::AppState,
         db::UserExt,
-        dto,
         error::Error,
         middleware::RequireAuth,
-        model::{Authenticated, UserRole}, http,
+        model::{Authenticated, UserRole, self}, http,
     };
 
     #[get("/me", wrap = "RequireAuth::filter(UserRole::all())")]
-    pub async fn get_me(user: Authenticated) -> Result<http::Response<dto::User>, http::Error> {
-        Ok(http::Response::ok(dto::User::from_model(&user)))
+    pub async fn get_me(user: Authenticated) -> Result<http::Response<model::User>, http::Error> {
+        Ok(http::Response::ok(user.to_user()))
     }
 
     #[get("/{user_id}", wrap = "RequireAuth::filter(UserRole::only_admin())")]
     pub async fn get(
         app_state: web::Data<AppState>,
         path: web::Path<(Uuid,)>,
-    ) -> Result<http::Response<dto::User>, http::Error> {
+    ) -> Result<http::Response<model::User>, http::Error> {
         let (id,) = path.into_inner();
 
         let maybe_user = app_state.db_client.get_user(Some(id), None, None).await?;
 
         match maybe_user {
-            Some(user) => Ok(http::Response::ok(dto::User::from_model(&user))),
+            Some(user) => Ok(http::Response::ok(user)),
             None => Err(http::Error::bad_request(Error::UserDoesNotExist)),
         }
     }

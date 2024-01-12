@@ -11,7 +11,7 @@ pub mod handler {
         db::UserExt,
         http::{self, Created, Response},
         middleware::RequireAuth,
-        model::UserRole,
+        model::{UserRole, self},
         utils::{password, token}, Error, dto,
     };
 
@@ -19,7 +19,7 @@ pub mod handler {
     pub async fn register(
         app_state: web::Data<AppState>,
         body: web::Json<dto::RegisterUser>,
-    ) -> Result<http::Response<dto::User, Created>, http::Error> {
+    ) -> Result<http::Response<model::User, Created>, http::Error> {
         body.validate()
             .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
 
@@ -32,7 +32,7 @@ pub mod handler {
             .await;
 
         match result {
-            Ok(user) => Ok(http::Response::created(dto::User::from_model(&user))),
+            Ok(user) => Ok(http::Response::created(user)),
             Err(sqlx::Error::Database(db_err)) => {
                 if db_err.is_unique_violation() {
                     Err(http::Error::unique_constraint_voilation(

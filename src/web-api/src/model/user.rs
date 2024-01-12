@@ -4,7 +4,7 @@ use derive_more::Display;
 use futures_util::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
 
-use crate::{Error, http};
+use crate::{http, Error};
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
@@ -36,6 +36,7 @@ pub struct User {
     pub id: uuid::Uuid,
     pub username: String,
     pub email: String,
+    #[serde(skip_serializing)]
     pub password_hash: String,
     pub role: UserRole,
     pub photo: String,
@@ -48,6 +49,12 @@ pub struct User {
 
 #[derive(Serialize)]
 pub struct Authenticated(User);
+
+impl Authenticated {
+    pub fn to_user(self) -> User {
+        self.0
+    }
+}
 
 impl FromRequest for Authenticated {
     type Error = actix_web::Error;
