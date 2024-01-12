@@ -1,4 +1,4 @@
-use actix_web::{web, Scope};
+use actix_web::{web, Scope, get};
 
 pub mod auth;
 
@@ -15,4 +15,19 @@ pub fn user() -> Scope {
     web::scope("/user")
         .service(self::user::handler::get_me)
         .service(self::user::handler::get)
+}
+
+
+#[utoipa::path(
+    get,
+    path = "/api/health",
+    tag = "Health Checker Endpoint",
+    responses(
+        (status = 200, body = &'static str),
+    )
+)]
+#[get("/health")]
+async fn health_handler() -> crate::http::Response<&'static str> {
+    let msg = "Web API Server";
+    crate::http::Response::ok(msg)
 }

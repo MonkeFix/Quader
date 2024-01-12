@@ -1,14 +1,15 @@
 #![allow(non_upper_case_globals)]
 
-pub mod db;
-pub mod config;
 pub mod app;
+pub mod config;
+pub mod db;
+pub mod dto;
 pub mod error;
 pub mod http;
-pub mod model;
-pub mod utils;
-pub mod scope;
-pub mod dto;
 pub mod middleware;
+pub mod model;
+pub mod openapi;
+pub mod scope;
+pub mod utils;
 
-pub use crate::error::Error as Error; // lets address it as `web_api::Error` or `crate::Error`
+pub use crate::error::Error; // lets address it as `web_api::Error` or `crate::Error`
