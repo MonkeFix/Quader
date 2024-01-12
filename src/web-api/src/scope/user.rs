@@ -11,12 +11,12 @@ pub mod handler {
         model::{Authenticated, UserRole}, http,
     };
 
-    #[get("/me", wrap = "RequireAuth::new(UserRole::all())")]
+    #[get("/me", wrap = "RequireAuth::filter(UserRole::all())")]
     pub async fn get_me(user: Authenticated) -> Result<http::Response<dto::User>, http::Error> {
         Ok(http::Response::ok(dto::User::from_model(&user)))
     }
 
-    #[get("/{user_id}", wrap = "RequireAuth::new(UserRole::only_admin())")]
+    #[get("/{user_id}", wrap = "RequireAuth::filter(UserRole::only_admin())")]
     pub async fn get(
         app_state: web::Data<AppState>,
         path: web::Path<(Uuid,)>,

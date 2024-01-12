@@ -89,7 +89,7 @@ pub mod handler {
         }
     }
 
-    #[post("/logout", wrap = "RequireAuth::new(UserRole::all())")]
+    #[post("/logout", wrap = "RequireAuth::filter(UserRole::all())")]
     pub async fn logout() -> impl Responder {
         let cookie = Cookie::build("token", "")
             .path("/")

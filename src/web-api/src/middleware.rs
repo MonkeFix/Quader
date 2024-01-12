@@ -17,7 +17,7 @@ pub struct RequireAuth {
 }
 
 impl RequireAuth {
-    pub fn new(allowed_roles: Vec<UserRole>) -> Self {
+    pub fn filter(allowed_roles: Vec<UserRole>) -> Self {
         RequireAuth { allowed_roles }
     }
 }
