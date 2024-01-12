@@ -1,10 +1,8 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
-use crate::model;
-
-#[derive(Validate, Debug, Default, Clone, Deserialize)]
+#[derive(Validate, Debug, Default, Clone, Deserialize, ToSchema)]
 pub struct RegisterUser {
     #[validate(length(min = 1, message = "Name is required"))]
     pub username: String,
@@ -26,7 +24,7 @@ pub struct RegisterUser {
     pub password_confirm: String,
 }
 
-#[derive(Validate, Debug, Default, Clone, Deserialize)]
+#[derive(Validate, Debug, Default, Clone, Deserialize, ToSchema)]
 pub struct LoginUser {
     #[validate(
         length(min = 1, message = "Email is required"),
@@ -40,7 +38,7 @@ pub struct LoginUser {
     pub password: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct TokenData {
     pub token: String,
 }

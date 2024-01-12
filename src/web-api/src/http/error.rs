@@ -1,10 +1,11 @@
 use actix_web::{HttpResponse, ResponseError};
 use derive_more::Display;
 use log::warn;
+use utoipa::ToSchema;
 
 use crate::error::{self, Status};
 
-#[derive(Debug, Clone, Display)]
+#[derive(Debug, Clone, Display, ToSchema)]
 #[display(fmt = "Error: message: {}, status: {}", message, status)]
 pub struct Error {
     pub message: error::Response,
@@ -16,7 +17,7 @@ impl Error {
         Error {
             message: error::Response {
                 status: Status::Error,
-                message
+                message,
             },
             status,
         }

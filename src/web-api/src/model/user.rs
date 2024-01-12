@@ -3,10 +3,13 @@ use chrono::prelude::*;
 use derive_more::Display;
 use futures_util::future::{ready, Ready};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::{http, Error};
 
-#[derive(Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash)]
+#[derive(
+    Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash, ToSchema,
+)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
 pub enum UserRole {
     #[display(fmt = "admin")]
@@ -31,7 +34,7 @@ impl UserRole {
     }
 }
 
-#[derive(Debug, Deserialize, sqlx::FromRow, sqlx::Type, Serialize, Clone)]
+#[derive(Debug, Deserialize, sqlx::FromRow, sqlx::Type, Serialize, Clone, ToSchema)]
 pub struct User {
     pub id: uuid::Uuid,
     pub username: String,

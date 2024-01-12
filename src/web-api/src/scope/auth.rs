@@ -83,7 +83,7 @@ pub mod handler {
 
             Ok(HttpResponse::Ok()
                 .cookie(cookie)
-                .json(Response::ok(json!({"token": token}))))
+                .json(Response::ok(dto::TokenData { token })))
         } else {
             Err(http::Error::unauthorized(Error::WrongCredentials))
         }

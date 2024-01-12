@@ -1,8 +1,9 @@
-use std::fmt;
-use serde::Serialize;
 use derive_more::Display;
+use serde::Serialize;
+use std::fmt;
+use utoipa::ToSchema;
 
-#[derive(Debug, Display, Copy, Clone, Serialize)]
+#[derive(Debug, Display, Copy, Clone, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Status {
     #[display(fmt = "success")]
@@ -16,12 +17,12 @@ pub enum Status {
 fn use_display<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
     T: fmt::Display,
-    S: serde::Serializer
+    S: serde::Serializer,
 {
     serializer.collect_str(value)
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 pub struct Response {
     #[serde(serialize_with = "use_display")]
     pub status: Status,
@@ -35,7 +36,7 @@ impl fmt::Display for Response {
     }
 }
 
-#[derive(Debug, PartialEq, Display, Clone)]
+#[derive(Debug, PartialEq, Display, Clone, ToSchema)]
 pub enum Error {
     #[display(fmt = "Server Error. Please try again later")]
     ServerError,
