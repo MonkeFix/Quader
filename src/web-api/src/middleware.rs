@@ -91,7 +91,7 @@ where
             &token.unwrap(),
             app_state.config.jwt_secret.as_bytes(),
         ) {
-            Ok(id) => id,
+            Ok(claims) => claims.sub,
             Err(message) => {
                 return Box::pin(ready(Err(ErrorUnauthorized(error::Response {
                     status: Status::Failure,

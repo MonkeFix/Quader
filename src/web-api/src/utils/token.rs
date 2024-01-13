@@ -1,8 +1,9 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct Claims {
     pub sub: String,
     pub iat: usize,
@@ -34,14 +35,14 @@ pub fn create_jwt(
     )
 }
 
-pub fn decode_jwt<T: Into<String>>(token: T, secret: &[u8]) -> Result<String, crate::Error> {
+pub fn decode_jwt<T: Into<String>>(token: T, secret: &[u8]) -> Result<Claims, crate::Error> {
     let decoded = decode::<Claims>(
         &token.into(),
         &DecodingKey::from_secret(secret),
         &Validation::new(Algorithm::HS256),
     );
     match decoded {
-        Ok(token) => Ok(token.claims.sub),
+        Ok(token) => Ok(token.claims),
         Err(_) => Err(crate::Error::InvalidToken),
     }
 }
