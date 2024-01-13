@@ -11,6 +11,7 @@ use crate::{http, Error};
     Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash, ToSchema,
 )]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
+#[serde(rename_all = "snake_case")]
 pub enum UserRole {
     #[display(fmt = "admin")]
     Admin,
