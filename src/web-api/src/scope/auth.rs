@@ -1,7 +1,7 @@
 pub mod handler {
     use actix_web::{
         cookie::{self, Cookie},
-        post, web, HttpResponse, Responder,
+        post, web, HttpResponse, Responder, get,
     };
     use serde_json::json;
     use validator::Validate;
@@ -12,7 +12,7 @@ pub mod handler {
         http::{self, Created, Response},
         middleware::RequireAuth,
         model::{UserRole, self},
-        utils::{password, token}, Error, dto,
+        utils::{password, token::{self, Claims, decode_jwt}}, Error, dto,
     };
 
     #[utoipa::path(
@@ -132,5 +132,24 @@ pub mod handler {
         HttpResponse::Ok()
             .cookie(cookie)
             .json(json!({"status": "success"}))
+    }
+
+    #[utoipa::path(
+        get,
+        path = "/api/auth/validate/{token}",
+        tag = "Validate Endpoint",
+        responses(
+            (status = 200, body = Claims),
+        )
+    )]
+    #[get("/validate/{token}")]
+    pub async fn validate(
+        app_state: web::Data<AppState>,
+        path: web::Path<(String,)>,
+    ) -> Result<http::Response<Claims>, http::Error> {
+        let (token,) = path.into_inner();
+        decode_jwt(token, app_state.config.jwt_secret.as_bytes())
+            .map(http::Response::ok)
+            .map_err(http::Error::not_acceptable)
     }
 }

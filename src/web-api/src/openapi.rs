@@ -3,7 +3,7 @@ use utoipa::{
     Modify, OpenApi,
 };
 
-use crate::{dto, error, model, scope};
+use crate::{dto, error, model, scope, utils};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -11,6 +11,7 @@ use crate::{dto, error, model, scope};
         scope::health_handler,
         scope::auth::handler::register,
         scope::auth::handler::login,
+        scope::auth::handler::validate,
         scope::auth::handler::logout,
         scope::user::handler::get_me,
         scope::user::handler::get,
@@ -24,6 +25,7 @@ use crate::{dto, error, model, scope};
         error::Response,
         error::Status,
         error::Error,
+        utils::token::Claims,
     )),
     modifiers(&SecurityAddon)
 )]

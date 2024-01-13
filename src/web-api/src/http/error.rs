@@ -23,6 +23,16 @@ impl Error {
         }
     }
 
+    pub fn not_acceptable(message: error::Error) -> Self {
+        Error {
+            message: error::Response {
+                status: Status::Failure,
+                message,
+            },
+            status: 406,
+        }
+    }
+
     pub fn server_error(message: error::Error) -> Self {
         Error::new(message, 500)
     }
@@ -56,6 +66,7 @@ impl ResponseError for Error {
         let err = self.clone();
         match err.status {
             400 => HttpResponse::BadRequest().json(err.message),
+            406 => HttpResponse::NotAcceptable().json(err.message),
             401 => HttpResponse::Unauthorized().json(err.message),
             409 => HttpResponse::Conflict().json(err.message),
             500 => HttpResponse::InternalServerError().json(err.message),
