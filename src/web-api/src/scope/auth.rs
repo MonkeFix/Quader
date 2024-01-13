@@ -15,6 +15,15 @@ pub mod handler {
         utils::{password, token}, Error, dto,
     };
 
+    #[utoipa::path(
+        post,
+        path = "/api/auth/register",
+        tag = "Register Endpoint",
+        request_body(content = RegisterUser),
+        responses(
+            (status = 201, body = User),
+        )
+    )]
     #[post("/register")]
     pub async fn register(
         app_state: web::Data<AppState>,
@@ -46,6 +55,18 @@ pub mod handler {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/auth/login",
+        tag = "Login Endpoint",
+        request_body(
+            content = LoginUser,
+            example = json!({"email": "savely@krendelhoff.space", "password": "123456"})
+        ),
+        responses(
+            (status = 200, body = TokenData),
+        )
+    )]
     #[post("/login")]
     pub async fn login(
         app_state: web::Data<AppState>,
@@ -89,6 +110,17 @@ pub mod handler {
         }
     }
 
+    #[utoipa::path(
+        post,
+        path = "/api/auth/logout",
+        tag = "Logout Endpoint",
+        responses(
+            (status = 200),
+        ),
+        security(
+            ("token" = [])
+        )
+    )]
     #[post("/logout", wrap = "RequireAuth::filter(UserRole::all())")]
     pub async fn logout() -> impl Responder {
         let cookie = Cookie::build("token", "")

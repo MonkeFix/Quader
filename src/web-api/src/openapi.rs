@@ -7,7 +7,14 @@ use crate::{dto, error, model, scope};
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(scope::health_handler),
+    paths(
+        scope::health_handler,
+        scope::auth::handler::register,
+        scope::auth::handler::login,
+        scope::auth::handler::logout,
+        scope::user::handler::get_me,
+        scope::user::handler::get,
+    ),
     components(schemas(
         model::User,
         model::UserRole,

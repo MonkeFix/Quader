@@ -10,11 +10,33 @@ pub mod handler {
         model::{Authenticated, UserRole, self}, http,
     };
 
+    #[utoipa::path(
+        get,
+        path = "/api/user/me",
+        tag = "Get User Endpoint",
+        responses(
+            (status=200, body=User),
+        ),
+        security(
+            ("token" = [])
+        )
+    )]
     #[get("/me", wrap = "RequireAuth::filter(UserRole::all())")]
     pub async fn get_me(user: Authenticated) -> Result<http::Response<model::User>, http::Error> {
         Ok(http::Response::ok(user.to_user()))
     }
 
+    #[utoipa::path(
+        get,
+        path = "/api/user/{user_id}",
+        tag = "Get User By Id Endpoint",
+        responses(
+            (status=200, body=User),
+        ),
+        security(
+            ("token" = [])
+        )
+    )]
     #[get("/{user_id}", wrap = "RequireAuth::filter(UserRole::only_admin())")]
     pub async fn get(
         app_state: web::Data<AppState>,
