@@ -11,7 +11,7 @@ use server::auth::{ApiErrorResult, ApiErrors};
 use server::config::Config;
 use server::lobby::lobbies;
 use server::lobby::models::LobbyContainer;
-use server::ws::models::SessionStorage;
+use server::ws::models::{SessionStorage, WsAction, WsRequest, WsResponse};
 use server::ws::ws_lobby;
 
 
@@ -23,6 +23,26 @@ async fn main() -> Result<(), dotenvy::Error> {
     let config = Config::init();
 
     log::info!("Using config {:?}", config);
+
+    let chat_req = WsRequest::new(1, WsAction::Chat("Hello, World".to_string()));
+    let chat_res = WsResponse {
+        id: 1,
+        action: WsAction::Chat("Hello, World".to_string()),
+        message: "Hello, World".to_string(),
+        status: "Ok".to_string(),
+        status_code: 200
+    };
+
+    let chat_req_json = serde_json::to_string_pretty(&chat_req).unwrap();
+    let chat_res_json = serde_json::to_string_pretty(&chat_res).unwrap();
+
+    let chat_req_2: WsRequest = serde_json::from_str(&chat_req_json).unwrap();
+    let chat_res_2: WsResponse = serde_json::from_str(&chat_res_json).unwrap();
+
+    /*println!("{}", chat_req_json);
+    println!("{}", chat_res_json);
+    dbg!(chat_req_2);
+    dbg!(chat_res_2);*/
 
     let lobby_container = LobbyContainer::new();
     let session_storage = SessionStorage::new();

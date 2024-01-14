@@ -12,12 +12,13 @@ use tokio::sync::{mpsc, oneshot};
 use tokio::time::{sleep, timeout};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::{filters::ws::Ws, reject, reply::Reply};
+use warp::http::StatusCode;
 use warp::ws::{Message, WebSocket};
 use crate::auth::UserInfo;
 
 use crate::lobby::models::LobbyContainer;
 use crate::Result;
-use crate::ws::models::{ClientConnection, Session, SessionStorage};
+use crate::ws::models::{ClientConnection, Session, SessionStorage, WsAction, WsRequest, WsResponse};
 
 pub async fn ws(
     uuid: String,
@@ -52,8 +53,8 @@ async fn client_connected(
     // Drop old connection if the same user is already connected
     if let Some(session) = session_storage.sessions.lock().unwrap().get_mut(&user_info.username) {
         info!("Client {} is already logged in. Closing the old connection", &user_info.username);
-        session.client_connection.sender.send(Message::text("Already logged in. Closing old connection.")).ok();
-        session.client_connection.sender.send(Message::close()).ok();
+        session.send(Message::text("Already logged in. Closing old connection.")).ok();
+        session.send(Message::close()).ok();
     }
 
     info!("client {} connected", user_info.username);
@@ -72,6 +73,8 @@ async fn client_connected(
     session_storage.sessions.lock().unwrap().insert(user_info.username.clone(), session);
 
     tokio::task::spawn(receiver(client_ws_rcv, client.clone(), terminate_tx, session_storage.clone()));
+
+
 
 
     //let (terminate_tx2, terminate_rx2) = oneshot::channel();
