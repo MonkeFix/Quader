@@ -2908,6 +2908,27 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
+ "actix-web",
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "derive_more",
+ "dotenvy",
+ "env_logger",
+ "futures-util",
+ "log",
+ "quader_engine",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "uuid",
+ "validator",
+]
+
+[[package]]
+name = "server-old"
+version = "0.1.0"
+dependencies = [
  "dotenvy",
  "env_logger",
  "futures",
