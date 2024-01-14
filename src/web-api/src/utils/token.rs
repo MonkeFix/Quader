@@ -46,3 +46,25 @@ pub fn decode_jwt<T: Into<String>>(token: T, secret: &[u8]) -> Result<Claims, cr
         Err(_) => Err(crate::Error::InvalidToken),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    #[test]
+    fn test_empty_username_should_fail() {
+        assert!(super::create_jwt("", b"", 60).is_err())
+    }
+
+    proptest! {
+        #[test]
+        fn test_encode_decode_roundtrip(s in prop::collection::vec(any::<char>(), 1..24)
+                                        .prop_map(|v| v.into_iter().collect::<String>())
+        ) {
+            let secret = b"secret";
+            let token = super::create_jwt(&s, secret, 60).expect("encode must succeed");
+            let claims = super::decode_jwt(token, secret).expect("decode must succeed");
+            assert_eq!(claims.sub, s)
+        }
+    }
+}
