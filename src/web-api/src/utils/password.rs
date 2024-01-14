@@ -25,3 +25,15 @@ pub fn compare(password: &str, hashed_password: &str) -> Result<bool, crate::Err
 
     Ok(password_matches)
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn test_random_strings(s in prop::collection::vec(any::<char>(), 1..128).prop_map(|v| v.into_iter().collect::<String>())) {
+            assert!(super::compare(&s, &super::hash(&s).unwrap()).unwrap())
+        }
+    }
+}
