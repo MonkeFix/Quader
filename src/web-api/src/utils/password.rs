@@ -3,18 +3,8 @@ use argon2::{
     Argon2,
 };
 
-const max_password_length: usize = 64;
-
 pub fn hash(password: impl Into<String>) -> Result<String, crate::Error> {
     let password = password.into();
-
-    if password.is_empty() {
-        return Err(crate::Error::EmptyPassword);
-    }
-
-    if password.len() > max_password_length {
-        return Err(crate::Error::ExceededMaxPasswordLength(max_password_length));
-    }
 
     let salt = SaltString::generate(&mut OsRng);
     let hashed_password = Argon2::default()
@@ -26,14 +16,6 @@ pub fn hash(password: impl Into<String>) -> Result<String, crate::Error> {
 }
 
 pub fn compare(password: &str, hashed_password: &str) -> Result<bool, crate::Error> {
-    if password.is_empty() {
-        return Err(crate::Error::EmptyPassword);
-    }
-
-    if password.len() > max_password_length {
-        return Err(crate::Error::ExceededMaxPasswordLength(max_password_length));
-    }
-
     let parsed_hash =
         PasswordHash::new(hashed_password).map_err(|_| crate::Error::InvalidHashFormat)?;
 
