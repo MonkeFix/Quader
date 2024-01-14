@@ -1,4 +1,4 @@
-use async_trait::async_trait;
+#![allow(async_fn_in_trait)]
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use uuid::Uuid;
 
@@ -29,7 +29,6 @@ impl DBClient {
     }
 }
 
-#[async_trait]
 pub trait UserExt {
     async fn get_user(
         &self,
@@ -51,7 +50,6 @@ pub trait UserExt {
     ) -> Result<model::User, sqlx::Error>;
 }
 
-#[async_trait]
 impl UserExt for DBClient {
     async fn get_user(
         &self,
