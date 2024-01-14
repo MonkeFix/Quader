@@ -11,6 +11,7 @@ use server::auth::{ApiErrorResult, ApiErrors};
 use server::config::Config;
 use server::lobby::lobbies;
 use server::lobby::models::LobbyContainer;
+use server::ws::models::SessionStorage;
 use server::ws::ws_lobby;
 
 
@@ -24,9 +25,10 @@ async fn main() -> Result<(), dotenvy::Error> {
     log::info!("Using config {:?}", config);
 
     let lobby_container = LobbyContainer::new();
+    let session_storage = SessionStorage::new();
 
     // lobby/:uuid
-    let lobby_ws = ws_lobby(lobby_container.clone()).await;
+    let lobby_ws = ws_lobby(lobby_container.clone(), session_storage).await;
 
     let index = warp::path::end().map(|| warp::reply::html(index_html));
 
@@ -37,10 +39,6 @@ async fn main() -> Result<(), dotenvy::Error> {
     warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 
     Ok(())
-}
-
-fn with_session_storage() {
-
 }
 
 async fn handle_rejection(err: warp::reject::Rejection) -> Result<impl warp::reply::Reply, Infallible> {

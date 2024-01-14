@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::convert::Infallible;
 use uuid::Uuid;
 use warp::http::StatusCode;
+use warp::reject;
 use crate::auth::UserInfo;
 use crate::lobby::models::{Lobby, LobbyContainer, LobbySettings};
 
@@ -28,7 +29,7 @@ pub async fn create_lobby(
     user_info: UserInfo,
     lobby_settings: LobbySettings,
     lobby_container: LobbyContainer
-) -> Result<impl warp::Reply, Infallible>
+) -> Result<impl warp::Reply, warp::Rejection>
 {
     log::debug!("creating lobby with settings: {:?}", lobby_settings);
 
@@ -70,13 +71,13 @@ pub async fn delete_lobby(
     uuid: String,
     user_info: UserInfo,
     lobby_container: LobbyContainer
-) -> Result<impl warp::Reply, Infallible>
+) -> Result<impl warp::Reply, warp::Rejection>
 {
     log::debug!("delete_lobby: uuid={:?}", uuid);
     let mut lobby_container = lobby_container.lobby_list.write().unwrap();
 
     if let Some(lobby) = lobby_container.get(&uuid) {
-        // deny removal of the lobby if issuer is not the creator of the lobby
+        // deny removal of the lobby if issuer is not creator of the lobby
         if lobby.creator_username != user_info.username && user_info.role != "admin" {
             return Ok(StatusCode::FORBIDDEN);
         }

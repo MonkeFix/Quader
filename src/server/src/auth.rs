@@ -52,14 +52,19 @@ pub async fn ensure_auth() -> impl Filter<Extract = (UserInfo,), Error = warp::r
 fn check_token(header: String) -> Option<UserInfo> {
     let parts: Vec<&str> = header.split(" ").collect();
     // TODO: Add proper checks
-    if parts.len() == 2 && parts[0] == "Bearer" && parts[1] == API_TOKEN {
-        return Some(create_mock_user());
+    if parts.len() == 2 && parts[0] == "Bearer" {
+        if parts[1] == API_TOKEN {
+            return Some(create_mock_user());
+        } else if parts[1] == API_TOKEN_2 {
+            return Some(create_mock_user_2());
+        }
     }
 
     None
 }
 
 const API_TOKEN: &'static str = "12345";
+const API_TOKEN_2: &'static str = "54321";
 
 fn create_mock_user() -> UserInfo {
     UserInfo {
@@ -71,3 +76,12 @@ fn create_mock_user() -> UserInfo {
     }
 }
 
+fn create_mock_user_2() -> UserInfo {
+    UserInfo {
+        id: "2".to_string(),
+        username: "user".to_string(),
+        email: "user@quader.io".to_string(),
+        role: "user".to_string(),
+        verified: true,
+    }
+}
