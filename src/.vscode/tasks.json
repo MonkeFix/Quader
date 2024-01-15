@@ -1,14 +1,12 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
+ 		{
 			"type": "cargo",
 			"command": "run",
 			"args": [
 				"--bin",
 				"quader",
-				"--features",
-				"bevy/dynamic_linking"
 			],
 			"problemMatcher": [
 				"$rustc"
@@ -20,13 +18,14 @@
 			"type": "cargo",
 			"command": "run",
 			"args": [
-				"--bin",
-				"quader_client_prototype"
 			],
+			"options": {
+				"cwd": "${workspaceFolder}/server"
+			},
 			"problemMatcher": [
 				"$rustc"
 			],
-			"label": "Run Quader Prototype"
+			"label": "Run Server",
 		}
 	]
 }

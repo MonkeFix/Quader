@@ -7,157 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'quader_engine'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=quader_engine"
-                ],
-                "filter": {
-                    "name": "quader_engine",
-                    "kind": "lib"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug integration test 'sample'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--test=sample",
-                    "--package=quader_engine"
-                ],
-                "filter": {
-                    "name": "sample",
-                    "kind": "test"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'quader_client_prototype'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=quader_client_prototype",
-                    "--package=quader_client_prototype"
-                ],
-                "filter": {
-                    "name": "quader_client_prototype",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'quader_client_prototype'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=quader_client_prototype",
-                    "--package=quader_client_prototype"
-                ],
-                "filter": {
-                    "name": "quader_client_prototype",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'server'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=server",
-                    "--package=server"
-                ],
-                "filter": {
-                    "name": "server",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'server'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=server",
-                    "--package=server"
-                ],
-                "filter": {
-                    "name": "server",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in library 'quader_engine'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=quader_engine_c_api"
-                ],
-                "filter": {
-                    "name": "quader_engine",
-                    "kind": "lib"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in library 'quader_skynet'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=quader_skynet"
-                ],
-                "filter": {
-                    "name": "quader_skynet",
-                    "kind": "lib"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'quader'",
+            "name": "Debug Quader",
             "cargo": {
                 "args": [
                     "build",
@@ -170,35 +20,12 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "CARGO_MANIFEST_DIR": "${workspaceFolder}",
-                "PATH": "${env:USERPROFILE}/.rustup/toolchains/nightly-x86_64-pc-windows-msvc/bin;${workspaceFolder}/target/debug/deps;${env:PATH}",
-            }
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'quader'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=quader",
-                    "--package=quader"
-                ],
-                "filter": {
-                    "name": "quader",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
             "cwd": "${workspaceFolder}"
         },
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'web_api'",
+            "name": "Debug web_api",
             "cargo": {
                 "args": [
                     "build",
@@ -216,21 +43,18 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'web_api'",
+            "name": "Debug server",
             "cargo": {
                 "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=web_api",
-                    "--package=web_api"
+                    "build",
                 ],
                 "filter": {
-                    "name": "web_api",
+                    "name": "server",
                     "kind": "bin"
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}/server"
         }
     ]
 }
