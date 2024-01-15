@@ -69,6 +69,7 @@ async fn main() -> std::io::Result<()> {
 
     let mut lobby_container = LobbyContainer::new();
     seed_lobbies(&mut lobby_container);
+    let lobbies = web::Data::new(lobby_container);
 
     let app_state = Arc::new(AtomicUsize::new(0));
     let (chat_server, server_tx) = ChatServer::new();
@@ -76,6 +77,7 @@ async fn main() -> std::io::Result<()> {
 
     let http_server = HttpServer::new(move || {
         App::new()
+            .app_data(lobbies.clone())
             .app_data(web::Data::new(server_tx.clone()))
             .app_data(web::Data::from(app_state.clone()))
             .configure(lobbies::config)
