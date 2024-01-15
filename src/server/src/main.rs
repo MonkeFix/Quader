@@ -1,5 +1,6 @@
 mod config;
 mod lobbies;
+mod auth;
 
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use serde::Serialize;
