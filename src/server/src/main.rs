@@ -1,20 +1,29 @@
 mod config;
+mod lobbies;
 
-use actix_web::{App, get, HttpResponse, HttpServer, post, Responder, web};
+use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
+use serde::Serialize;
 use crate::config::Config;
+use crate::lobbies::models::LobbyContainer;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello World!")
+#[derive(Serialize)]
+pub struct Response {
+    pub message: String
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+#[get("/health")]
+async fn healthcheck() -> impl Responder {
+    let response = Response {
+        message: "Everything is fine".to_string()
+    };
+    HttpResponse::Ok().json(response)
 }
 
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+async fn not_found() -> impl Responder {
+    let response = Response {
+        message: "Not Found".to_string()
+    };
+    HttpResponse::NotFound().json(response)
 }
 
 #[actix_web::main]
@@ -26,13 +35,25 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Using config {:?}", config);
 
-    HttpServer::new(|| {
+    let lobby_container = LobbyContainer::new();
+    let app_data = web::Data::new(lobby_container);
+
+    // Lobby:
+    //  - create
+    //  - update
+    //  - get all
+    //  - delete
+    // WS:
+    //  - connect to lobby
+    HttpServer::new(move || {
         App::new()
-            .service(hello)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+            .app_data(app_data.clone())
+            .configure(lobbies::config)
+            .service(healthcheck)
+            .default_service(web::route().to(not_found))
+            .wrap(actix_web::middleware::Logger::default())
     })
-        .bind(("127.0.0.1", 8080))?
+        .bind(("0.0.0.0", config.port))?
         .run()
         .await
 }
