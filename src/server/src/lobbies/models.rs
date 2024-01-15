@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root for full license text.
  */
 
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub type Lobbies = Arc<RwLock<HashMap<String, Lobby>>>;
@@ -20,27 +20,34 @@ pub struct LobbySettings {
 
 impl LobbySettings {
     pub fn new(name: String, player_limit: usize) -> Self {
-        Self {
-            name,
-            player_limit
-        }
+        Self { name, player_limit }
     }
 }
 
 #[derive(Clone)]
 pub struct LobbyContainer {
-    pub lobby_list: Lobbies
+    pub lobby_list: Lobbies,
 }
 
 impl LobbyContainer {
     pub fn new() -> Self {
         Self {
-            lobby_list: Arc::new(RwLock::new(HashMap::new()))
+            lobby_list: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
     pub fn contains_id(&self, uuid: &str) -> bool {
         self.lobby_list.read().unwrap().contains_key(uuid)
+    }
+
+    pub fn add_lobby(&mut self, lobby: Lobby) -> Option<Lobby> {
+        let uuid = lobby.uuid.clone();
+
+        self.lobby_list.write().unwrap().insert(uuid, lobby)
+    }
+
+    pub fn delete_lobby(&mut self, uuid: &str) -> Option<Lobby> {
+        self.lobby_list.write().unwrap().remove(uuid)
     }
 
     pub fn add_player(&mut self, uuid: &str, username: String) {
@@ -63,29 +70,42 @@ pub struct Lobby {
     pub player_limit: usize,
     pub player_list: Vec<String>,
     pub creator_username: String,
-    pub is_started: bool
+    pub is_started: bool,
 }
 
 impl Lobby {
-    pub fn new(creator_username: String, uuid: String, lobby_name: String, player_limit: usize) -> Self {
+    pub fn new(
+        creator_username: String,
+        uuid: String,
+        lobby_name: String,
+        player_limit: usize,
+    ) -> Self {
         Self {
             uuid,
             lobby_name,
             player_limit,
             player_list: vec![],
             creator_username,
-            is_started: false
+            is_started: false,
         }
     }
 
     pub fn from_settings(lobby_settings: LobbySettings, creator_username: String) -> Self {
+        Lobby::from_settings_with_id(lobby_settings, creator_username, Uuid::new_v4().to_string())
+    }
+
+    pub fn from_settings_with_id(
+        lobby_settings: LobbySettings,
+        creator_username: String,
+        uuid: String,
+    ) -> Self {
         Self {
-            uuid: Uuid::new_v4().to_string(),
+            uuid,
             lobby_name: lobby_settings.name,
             player_limit: lobby_settings.player_limit,
             player_list: vec![],
             creator_username,
-            is_started: false
+            is_started: false,
         }
     }
 

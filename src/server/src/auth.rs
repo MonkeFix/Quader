@@ -11,18 +11,17 @@ pub struct UserInfo {
     pub username: String,
     pub email: String,
     pub role: String,
-    pub verified: bool
+    pub verified: bool,
 }
 
 #[derive(Serialize)]
 pub struct AuthRequest {
-    pub token: String
+    pub token: String,
 }
 
-
 pub mod mock {
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use crate::auth::UserInfo;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
@@ -38,14 +37,15 @@ pub mod mock {
         None
     }
 
-
     fn create_mock(username: String, role: String) -> UserInfo {
         let id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed).to_string();
 
         UserInfo {
-            id, username, role,
-            email: format!("{}@quader.io", username),
-            verified: true
+            id,
+            username: username.clone(),
+            role,
+            email: format!("{}@quader.io", &username),
+            verified: true,
         }
     }
 
@@ -71,4 +71,3 @@ pub mod mock {
         None
     }
 }
-
