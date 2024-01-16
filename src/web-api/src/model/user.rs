@@ -49,6 +49,8 @@ pub struct User {
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing)]
+    pub refresh_token: String,
 }
 
 #[derive(Serialize)]

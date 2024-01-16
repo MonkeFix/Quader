@@ -70,7 +70,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE id = $1
                 "#, user_id)
@@ -87,7 +88,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE username = $1
                 "#, username)
@@ -104,7 +106,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE email = $1
                 "#, email)
@@ -124,7 +127,7 @@ impl UserExt for DBClient {
         let user = sqlx::query_as!(
             model::User,
             r#"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)
-               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
             "#,
             username.into(),
             email.into(),
@@ -145,7 +148,7 @@ impl UserExt for DBClient {
         let user = sqlx::query_as!(
             model::User,
             r#"INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4)
-               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
             "#,
             username.into(),
             email.into(),
