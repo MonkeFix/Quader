@@ -3,25 +3,33 @@
  * See the LICENSE file in the repository root for full license text.
  */
 
-use std::ops::Deref;
-use actix_web::{delete, get, HttpMessage, HttpRequest, HttpResponse, post, put, web};
 use crate::lobbies::models::{Lobby, LobbyContainer, LobbySettings};
+use actix_web::{delete, get, post, put, web, HttpRequest, HttpResponse};
+use std::ops::Deref;
 
 #[get("/lobbies")]
 pub async fn list_lobbies(lobby_container: web::Data<LobbyContainer>) -> HttpResponse {
-    let lobbies = lobby_container.lobby_list
-        .read()
-        .map_err(|e| match e { _ => HttpResponse::InternalServerError() });
+    let lobbies = lobby_container.lobby_list.read().map_err(|e| match e {
+        _ => HttpResponse::InternalServerError(),
+    });
 
     match lobbies {
-        Ok(r) => { HttpResponse::Ok().json(r.deref()) }
-        Err(err) => { err.into() }
+        Ok(r) => HttpResponse::Ok().json(r.deref()),
+        Err(err) => err.into(),
     }
 }
 
 #[get("/lobbies/{uuid}")]
-pub async fn get_lobby(lobby_container: web::Data<LobbyContainer>, uuid: web::Path<String>) -> HttpResponse {
-    if let Some(lobby) = lobby_container.lobby_list.read().unwrap().get(uuid.as_ref()) {
+pub async fn get_lobby(
+    lobby_container: web::Data<LobbyContainer>,
+    uuid: web::Path<String>,
+) -> HttpResponse {
+    if let Some(lobby) = lobby_container
+        .lobby_list
+        .read()
+        .unwrap()
+        .get(uuid.as_ref())
+    {
         return HttpResponse::Ok().json(lobby);
     }
 
@@ -30,18 +38,19 @@ pub async fn get_lobby(lobby_container: web::Data<LobbyContainer>, uuid: web::Pa
 
 #[post("/lobbies")]
 pub async fn create_lobby(
-    req: HttpRequest,
+    _req: HttpRequest,
     lobby_container: web::Data<LobbyContainer>,
-    lobby_settings: web::Json<LobbySettings>
+    lobby_settings: web::Json<LobbySettings>,
 ) -> HttpResponse {
-
-    let auth = req.headers().get(actix_web::http::header::AUTHORIZATION);
+    //let auth = req.headers().get(actix_web::http::header::AUTHORIZATION);
     //req.extensions_mut().insert("a".to_string());
 
     let lobby = Lobby::from_settings(lobby_settings.0, "aaaa".to_string());
 
-    lobby_container.lobby_list
-        .write().unwrap()
+    lobby_container
+        .lobby_list
+        .write()
+        .unwrap()
         .insert(lobby.uuid.clone(), lobby.clone());
 
     HttpResponse::Ok().json(lobby)
@@ -51,10 +60,14 @@ pub async fn create_lobby(
 pub async fn update_lobby(
     lobby_container: web::Data<LobbyContainer>,
     uuid: web::Path<String>,
-    new_settings: web::Json<LobbySettings>
+    new_settings: web::Json<LobbySettings>,
 ) -> HttpResponse {
-
-    if let Some(_) = lobby_container.lobby_list.read().unwrap().get(uuid.as_ref()) {
+    if let Some(_) = lobby_container
+        .lobby_list
+        .read()
+        .unwrap()
+        .get(uuid.as_ref())
+    {
         let mut mutex = lobby_container.lobby_list.write().unwrap();
         let lobby = mutex.get_mut(uuid.as_ref()).unwrap();
         lobby.lobby_name = new_settings.name.clone();
@@ -69,10 +82,14 @@ pub async fn update_lobby(
 #[delete("/lobbies/{uuid}")]
 pub async fn delete_lobby(
     lobby_container: web::Data<LobbyContainer>,
-    uuid: web::Path<String>
+    uuid: web::Path<String>,
 ) -> HttpResponse {
-
-    lobby_container.lobby_list.write().unwrap().remove(uuid.as_ref()).unwrap();
+    lobby_container
+        .lobby_list
+        .write()
+        .unwrap()
+        .remove(uuid.as_ref())
+        .unwrap();
 
     HttpResponse::Ok().body("Success")
 }
