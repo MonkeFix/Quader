@@ -3,17 +3,13 @@
  * See the LICENSE file in the repository root for full license text.
  */
 
-use std::str::SplitN;
 use std::time::{Duration, Instant};
 
-use crate::ws::server::{ChatServer, ChatServerHandle};
+use crate::ws::server::ChatServerHandle;
 use crate::ConnId;
-use actix_ws::Message;
-use futures_util::{
-    future::{select, Either},
-    StreamExt as _,
-};
-use tokio::{pin, sync::mpsc, time::interval};
+use actix_ws::{CloseReason, Message};
+use futures_util::StreamExt as _;
+use tokio::{pin, select, sync::mpsc, time::interval};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -33,63 +29,63 @@ pub async fn chat_ws(
 
     let conn_id = chat_server.connect(conn_tx).await;
 
-    let close_reason = loop {
+    let close_reason: Option<CloseReason> = loop {
         let tick = interval.tick();
         pin!(tick);
 
         let msg_rx = conn_rx.recv();
         pin!(msg_rx);
 
-        let messages = select(msg_stream.next(), msg_rx);
-        pin!(messages);
+        select! {
+            msg = msg_stream.next() => {
 
-        match select(messages, tick).await {
-            // commands & messages received from client
-            Either::Left((Either::Left((Some(Ok(msg)), _)), _)) => {
-                log::debug!("msg: {msg:?}");
+                match &msg {
+                    // commands & messages received from client
+                    Some(Ok(msg)) => {
+                        log::debug!("msg: {msg:?}");
 
-                match msg {
-                    Message::Ping(bytes) => {
-                        last_heartbeat = Instant::now();
-                        session.pong(&bytes).await.unwrap();
-                    }
-                    Message::Pong(_) => {
-                        last_heartbeat = Instant::now();
-                    }
-                    Message::Text(text) => {
-                        process_text_msg(&chat_server, &mut session, &text, conn_id, &mut name)
-                            .await;
-                    }
-                    Message::Binary(_bin) => {
-                        log::warn!("unexpected binary message");
-                    }
-                    Message::Close(reason) => break reason,
-                    _ => {
+                        match msg {
+                            Message::Ping(bytes) => {
+                                last_heartbeat = Instant::now();
+                                session.pong(&bytes).await.unwrap();
+                            }
+                            Message::Pong(_) => {
+                                last_heartbeat = Instant::now();
+                            }
+                            Message::Text(text) => {
+                                process_text_msg(&chat_server, &mut session, &text, conn_id, &mut name)
+                                    .await;
+                            }
+                            Message::Binary(_bin) => {
+                                log::warn!("unexpected binary message");
+                            }
+                            Message::Close(reason) => break reason.clone(),
+                            _ => {
+                                break None;
+                            }
+                        }
+                    },
+                    // client WebSocket stream error
+                    Some(Err(err)) => {
+                        log::error!("{}", err);
+                        break None;
+                    },
+                    // client WebSocket stream ended
+                    None => {
                         break None;
                     }
                 }
             }
-            // client WebSocket stream error
-            Either::Left((Either::Left((Some(Err(err)), _)), _)) => {
-                log::error!("{}", err);
-                break None;
+            msg = msg_rx => {
+                // chat messages received from other room participants
+                if let Some(msg) = &msg {
+                    session.text(msg).await.unwrap();
+                } else {
+                    unreachable!("all connection message senders were dropped; chat server may have panicked")
+                }
             }
-
-            // client WebSocket stream ended
-            Either::Left((Either::Left((None, _)), _)) => break None,
-
-            // chat messages received from other room participants
-            Either::Left((Either::Right((Some(chat_msg), _)), _)) => {
-                session.text(chat_msg).await.unwrap();
-            }
-
-            // all connection's message senders were dropped
-            Either::Left((Either::Right((None, _)), _)) => unreachable!(
-                "all connection message senders were dropped; chat server may have panicked"
-            ),
-
             // heartbeat internal tick
-            Either::Right((_inst, _)) => {
+            _ = tick => {
                 // if no heartbeat ping/pong received recently, close the connection
                 if Instant::now().duration_since(last_heartbeat) > CLIENT_TIMEOUT {
                     log::info!(
