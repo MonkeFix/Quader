@@ -19,6 +19,7 @@ pub struct AuthRequest {
     pub token: String,
 }
 
+#[allow(dead_code)]
 pub mod mock {
     use crate::auth::UserInfo;
     use std::sync::atomic::{AtomicUsize, Ordering};

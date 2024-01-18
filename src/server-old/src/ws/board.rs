@@ -22,8 +22,8 @@ pub struct BoardInterface {
 
 impl BoardInterface {
     pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64) -> Self {
-        let (board_send, recv) = channel(100);
-        let (send, board_recv) = channel(100);
+        let (board_send, recv) = mpsc::unbounded_channel();
+        let (send, board_recv) = mpsc::unbounded_channel();
         //std::thread::spawn(move || run(board_recv, board_send, game_settings, wkd, seed));
 
         tokio::task::spawn(run(board_recv, board_send, game_settings, wkd, seed));
