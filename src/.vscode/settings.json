@@ -3,5 +3,6 @@
         "despawn",
         "Quader",
         "renderable"
-    ]
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
 }
