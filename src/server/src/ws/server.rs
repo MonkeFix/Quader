@@ -4,7 +4,8 @@
  */
 
 use crate::{ConnId, Msg, RoomId};
-use rand::{thread_rng, Rng as _};
+use quader_engine::{board::{Board, self}, wall_kick_data::WallKickData, time_mgr::TimeMgr};
+use rand::{thread_rng, Rng as _, RngCore};
 use std::{
     collections::{HashMap, HashSet},
     io,
@@ -14,6 +15,8 @@ use std::{
     },
 };
 use tokio::sync::{mpsc, oneshot};
+
+use super::handler::WsBoardCommand;
 
 enum Command {
     Connect {
@@ -36,6 +39,11 @@ enum Command {
         conn: ConnId,
         res_tx: oneshot::Sender<()>,
     },
+    BoardCommand {
+        cmd: WsBoardCommand,
+        conn: ConnId,
+        res_tx: oneshot::Sender<String>
+    }
 }
 
 #[derive(Debug)]
@@ -44,6 +52,10 @@ pub struct ChatServer {
     rooms: HashMap<RoomId, HashSet<ConnId>>,
     visitor_count: Arc<AtomicUsize>,
     cmd_rx: mpsc::UnboundedReceiver<Command>,
+    boards: HashMap<ConnId, Board>,
+    time_mgr: TimeMgr,
+    wkd: Arc<WallKickData>,
+    seed: u64
 }
 
 impl ChatServer {
@@ -60,6 +72,10 @@ impl ChatServer {
                 rooms,
                 visitor_count: Arc::new(AtomicUsize::new(0)),
                 cmd_rx,
+                boards: HashMap::new(),
+                time_mgr: TimeMgr::new(),
+                wkd: Arc::new(WallKickData::new(quader_engine::wall_kick_data::WallKickDataMode::Standard)),
+                seed: thread_rng().next_u64()
             },
             ChatServerHandle { cmd_tx },
         )
@@ -149,6 +165,57 @@ impl ChatServer {
             .await;
     }
 
+    async fn exec_board_cmd(&mut self, conn: ConnId, cmd: WsBoardCommand) -> String {
+        match cmd {
+            WsBoardCommand::Create => {
+                let board = Board::new(
+                    quader_engine::game_settings::GameSettings::default(), 
+                    self.wkd.clone(), 
+                    self.seed
+                );
+                self.boards.insert(conn.clone(), board);
+            },
+            WsBoardCommand::Destroy(id) => {
+                self.boards.remove(&id);
+            },
+            WsBoardCommand::Move(dir, amount) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.move_to(dir, amount);
+            },
+            WsBoardCommand::Rotate(dir) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.rotate(dir);
+            },
+            WsBoardCommand::HardDrop => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                let _res = board.hard_drop();
+            },
+            WsBoardCommand::SoftDrop(amount) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.soft_drop(amount);
+            },
+            WsBoardCommand::SendGarbage(amount, messiness) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.push_garbage(amount, messiness);
+            },
+            WsBoardCommand::Attack(amount) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.attack(amount);
+            },
+            WsBoardCommand::Update(dt) => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                self.time_mgr.update(dt);
+                board.update(&self.time_mgr);
+            },
+            WsBoardCommand::HoldPiece => {
+                let board = self.boards.get_mut(&conn).unwrap();
+                board.try_hold_piece();
+            },
+        }
+
+        "ok".to_string()
+    }
+
     pub async fn run(mut self) -> io::Result<()> {
         while let Some(cmd) = self.cmd_rx.recv().await {
             match cmd {
@@ -170,6 +237,10 @@ impl ChatServer {
                     self.send_message(conn, msg).await;
                     let _ = res_tx.send(());
                 }
+                Command::BoardCommand { cmd, conn, res_tx } => {
+                    let res = self.exec_board_cmd(conn, cmd).await;
+                    let _ = res_tx.send(res);
+                },
             }
         }
 
@@ -231,5 +302,19 @@ impl ChatServerHandle {
 
     pub fn disconnect(&self, conn: ConnId) {
         self.cmd_tx.send(Command::Disconnect { conn }).unwrap();
+    }
+
+    pub async fn on_board_cmd(&self, conn: ConnId, cmd: WsBoardCommand) -> String {
+        let (res_tx, res_rx) = oneshot::channel();
+
+        self.cmd_tx
+            .send(Command::BoardCommand { 
+                cmd, conn, res_tx 
+            })
+            .unwrap();
+
+        let res = res_rx.await.unwrap();
+
+        res
     }
 }

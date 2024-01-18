@@ -9,6 +9,8 @@ use crate::{ws::server::ChatServerHandle, Msg};
 use crate::ConnId;
 use actix_ws::{CloseReason, Message};
 use futures_util::StreamExt as _;
+use quader_engine::board_command::{BoardMoveDir};
+use quader_engine::piece::RotationDirection;
 use serde::{Serialize, Deserialize};
 use tokio::{pin, select, sync::mpsc, time::interval};
 
@@ -108,6 +110,22 @@ pub async fn chat_ws(
     let _ = session.close(close_reason).await;
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum WsBoardCommand {
+    Create,
+    Destroy(ConnId),
+    Move(BoardMoveDir, u32),
+    Rotate(RotationDirection),
+    HardDrop,
+    // delta
+    SoftDrop(u32),
+    // amount, messiness
+    SendGarbage(u32, u32),
+    Attack(i32),
+    // delta
+    Update(f32),
+    HoldPiece,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WsAction {
@@ -115,7 +133,7 @@ pub enum WsAction {
     ListRooms,
     JoinRoom(String),
     SetName(String),
-
+    BoardCommand(WsBoardCommand)
 }
 
 async fn process_text_msg(
@@ -157,6 +175,11 @@ async fn process_text_msg(
             };
     
             chat_server.send_message(conn, msg).await;
+        },
+        WsAction::BoardCommand(cmd) => {
+            log::info!("conn {conn}: got a board cmd: {:?}", cmd);
+            let msg = chat_server.on_board_cmd(conn, cmd).await;
+            session.text(msg).await.unwrap();
         },
     }
 
