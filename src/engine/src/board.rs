@@ -4,6 +4,7 @@
  */
 
 use std::sync::{Arc};
+use crate::board_command::BoardMoveDir;
 use crate::cell_holder::{CellHolder};
 use crate::game_settings::{GameSettings};
 use crate::garbage_mgr::GarbageMgr;
@@ -110,6 +111,13 @@ impl Board {
         }
 
         moves_count
+    }
+
+    pub fn move_to(&mut self, dir: BoardMoveDir, delta: u32) -> u32 {
+        match dir {
+            BoardMoveDir::Left => self.move_left(delta),
+            BoardMoveDir::Right => self.move_right(delta),
+        }
     }
 
     /// Tries to rotate current piece to direction `RotationDirection`
