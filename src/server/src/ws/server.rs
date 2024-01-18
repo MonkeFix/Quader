@@ -180,6 +180,9 @@ impl ChatServer {
                     self.seed
                 );
                 self.boards.insert(conn.clone(), board);
+                let bm = BoardManager::new();
+                let handle = tokio::spawn(bm.run());
+                handle.await.ok();
             },
             WsBoardCommand::Destroy(id) => {
                 self.boards.remove(&id);
