@@ -7,6 +7,7 @@ pub fn auth() -> Scope {
         .service(self::auth::handler::register)
         .service(self::auth::handler::login)
         .service(self::auth::handler::logout)
+        .service(self::auth::handler::refresh)
         .service(self::auth::handler::validate)
 }
 

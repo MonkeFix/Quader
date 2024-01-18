@@ -11,6 +11,7 @@ use crate::{dto, error, model, scope, utils};
         scope::health_handler,
         scope::auth::handler::register,
         scope::auth::handler::login,
+        scope::auth::handler::refresh,
         scope::auth::handler::validate,
         scope::auth::handler::logout,
         scope::user::handler::get_me,

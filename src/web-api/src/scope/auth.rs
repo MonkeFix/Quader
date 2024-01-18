@@ -1,8 +1,9 @@
 pub mod handler {
     use actix_web::{
         cookie::{self, Cookie},
-        post, web, HttpResponse, Responder, get,
+        post, web, HttpResponse, Responder, get, HttpRequest,
     };
+    use chrono::Utc;
     use serde_json::json;
     use uuid::Uuid;
     use validator::Validate;
@@ -131,6 +132,59 @@ pub mod handler {
                 .json(Response::ok(dto::TokenData { token, refresh_token })))
         } else {
             Err(http::Error::unauthorized(Error::WrongCredentials))
+        }
+    }
+
+    #[utoipa::path(
+        get,
+        path = "/api/auth/refresh",
+        tag = "Refresh Endpoint",
+        responses(
+            (status = 200, body = TokenData),
+        )
+    )]
+    #[get("/refresh")]
+    pub async fn refresh(
+        req: HttpRequest,
+        app_state: web::Data<AppState>,
+    ) -> Result<HttpResponse, http::Error> {
+        let refresh_token = req
+            .cookie("refresh_token")
+            .map(|c| c.value().to_string())
+            .ok_or(http::Error::bad_request(crate::Error::RefreshTokenNotProvided))?;
+
+        let claims = decode_jwt(&refresh_token, app_state.config.jwt_secret.as_bytes())
+            .map_err(http::Error::bad_request)?;
+
+        let user_id = uuid::Uuid::parse_str(claims.sub.as_str()).unwrap();
+
+        let user = app_state
+            .db_client
+            .get_user(Some(user_id), None, None)
+            .await?
+            .ok_or(http::Error::bad_request(crate::Error::UserNoLongerExist))?;
+
+        let now = Utc::now().timestamp() as usize;
+
+        if refresh_token != user.refresh_token {
+            Err(http::Error::not_acceptable(crate::Error::InvalidRefreshToken))
+        } else if claims.exp < now {
+            Err(http::Error::not_acceptable(crate::Error::RefreshTokenExpired))
+        } else {
+            let token = make_token(&user.id, app_state.config.jwt_maxage, &app_state.config.jwt_secret)
+                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            let cookie = make_cookie("token", token.clone(), app_state.config.jwt_maxage);
+
+            let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
+                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_maxage);
+
+            app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
+
+            Ok(HttpResponse::Ok()
+                .cookie(cookie)
+                .cookie(refresh_cookie)
+                .json(Response::ok(dto::TokenData { token, refresh_token })))
         }
     }
 

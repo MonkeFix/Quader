@@ -58,8 +58,12 @@ pub enum Error {
     InvalidHashFormat,
     #[display(fmt = "Authentication token is invalid")]
     InvalidToken,
+    #[display(fmt = "Refresh token is invalid")]
+    InvalidRefreshToken,
     #[display(fmt = "You are not logged in, please provide token")]
     TokenNotProvided,
+    #[display(fmt = "No refresh token provided")]
+    RefreshTokenNotProvided,
     #[display(fmt = "Access token is expired")]
     AccessTokenExpired,
     #[display(fmt = "Refresh token is expired")]
