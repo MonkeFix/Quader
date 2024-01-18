@@ -38,7 +38,11 @@ impl Modify for SecurityAddon {
         let components = openapi.components.as_mut().unwrap();
         components.add_security_scheme(
             "token",
-            SecurityScheme::ApiKey(ApiKey::Cookie(ApiKeyValue::new("api_key"))),
+            SecurityScheme::ApiKey(ApiKey::Cookie(ApiKeyValue::new("token"))),
+        );
+        components.add_security_scheme(
+            "refresh_token",
+            SecurityScheme::ApiKey(ApiKey::Cookie(ApiKeyValue::new("refresh_token"))),
         )
     }
 }
