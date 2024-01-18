@@ -56,10 +56,14 @@ pub enum Error {
     HashingError,
     #[display(fmt = "Invalid password hash format")]
     InvalidHashFormat,
-    #[display(fmt = "Authentication token is invalid or expired")]
+    #[display(fmt = "Authentication token is invalid")]
     InvalidToken,
     #[display(fmt = "You are not logged in, please provide token")]
     TokenNotProvided,
+    #[display(fmt = "Access token is expired")]
+    AccessTokenExpired,
+    #[display(fmt = "Refresh token is expired")]
+    RefreshTokenExpired,
     #[display(fmt = "You are not allowed to perform this action")]
     PermissionDenied,
     #[display(fmt = "{}", _0)]
