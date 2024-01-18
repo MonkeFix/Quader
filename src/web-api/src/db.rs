@@ -48,6 +48,11 @@ pub trait UserExt {
         email: T,
         password: T,
     ) -> Result<model::User, sqlx::Error>;
+    async fn update_refresh_token(
+        &self,
+        id: Uuid,
+        refresh_token: String,
+    ) -> Result<model::User, sqlx::Error>;
 }
 
 impl UserExt for DBClient {
@@ -158,6 +163,24 @@ impl UserExt for DBClient {
         .fetch_one(&self.pool)
         .await?;
 
+        Ok(user)
+    }
+
+    async fn update_refresh_token(
+        &self,
+        id: Uuid,
+        refresh_token: String,
+    ) -> Result<model::User, sqlx::Error> {
+        let user = sqlx::query_as!(
+            model::User,
+            r#"UPDATE users SET refresh_token = $1 WHERE id = $2
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
+            "#,
+            refresh_token,
+            id.into(),
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(user)
     }
 }

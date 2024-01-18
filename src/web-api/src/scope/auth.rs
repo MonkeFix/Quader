@@ -4,6 +4,7 @@ pub mod handler {
         post, web, HttpResponse, Responder, get,
     };
     use serde_json::json;
+    use uuid::Uuid;
     use validator::Validate;
 
     use crate::{
@@ -55,6 +56,33 @@ pub mod handler {
         }
     }
 
+    fn make_token(
+        user_id: &Uuid,
+        maxage: i64,
+        secret: &str,
+    ) -> Result<String, jsonwebtoken::errors::Error> {
+        token::create_jwt(
+                &*user_id.to_string(),
+                secret.as_bytes(),
+                maxage,
+        )
+    }
+
+    fn make_cookie<'a>(
+        title: &'a str,
+        token: String,
+        maxage: i64,
+    ) -> Cookie<'a> {
+        Cookie::build(title, token)
+            .path("/")
+            .max_age(cookie::time::Duration::new(
+                60 * maxage,
+                0,
+            ))
+            .http_only(true)
+            .finish()
+    }
+
     #[utoipa::path(
         post,
         path = "/api/auth/login",
@@ -87,24 +115,20 @@ pub mod handler {
             .map_err(|_| http::Error::unauthorized(Error::WrongCredentials))?;
 
         if password_matches {
-            let token = token::create_jwt(
-                &user.id.to_string(),
-                &app_state.config.jwt_secret.as_bytes(),
-                app_state.config.jwt_maxage,
-            )
-            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
-            let cookie = Cookie::build("token", token.to_owned())
-                .path("/")
-                .max_age(cookie::time::Duration::new(
-                    60 * &app_state.config.jwt_maxage,
-                    0,
-                ))
-                .http_only(true)
-                .finish();
+            let token = make_token(&user.id, app_state.config.jwt_maxage, &app_state.config.jwt_secret)
+                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            let cookie = make_cookie("token", token.clone(), app_state.config.jwt_maxage);
+
+            let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
+                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_maxage);
+
+            app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
 
             Ok(HttpResponse::Ok()
                 .cookie(cookie)
-                .json(Response::ok(dto::TokenData { token })))
+                .cookie(refresh_cookie)
+                .json(Response::ok(dto::TokenData { token, refresh_token })))
         } else {
             Err(http::Error::unauthorized(Error::WrongCredentials))
         }

@@ -46,4 +46,5 @@ pub struct LoginUser {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct TokenData {
     pub token: String,
+    pub refresh_token: String,
 }
