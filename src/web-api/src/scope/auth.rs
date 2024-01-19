@@ -11,7 +11,7 @@ pub mod handler {
     use crate::{
         app::AppState,
         db::UserExt,
-        http::{self, Created, Response},
+        http::{self, Created},
         middleware::RequireAuth,
         model::{UserRole, self},
         utils::{password, token::{self, Claims, decode_jwt}}, Error, dto,
@@ -100,7 +100,7 @@ pub mod handler {
     pub async fn login(
         app_state: web::Data<AppState>,
         body: web::Json<dto::LoginUser>,
-    ) -> Result<HttpResponse, http::Error> {
+    ) -> Result<http::Response<dto::TokenData>, http::Error> {
         body.validate()
             .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
 
@@ -122,14 +122,15 @@ pub mod handler {
 
             let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
                 .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
-            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_maxage);
+            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_refresh_maxage);
 
             app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
 
-            Ok(HttpResponse::Ok()
+            let payload = dto::TokenData { token, refresh_token };
+
+            Ok(http::Response::ok(payload)
                 .cookie(cookie)
-                .cookie(refresh_cookie)
-                .json(Response::ok(dto::TokenData { token, refresh_token })))
+                .cookie(refresh_cookie))
         } else {
             Err(http::Error::unauthorized(Error::WrongCredentials))
         }
@@ -147,7 +148,7 @@ pub mod handler {
     pub async fn refresh(
         req: HttpRequest,
         app_state: web::Data<AppState>,
-    ) -> Result<HttpResponse, http::Error> {
+    ) -> Result<http::Response<dto::TokenData>, http::Error> {
         let refresh_token = req
             .cookie("refresh_token")
             .map(|c| c.value().to_string())
@@ -177,14 +178,15 @@ pub mod handler {
 
             let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
                 .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
-            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_maxage);
+            let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_refresh_maxage);
 
             app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
 
-            Ok(HttpResponse::Ok()
+            let payload = dto::TokenData { token, refresh_token };
+
+            Ok(http::Response::ok(payload)
                 .cookie(cookie)
-                .cookie(refresh_cookie)
-                .json(Response::ok(dto::TokenData { token, refresh_token })))
+                .cookie(refresh_cookie))
         }
     }
 
