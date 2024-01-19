@@ -28,7 +28,6 @@ pub struct BotBoard {
     move_requested: bool
 }
 
-
 fn create_bot_interface(board: &Board) -> Box<Interface> {
     let mut bot_board = libtetris::Board::new();
     bot_board.add_next_piece(piece_type_to_piece(board.piece_mgr.cur_piece.get_type()));

@@ -28,7 +28,7 @@
             "name": "Debug web_api",
             "cargo": {
                 "args": [
-                    "build",
+                    "run",
                     "--bin=web_api",
                     "--package=web_api"
                 ],
@@ -38,7 +38,7 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}/web-api"
         },
         {
             "type": "lldb",

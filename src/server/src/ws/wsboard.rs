@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use futures_util::Future;
-use quader_engine::{time_mgr::TimeMgr, wall_kick_data::WallKickData, board::Board};
+use quader_engine::{time_mgr::TimeMgr, wall_kick_data::WallKickData, board::Board, piece_mgr::BoardErrorReason};
 use rand::{thread_rng, RngCore};
 use tokio::{select, sync::oneshot};
 
@@ -36,7 +36,6 @@ impl BoardManager {
 
         self.is_started = true;
 
-        let mut dt = 0.0;
         let update = async {
             let mut prev = Instant::now();
             let mut lag = 0.0;
@@ -47,8 +46,13 @@ impl BoardManager {
                 prev = curr;
                 lag += elapsed.as_secs_f32();
     
+                // TODO: process input
+    
                 while lag >= MS_PER_UPDATE {
-                    dt = lag / MS_PER_UPDATE;
+                    self.time_mgr.update(lag);
+                    //TODO: 
+                    self.update_boards();
+                    //log::info!("update, lag: {lag}, elapsed: {}", elapsed_sec);
                     lag -= MS_PER_UPDATE;
                 }
             }
@@ -56,8 +60,7 @@ impl BoardManager {
 
         select! {
             _ = update => {
-                log::info!("update {}", dt);
-                self.time_mgr.update(dt);
+
             }
             _ = terminate_rx => {
                 log::info!("terminating board manager");
@@ -65,8 +68,16 @@ impl BoardManager {
         }
     }
 
-    pub fn stop(&self) {
-        
+    fn update_boards(&mut self) {
+        for (conn, board) in &mut self.boards {
+
+            match board.update(&self.time_mgr) {
+                Some(Err(err)) => {
+                    log::info!("conn {conn}: board is dead. reason: {err:?}");
+                },
+                _ => {},
+            }
+        }
     }
 }
 
