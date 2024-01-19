@@ -1,12 +1,13 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
-use crate::{model, error};
-
-#[derive(Validate, Debug, Default, Clone, Deserialize)]
+#[derive(Validate, Debug, Default, Clone, Deserialize, ToSchema)]
 pub struct RegisterUser {
-    #[validate(length(min = 1, message = "Name is required"))]
+    #[validate(
+        length(min = 1, message = "Username is required"),
+        length(max = 24, message = "Username is too long")
+    )]
     pub username: String,
     #[validate(
         length(min = 1, message = "Email is required"),
@@ -15,7 +16,8 @@ pub struct RegisterUser {
     pub email: String,
     #[validate(
         length(min = 1, message = "Password is required"),
-        length(min = 6, message = "Password must be at least 6 characters")
+        length(min = 6, message = "Password must be at least 6 characters"),
+        length(max = 64, message = "Password must not exceed 64 characters")
     )]
     pub password: String,
     #[validate(
@@ -26,7 +28,7 @@ pub struct RegisterUser {
     pub password_confirm: String,
 }
 
-#[derive(Validate, Debug, Default, Clone, Deserialize)]
+#[derive(Validate, Debug, Default, Clone, Deserialize, ToSchema)]
 pub struct LoginUser {
     #[validate(
         length(min = 1, message = "Email is required"),
@@ -35,53 +37,14 @@ pub struct LoginUser {
     pub email: String,
     #[validate(
         length(min = 1, message = "Password is required"),
-        length(min = 6, message = "Password must be at least 6 characters")
+        length(min = 6, message = "Password must be at least 6 characters"),
+        length(max = 64, message = "Password must not exceed 64 characters")
     )]
     pub password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct User {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-    pub role: String,
-    pub photo: String,
-    pub verified: bool,
-    #[serde(rename = "createdAt")]
-    pub created_at: DateTime<Utc>,
-    #[serde(rename = "updatedAt")]
-    pub updated_at: DateTime<Utc>,
-}
-
-impl User {
-    pub fn from_model(user: &model::User) -> Self {
-        User {
-            id: user.id.to_string(),
-            email: user.email.to_owned(),
-            username: user.username.to_owned(),
-            photo: user.photo.to_owned(),
-            role: user.role.to_string(),
-            verified: user.verified,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct UserData {
-    pub user: User,
-}
-
-#[derive(Debug, Serialize)]
-pub struct RegisterResponse {
-    pub status: error::Status,
-    pub data: UserData,
-}
-
-#[derive(Debug, Serialize)]
-pub struct LoginResponse {
-    pub status: error::Status,
+#[derive(Debug, Serialize, ToSchema)]
+pub struct TokenData {
     pub token: String,
+    pub refresh_token: String,
 }

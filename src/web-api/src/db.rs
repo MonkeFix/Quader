@@ -1,4 +1,4 @@
-use async_trait::async_trait;
+#![allow(async_fn_in_trait)]
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use uuid::Uuid;
 
@@ -29,7 +29,6 @@ impl DBClient {
     }
 }
 
-#[async_trait]
 pub trait UserExt {
     async fn get_user(
         &self,
@@ -49,9 +48,13 @@ pub trait UserExt {
         email: T,
         password: T,
     ) -> Result<model::User, sqlx::Error>;
+    async fn update_refresh_token(
+        &self,
+        id: Uuid,
+        refresh_token: String,
+    ) -> Result<model::User, sqlx::Error>;
 }
 
-#[async_trait]
 impl UserExt for DBClient {
     async fn get_user(
         &self,
@@ -72,7 +75,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE id = $1
                 "#, user_id)
@@ -89,7 +93,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE username = $1
                 "#, username)
@@ -106,7 +111,8 @@ impl UserExt for DBClient {
                           photo,
                           verified,
                           created_at,
-                          updated_at
+                          updated_at,
+                          refresh_token
                    FROM users
                    WHERE email = $1
                 "#, email)
@@ -126,7 +132,7 @@ impl UserExt for DBClient {
         let user = sqlx::query_as!(
             model::User,
             r#"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)
-               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
             "#,
             username.into(),
             email.into(),
@@ -147,7 +153,7 @@ impl UserExt for DBClient {
         let user = sqlx::query_as!(
             model::User,
             r#"INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4)
-               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
             "#,
             username.into(),
             email.into(),
@@ -157,6 +163,24 @@ impl UserExt for DBClient {
         .fetch_one(&self.pool)
         .await?;
 
+        Ok(user)
+    }
+
+    async fn update_refresh_token(
+        &self,
+        id: Uuid,
+        refresh_token: String,
+    ) -> Result<model::User, sqlx::Error> {
+        let user = sqlx::query_as!(
+            model::User,
+            r#"UPDATE users SET refresh_token = $1 WHERE id = $2
+               RETURNING id, username, email, password_hash, role as "role: UserRole", photo, verified, created_at, updated_at, refresh_token
+            "#,
+            refresh_token,
+            id.into(),
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(user)
     }
 }
