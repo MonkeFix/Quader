@@ -16,7 +16,7 @@ use std::{
 };
 use tokio::sync::{mpsc, oneshot};
 
-use super::{handler::WsBoardCommand, wsboard::BoardManager};
+use super::{handler::WsBoardCommand, wsboard::WsBoardMgr};
 
 enum Command {
     Connect {
@@ -60,7 +60,7 @@ pub struct ChatServer {
     time_mgr: TimeMgr,
     wkd: Arc<WallKickData>,
     seed: u64,
-    board_manager: BoardManager
+    board_manager: WsBoardMgr
 }
 
 impl ChatServer {
@@ -70,6 +70,7 @@ impl ChatServer {
         rooms.insert("main".to_owned(), HashSet::new());
 
         let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (mgr, handle) = WsBoardMgr::new();
 
         (
             Self {
@@ -81,7 +82,7 @@ impl ChatServer {
                 time_mgr: TimeMgr::new(),
                 wkd: Arc::new(WallKickData::new(quader_engine::wall_kick_data::WallKickDataMode::Standard)),
                 seed: thread_rng().next_u64(),
-                board_manager: BoardManager::new()
+                board_manager: mgr
             },
             ChatServerHandle { cmd_tx },
         )
@@ -180,7 +181,7 @@ impl ChatServer {
                     self.seed
                 );
                 self.boards.insert(conn.clone(), board);
-                let bm = BoardManager::new();
+                let (bm, handle) = WsBoardMgr::new();
                 let handle = tokio::spawn(bm.run());
                 handle.await.ok();
             },

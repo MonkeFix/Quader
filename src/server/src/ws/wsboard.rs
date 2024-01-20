@@ -1,33 +1,39 @@
 use std::{collections::HashMap, sync::Arc, time::Instant};
 
-use futures_util::Future;
-use quader_engine::{time_mgr::TimeMgr, wall_kick_data::WallKickData, board::Board, piece_mgr::BoardErrorReason};
+use quader_engine::{time_mgr::TimeMgr, wall_kick_data::WallKickData, board::Board};
 use rand::{thread_rng, RngCore};
-use tokio::{select, sync::oneshot};
+use tokio::{select, sync::{oneshot, mpsc}};
 
 use crate::ConnId;
 
+
+const MS_PER_UPDATE: f32 = 1.0 / 30.0;
+
 #[derive(Debug)]
-pub struct BoardManager {
+pub struct WsBoardMgr {
     pub is_started: bool,
     time_mgr: TimeMgr,
     wkd: Arc<WallKickData>,
     seed: u64,
     pub boards: HashMap<ConnId, Board>,
     terminate_tx: Option<oneshot::Sender<()>>,
+    cmd_rx: mpsc::UnboundedReceiver<()>
 }
 
-impl BoardManager {
-    pub fn new() -> Self {
+impl WsBoardMgr {
+    pub fn new() -> (Self, WsBoardMgrHandle) {
     
-        Self {
+        let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+
+        (Self {
             is_started: false,
             time_mgr: TimeMgr::new(),
             wkd: Arc::new(WallKickData::default()),
             seed: thread_rng().next_u64(),
             boards: HashMap::new(),
-            terminate_tx: None
-        }
+            terminate_tx: None,
+            cmd_rx
+        }, WsBoardMgrHandle { cmd_tx })
     }
 
     pub async fn run(mut self) {
@@ -35,6 +41,7 @@ impl BoardManager {
         self.terminate_tx = Some(terminate_tx);
 
         self.is_started = true;
+        
 
         let update = async {
             let mut prev = Instant::now();
@@ -81,4 +88,18 @@ impl BoardManager {
     }
 }
 
-const MS_PER_UPDATE: f32 = 1.0 / 30.0;
+pub struct WsBoardMgrHandle {
+    cmd_tx: mpsc::UnboundedSender<()>
+}
+
+impl WsBoardMgrHandle {
+    pub async fn start(&self) {
+        let (res_tx, res_rx) = oneshot::channel();
+
+        self.cmd_tx
+            .send(())
+            .unwrap();
+
+        res_rx.await.unwrap()
+    }
+}
