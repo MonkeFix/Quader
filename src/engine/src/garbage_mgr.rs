@@ -208,7 +208,8 @@ mod tests {
         let mut g = create_garbage_mgr();
 
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
+        assert_eq!(dmg.in_damage_queue.len(), 0);
     }
 
     #[test]
@@ -216,7 +217,8 @@ mod tests {
         let mut g = create_garbage_mgr();
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 4);
+        assert_eq!(dmg.out_damage, 4);
+        assert_eq!(dmg.in_damage_queue.len(), 0);
     }
 
     #[test]
@@ -225,7 +227,8 @@ mod tests {
         g.queue.push_back(id(2, 0));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 2);
+        assert_eq!(dmg.out_damage, 2);
+        assert_eq!(dmg.in_damage_queue.len(), 0);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -236,7 +239,7 @@ mod tests {
         g.queue.push_back(id(2, 0));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 1);
+        assert_eq!(dmg.out_damage, 1);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -246,7 +249,7 @@ mod tests {
         g.queue.push_back(id(2, 100));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 2);
+        assert_eq!(dmg.out_damage, 2);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -257,7 +260,7 @@ mod tests {
         g.queue.push_back(id(1, 150));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 1);
+        assert_eq!(dmg.out_damage, 1);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -268,7 +271,7 @@ mod tests {
         g.queue.push_back(id(2, 150));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -278,17 +281,17 @@ mod tests {
         g.queue.push_back(id(10, 0));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 6);
 
         let dmg = g.hard_drop(1, 1);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 5);
 
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, -5);
+        assert_eq!(dmg.out_damage, -5);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -298,24 +301,24 @@ mod tests {
         g.queue.push_back(id(10, 100));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 6);
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 2);
 
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 2);
         assert_eq!(g.queue[0].delay, 100);
 
         g.queue[0].delay = 0;
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, -2);
+        assert_eq!(dmg.out_damage, -2);
         assert_eq!(g.queue.len(), 0);
     }
 
@@ -330,25 +333,27 @@ mod tests {
         g.queue.push_back(id(3, 150));
 
         let dmg = g.hard_drop(2, 4);
-        assert_eq!(dmg, 0);
+        assert_eq!(dmg.out_damage, 0);
         assert_eq!(g.queue.len(), 4);
         assert_eq!(g.queue[0].amount, 2);
 
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, -2);
+        assert_eq!(dmg.out_damage, -2);
         assert_eq!(g.queue.len(), 3);
         assert_eq!(g.queue[0].amount, 1);
 
-        g.update(100);
+        let mut tm = TimeMgr::new();
+        tm.update(100.0);
+        g.update(&tm);
 
         let dmg = g.hard_drop(0, 0);
-        assert_eq!(dmg, -3);
+        assert_eq!(dmg.out_damage, -3);
         assert_eq!(g.queue.len(), 1);
         assert_eq!(g.queue[0].amount, 3);
         assert_eq!(g.queue[0].delay, 50);
 
         let dmg = g.hard_drop(4, 10);
-        assert_eq!(dmg, 7);
+        assert_eq!(dmg.out_damage, 7);
         assert_eq!(g.queue.len(), 0);
     }
 }
