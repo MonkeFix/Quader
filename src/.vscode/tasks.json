@@ -1,7 +1,7 @@
 {
 	"version": "2.0.0",
 	"tasks": [
- 		{
+		{
 			"type": "cargo",
 			"command": "run",
 			"args": [
@@ -12,13 +12,11 @@
 				"$rustc"
 			],
 			"label": "Run Quader",
-			
 		},
 		{
 			"type": "cargo",
 			"command": "run",
-			"args": [
-			],
+			"args": [],
 			"options": {
 				"cwd": "${workspaceFolder}/server"
 			},
@@ -26,6 +24,18 @@
 				"$rustc"
 			],
 			"label": "Run Server",
+		},
+		{
+			"type": "cargo",
+			"command": "test",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/engine"
+			},
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "Test Quader Engine",
 		}
 	]
 }
