@@ -5,18 +5,18 @@
 
 use std::time::{Duration, Instant};
 
-use crate::{ws::server::ChatServerHandle, Msg};
 use crate::ConnId;
+use crate::{ws::server::ChatServerHandle, Msg};
 use actix_ws::{CloseReason, Message};
 use futures_util::StreamExt as _;
 use quader_engine::board_command::BoardMoveDir;
 use quader_engine::piece::RotationDirection;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use tokio::{pin, select, sync::mpsc, time::interval};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
- 
+
 pub async fn chat_ws(
     chat_server: ChatServerHandle,
     mut session: actix_ws::Session,
@@ -129,7 +129,7 @@ pub enum WsAction {
     JoinRoom(String),
     SetName(String),
     BoardCommand(WsBoardCommand),
-    StartMatch
+    StartMatch,
 }
 
 async fn process_text_msg(
@@ -152,35 +152,35 @@ async fn process_text_msg(
             for room in rooms {
                 session.text(room).await.unwrap();
             }
-        },
+        }
         WsAction::JoinRoom(room) => {
             log::info!("conn {conn}: joining room {room}");
 
             chat_server.join_room(conn, &room).await;
 
             session.text(format!("joined {room}")).await.unwrap();
-        },
+        }
         WsAction::SetName(new_name) => {
             log::info!("conn {conn}: setting name to: {new_name}");
             name.replace(new_name.to_owned());
-        },
+        }
         WsAction::Chat(msg) => {
             let msg = match name {
                 Some(ref name) => format!("{name}: {msg}"),
                 None => msg.to_owned(),
             };
-    
+
             chat_server.send_message(conn, msg).await;
-        },
+        }
         WsAction::BoardCommand(cmd) => {
             log::info!("conn {conn}: got a board cmd: {:?}", cmd);
             let msg = chat_server.on_board_cmd(conn, cmd).await;
             session.text(msg).await.unwrap();
-        },
+        }
         WsAction::StartMatch => {
             log::info!("conn {conn}: starting match");
             chat_server.start_match(conn).await;
-        },
+        }
     }
 
     Ok(())

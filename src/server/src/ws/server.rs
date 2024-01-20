@@ -3,8 +3,15 @@
  * See the LICENSE file in the repository root for full license text.
  */
 
-use crate::{ConnId, Msg, RoomId};
-use quader_engine::{board::{Board, self}, wall_kick_data::WallKickData, time_mgr::TimeMgr};
+use crate::{
+    lobbies::{Lobby, LobbyContainer, LobbySettings},
+    ConnId, Msg, RoomId,
+};
+use quader_engine::{
+    board::{self, Board},
+    time_mgr::TimeMgr,
+    wall_kick_data::WallKickData,
+};
 use rand::{thread_rng, Rng as _, RngCore};
 use std::{
     collections::{HashMap, HashSet},
@@ -42,25 +49,38 @@ enum Command {
     BoardCommand {
         cmd: WsBoardCommand,
         conn: ConnId,
-        res_tx: oneshot::Sender<String>
+        res_tx: oneshot::Sender<String>,
     },
     StartMatch {
         conn: ConnId,
-        res_tx: oneshot::Sender<()>
-    }
+        res_tx: oneshot::Sender<()>,
+    },
 }
 
+/// Basic architecture:
+/// ```
+/// ┌─────────────────────────────────┐
+/// │             SERVER              │
+/// └─────────────────────────────────┘
+///      ▲           ▲           ▲
+///      │           │           │
+/// ┌────┴────┐ ┌────┴────┐ ┌────┴────┐
+/// │BoardMgr1│ │BoardMgr2│ │BoardMgrN│
+/// └─────────┘ └─────────┘ └─────────┘
+///      ▲
+///      │◄────────┐◄───────┐
+///      │         │        │
+///  ┌───┴───┐ ┌───┴───┐ ┌──┴────┐
+///  │Board_1│ │Board_2│ │Board_N│
+///  └───────┘ └───────┘ └───────┘
+/// ```
 #[derive(Debug)]
 pub struct ChatServer {
     sessions: HashMap<ConnId, mpsc::UnboundedSender<Msg>>,
     rooms: HashMap<RoomId, HashSet<ConnId>>,
+    lobby_container: LobbyContainer,
     visitor_count: Arc<AtomicUsize>,
     cmd_rx: mpsc::UnboundedReceiver<Command>,
-    boards: HashMap<ConnId, Board>,
-    time_mgr: TimeMgr,
-    wkd: Arc<WallKickData>,
-    seed: u64,
-    board_manager: WsBoardMgr
 }
 
 impl ChatServer {
@@ -69,20 +89,18 @@ impl ChatServer {
 
         rooms.insert("main".to_owned(), HashSet::new());
 
+        let mut lobby_container = LobbyContainer::new();
+        seed_lobbies(&mut lobby_container);
+
         let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
-        let (mgr, handle) = WsBoardMgr::new();
 
         (
             Self {
                 sessions: HashMap::new(),
                 rooms,
+                lobby_container,
                 visitor_count: Arc::new(AtomicUsize::new(0)),
                 cmd_rx,
-                boards: HashMap::new(),
-                time_mgr: TimeMgr::new(),
-                wkd: Arc::new(WallKickData::new(quader_engine::wall_kick_data::WallKickDataMode::Standard)),
-                seed: thread_rng().next_u64(),
-                board_manager: mgr
             },
             ChatServerHandle { cmd_tx },
         )
@@ -173,11 +191,11 @@ impl ChatServer {
     }
 
     async fn exec_board_cmd(&mut self, conn: ConnId, cmd: WsBoardCommand) -> String {
-        match cmd {
+        /* match cmd {
             WsBoardCommand::Create => {
                 let board = Board::new(
-                    quader_engine::game_settings::GameSettings::default(), 
-                    self.wkd.clone(), 
+                    quader_engine::game_settings::GameSettings::default(),
+                    self.wkd.clone(),
                     self.seed
                 );
                 self.boards.insert(conn.clone(), board);
@@ -208,7 +226,7 @@ impl ChatServer {
                 let board = self.boards.get_mut(&conn).unwrap();
                 board.try_hold_piece();
             },
-        }
+        } */
 
         "ok".to_string()
     }
@@ -238,9 +256,7 @@ impl ChatServer {
                     let res = self.exec_board_cmd(conn, cmd).await;
                     let _ = res_tx.send(res);
                 }
-                Command::StartMatch { conn, res_tx } => {
-
-                }
+                Command::StartMatch { conn, res_tx } => {}
             }
         }
 
@@ -308,9 +324,7 @@ impl ChatServerHandle {
         let (res_tx, res_rx) = oneshot::channel();
 
         self.cmd_tx
-            .send(Command::BoardCommand { 
-                cmd, conn, res_tx 
-            })
+            .send(Command::BoardCommand { cmd, conn, res_tx })
             .unwrap();
 
         let res = res_rx.await.unwrap();
@@ -327,4 +341,27 @@ impl ChatServerHandle {
 
         res_rx.await.unwrap();
     }
+}
+
+#[cfg(debug_assertions)]
+fn seed_lobbies(lobby_container: &mut LobbyContainer) {
+    log::debug!("Seeding lobbies");
+
+    lobby_container.add_lobby(Lobby::from_settings_with_id(
+        LobbySettings {
+            name: "test1".to_owned(),
+            player_limit: 128,
+        },
+        "admin".to_owned(),
+        "0".to_owned(),
+    ));
+
+    lobby_container.add_lobby(Lobby::from_settings_with_id(
+        LobbySettings {
+            name: "test2".to_owned(),
+            player_limit: 2,
+        },
+        "admin".to_owned(),
+        "1".to_owned(),
+    ));
 }

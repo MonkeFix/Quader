@@ -4,7 +4,6 @@ mod lobbies;
 mod ws;
 
 use crate::config::Config;
-use crate::lobbies::models::{Lobby, LobbyContainer, LobbySettings};
 use crate::ws::server::{ChatServer, ChatServerHandle};
 use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use serde::Serialize;
@@ -67,9 +66,9 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Using config {:?}", config);
 
-    let mut lobby_container = LobbyContainer::new();
-    seed_lobbies(&mut lobby_container);
-    let lobbies = web::Data::new(lobby_container);
+    //let mut lobby_container = LobbyContainer::new();
+    //seed_lobbies(&mut lobby_container);
+    //let lobbies = web::Data::new(lobby_container);
 
     let app_state = Arc::new(AtomicUsize::new(0));
     let (chat_server, server_tx) = ChatServer::new();
@@ -77,10 +76,9 @@ async fn main() -> std::io::Result<()> {
 
     let http_server = HttpServer::new(move || {
         App::new()
-            .app_data(lobbies.clone())
+            //.app_data(lobbies.clone())
             .app_data(web::Data::new(server_tx.clone()))
             .app_data(web::Data::from(app_state.clone()))
-            .configure(lobbies::config)
             .service(healthcheck)
             .route("/count", web::get().to(get_count))
             .service(web::resource("/ws").route(web::get().to(chat_ws)))
@@ -94,26 +92,4 @@ async fn main() -> std::io::Result<()> {
     try_join!(http_server, async move { chat_server.await.unwrap() })?;
 
     Ok(())
-}
-
-fn seed_lobbies(lobby_container: &mut LobbyContainer) {
-    let lobby1 = Lobby::from_settings_with_id(
-        LobbySettings {
-            name: "Super Lobby".to_string(),
-            player_limit: 3,
-        },
-        "admin".to_string(),
-        "1".to_string(),
-    );
-    let lobby2 = Lobby::from_settings_with_id(
-        LobbySettings {
-            name: "Not So Super Lobby".to_string(),
-            player_limit: 6,
-        },
-        "user".to_string(),
-        "2".to_string(),
-    );
-
-    lobby_container.add_lobby(lobby1);
-    lobby_container.add_lobby(lobby2);
 }
