@@ -1,4 +1,10 @@
 { pkgs ? import <nixpkgs> {} }:
+let
+  # Add precompiled library to rustc search path
+  rustflags = with pkgs.lib.lists; foldr (x: acc: ''-L ${x}/lib '' + acc) "" [
+    # add libraries here (e.g. pkgs.libvmi)
+  ];
+in
 pkgs.mkShell rec {
   nativeBuildInputs = [ pkgs.pkg-config ];
   buildInputs = with pkgs; [
@@ -12,11 +18,8 @@ pkgs.mkShell rec {
   shellHook = ''
     export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
     export PATH=$PATH:''${RUSTUP_HOME:-~/.rustup}/toolchains/$RUSTC_VERSION-x86_64-unknown-linux-gnu/bin/
-    '';
-  # Add precompiled library to rustc search path
-  RUSTFLAGS = (builtins.map (a: ''-L ${a}/lib'') [
-    # add libraries here (e.g. pkgs.libvmi)
-  ]);
+    export RUSTFLAGS="-A dead_code ${rustflags}"
+  '';
   PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:${pkgs.alsa-lib.dev}/lib/pkgconfig:${pkgs.udev.dev}/lib/pkgconfig";
   # Add glibc, clang, glib and other headers to bindgen search path
   BINDGEN_EXTRA_CLANG_ARGS =
