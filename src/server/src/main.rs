@@ -8,8 +8,6 @@ use crate::ws::server::{ChatServer, ChatServerHandle};
 use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use auth::mock::ensure_auth;
 use serde::Serialize;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::Arc;
 use tokio::task::spawn_local;
 use tokio::{spawn, try_join};
 
@@ -63,11 +61,6 @@ async fn chat_ws(
     Ok(res)
 }
 
-async fn get_count(count: web::Data<AtomicUsize>) -> impl Responder {
-    let current_count = count.load(Ordering::SeqCst);
-    format!("Visitors: {current_count}")
-}
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().expect("cannot load .env file");
@@ -77,46 +70,28 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Using config {:?}", config);
 
-    let app_state = Arc::new(AtomicUsize::new(0));
     let (chat_server, server_tx) = ChatServer::new();
     let chat_server = spawn(chat_server.run());
 
+    log::info!("constructing http server");
+
     let http_server = HttpServer::new(move || {
         App::new()
-            //.app_data(lobbies.clone())
             .app_data(web::Data::new(server_tx.clone()))
-            .app_data(web::Data::from(app_state.clone()))
             .service(healthcheck)
-            .route("/count", web::get().to(get_count))
             .service(web::resource("/ws").route(web::get().to(chat_ws)))
             .default_service(web::route().to(not_found))
             .wrap(actix_web::middleware::Logger::default())
     })
     .workers(4)
-    .disable_signals()
     .bind(("0.0.0.0", config.port))?
     .run();
 
-    //let server_handle = http_server.handle();
-    //let task_shutdown_marker = Arc::new(AtomicBool::new(false));
+    log::info!("done constructing http server");
 
-    //let server_task = tokio::spawn(http_server);
+    try_join!(http_server, async move { chat_server.await.unwrap() })?;
 
-    /* let shutdown = tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.unwrap();
-
-        let server_stop = server_handle.stop(true);
-        task_shutdown_marker.store(true, Ordering::SeqCst);
-        server_stop.await;
-        Ok(())
-    }); */
-
-    //try_join!(http_server, async move { chat_server.await.unwrap() })?;
-    try_join!(
-        http_server,
-        async move { chat_server.await.unwrap() },
-        //async move { shutdown.await.unwrap() }
-    )?;
+    log::info!("bye-bye");
 
     Ok(())
 }

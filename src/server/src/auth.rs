@@ -50,11 +50,11 @@ pub mod mock {
         }
     }
 
-    fn create_admin() -> UserInfo {
+    pub fn create_admin() -> UserInfo {
         create_mock("admin".to_string(), "admin".to_string())
     }
 
-    fn create_user() -> UserInfo {
+    pub fn create_user() -> UserInfo {
         create_mock("user".to_string(), "user".to_string())
     }
 

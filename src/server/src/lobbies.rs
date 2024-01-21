@@ -4,11 +4,14 @@
  */
 
 use serde::{Deserialize, Serialize};
-use tokio::task::JoinHandle;
 use std::collections::HashMap;
+use tokio::task::JoinHandle;
 use uuid::Uuid;
 
-use crate::{LobbyUuid, LobbyName, ws::wsboard::{WsBoardMgr, WsBoardMgrHandle}};
+use crate::{
+    ws::wsboard::{WsBoardMgr, WsBoardMgrHandle},
+    LobbyName, LobbyUuid,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LobbySettings {
@@ -23,7 +26,7 @@ pub struct LobbyListing {
     pub uuid: String,
     pub name: String,
     pub player_limit: usize,
-    pub player_count: usize
+    pub player_count: usize,
 }
 
 impl LobbySettings {
@@ -58,7 +61,7 @@ impl LobbyContainer {
         self.lobby_map.remove(uuid)
     }
 
-    /// Tries to add a new player to lobby with specified `uuid`. 
+    /// Tries to add a new player to lobby with specified `uuid`.
     /// If the lobby is full, returns `Err(())`.
     /// Returns `Ok(())` otherwise.
     pub fn add_player(&mut self, uuid: &str, username: String) -> Result<(), ()> {
@@ -78,7 +81,7 @@ impl LobbyContainer {
                 uuid: kv.0.clone(),
                 name: kv.1.lobby_name.clone(),
                 player_limit: kv.1.player_limit,
-                player_count: kv.1.player_count()
+                player_count: kv.1.player_count(),
             })
             .collect()
     }
@@ -93,7 +96,7 @@ pub struct Lobby {
     pub creator_username: String,
     pub is_started: bool,
     board_mgr: WsBoardMgrHandle,
-    board_mgr_task: JoinHandle<()>
+    //board_mgr_task: JoinHandle<()>,
 }
 
 impl Lobby {
@@ -103,9 +106,8 @@ impl Lobby {
         lobby_name: String,
         player_limit: usize,
     ) -> Self {
-
         let (board_mgr, handle) = WsBoardMgr::new();
-        let board_mgr = tokio::spawn(board_mgr.run());
+        //let board_mgr = tokio::spawn(board_mgr.run());
 
         Self {
             uuid,
@@ -115,13 +117,11 @@ impl Lobby {
             creator_username,
             is_started: false,
             board_mgr: handle,
-            board_mgr_task: board_mgr
+            //board_mgr_task: board_mgr,
         }
     }
 
-    pub fn start(mut self) {
-
-    }
+    pub fn start(mut self) {}
 
     pub fn from_settings(lobby_settings: LobbySettings, creator_username: String) -> Self {
         Lobby::from_settings_with_id(lobby_settings, creator_username, Uuid::new_v4().to_string())

@@ -5,8 +5,8 @@
 
 use std::time::{Duration, Instant};
 
-use crate::ConnId;
 use crate::auth::UserInfo;
+use crate::ConnId;
 use crate::{ws::server::ChatServerHandle, Msg};
 use actix_ws::{CloseReason, Message};
 use futures_util::StreamExt as _;
@@ -22,7 +22,7 @@ pub async fn chat_ws(
     chat_server: ChatServerHandle,
     mut session: actix_ws::Session,
     mut msg_stream: actix_ws::MessageStream,
-    user_info: UserInfo
+    user_info: UserInfo,
 ) {
     log::info!("user connected: {user_info:?}");
 
@@ -31,8 +31,10 @@ pub async fn chat_ws(
     let mut interval = interval(HEARTBEAT_INTERVAL);
 
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
-    
+
+    log::debug!("server connect");
     let conn_id = chat_server.connect(conn_tx, user_info).await;
+    log::debug!("server connected");
 
     let close_reason: Option<CloseReason> = loop {
         let tick = interval.tick();
@@ -108,6 +110,7 @@ pub async fn chat_ws(
     };
 
     chat_server.disconnect(conn_id);
+    log::info!("closed, reason: {:?}", close_reason);
 
     let _ = session.close(close_reason).await;
 }
@@ -133,7 +136,7 @@ pub enum WsAction {
     BoardCommand(WsBoardCommand),
     StartMatch,
     ListLobbies,
-    JoinLobby(String)
+    JoinLobby(String),
 }
 
 async fn process_text_msg(
@@ -194,14 +197,14 @@ async fn process_text_msg(
             /* for lobby in lobbies {
                 session.text(lobby).await.unwrap();
             } */
-        },
+        }
         WsAction::JoinLobby(lobby) => {
             log::info!("conn {conn}: joining lobby {lobby}");
 
             chat_server.join_lobby(conn, &lobby).await;
 
             session.text(format!("joined lobby {lobby}")).await.unwrap();
-        },
+        }
     }
 
     Ok(())
