@@ -5,7 +5,8 @@ members = [
     "client",
     "skynet",
     "web-api",
-    "server"
+    "server",
+    "lib"
 ]
 
 [profile.release]
