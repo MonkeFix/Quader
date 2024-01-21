@@ -4,9 +4,11 @@
  */
 
 use serde::{Deserialize, Serialize};
+use tokio::task::JoinHandle;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 use uuid::Uuid;
+
+use crate::{LobbyUuid, LobbyName, ws::wsboard::{WsBoardMgr, WsBoardMgrHandle}};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LobbySettings {
@@ -16,13 +18,21 @@ pub struct LobbySettings {
     // pub game_settings: GameSettings
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct LobbyListing {
+    pub uuid: String,
+    pub name: String,
+    pub player_limit: usize,
+    pub player_count: usize
+}
+
 impl LobbySettings {
     pub fn new(name: String, player_limit: usize) -> Self {
         Self { name, player_limit }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct LobbyContainer {
     pub lobby_map: HashMap<String, Lobby>,
 }
@@ -48,18 +58,33 @@ impl LobbyContainer {
         self.lobby_map.remove(uuid)
     }
 
-    pub fn add_player(&mut self, uuid: &str, username: String) {
+    /// Tries to add a new player to lobby with specified `uuid`. 
+    /// If the lobby is full, returns `Err(())`.
+    /// Returns `Ok(())` otherwise.
+    pub fn add_player(&mut self, uuid: &str, username: String) -> Result<(), ()> {
         let lobby = self.lobby_map.get_mut(uuid).unwrap();
-        lobby.add_player(username);
+        lobby.add_player(username)
     }
 
-    pub fn remove_player(&mut self, uuid: &str, username: &str) {
+    pub fn remove_player(&mut self, uuid: &str, username: &str) -> Result<(), ()> {
         let lobby = self.lobby_map.get_mut(uuid).unwrap();
-        lobby.remove_player(username);
+        lobby.remove_player(username)
+    }
+
+    pub fn list_lobbies(&self) -> Vec<LobbyListing> {
+        self.lobby_map
+            .iter()
+            .map(|kv| LobbyListing {
+                uuid: kv.0.clone(),
+                name: kv.1.lobby_name.clone(),
+                player_limit: kv.1.player_limit,
+                player_count: kv.1.player_count()
+            })
+            .collect()
     }
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Lobby {
     pub uuid: String,
     pub lobby_name: String,
@@ -67,6 +92,8 @@ pub struct Lobby {
     pub player_list: Vec<String>,
     pub creator_username: String,
     pub is_started: bool,
+    board_mgr: WsBoardMgrHandle,
+    board_mgr_task: JoinHandle<()>
 }
 
 impl Lobby {
@@ -76,6 +103,10 @@ impl Lobby {
         lobby_name: String,
         player_limit: usize,
     ) -> Self {
+
+        let (board_mgr, handle) = WsBoardMgr::new();
+        let board_mgr = tokio::spawn(board_mgr.run());
+
         Self {
             uuid,
             lobby_name,
@@ -83,7 +114,13 @@ impl Lobby {
             player_list: vec![],
             creator_username,
             is_started: false,
+            board_mgr: handle,
+            board_mgr_task: board_mgr
         }
+    }
+
+    pub fn start(mut self) {
+
     }
 
     pub fn from_settings(lobby_settings: LobbySettings, creator_username: String) -> Self {
@@ -107,12 +144,24 @@ impl Lobby {
         self.player_list.len()
     }
 
-    pub fn add_player(&mut self, username: String) {
+    /// Tries to add a new player. If the lobby is full, returns `Err(())`.
+    /// Returns `Ok(())` otherwise.
+    pub fn add_player(&mut self, username: String) -> Result<(), ()> {
+        if self.player_count() == self.player_limit {
+            return Err(());
+        }
+
         self.player_list.push(username);
+        Ok(())
     }
 
-    pub fn remove_player(&mut self, username: &str) {
-        let index = self.player_list.iter().position(|x| x == username).unwrap();
-        self.player_list.remove(index);
+    pub fn remove_player(&mut self, username: &str) -> Result<(), ()> {
+        let index = self.player_list.iter().position(|x| x == username);
+        if let Some(index) = index {
+            self.player_list.remove(index);
+            return Ok(());
+        }
+
+        Err(())
     }
 }

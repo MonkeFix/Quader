@@ -4,8 +4,8 @@
  */
 
 use crate::{
-    lobbies::{Lobby, LobbyContainer, LobbySettings},
-    ConnId, Msg, RoomId,
+    lobbies::{Lobby, LobbyContainer, LobbySettings, LobbyListing},
+    ConnId, Msg, RoomId, LobbyUuid, LobbyName, auth::UserInfo,
 };
 use quader_engine::{
     board::{self, Board},
@@ -25,9 +25,17 @@ use tokio::sync::{mpsc, oneshot};
 
 use super::{handler::WsBoardCommand, wsboard::WsBoardMgr};
 
+#[derive(Debug)]
+struct Session {
+    pub conn: ConnId,
+    pub user_info: UserInfo,
+    pub conn_tx: mpsc::UnboundedSender<Msg>
+}
+
 enum Command {
     Connect {
         conn_tx: mpsc::UnboundedSender<Msg>,
+        user_info: UserInfo,
         res_tx: oneshot::Sender<ConnId>,
     },
     Disconnect {
@@ -36,9 +44,17 @@ enum Command {
     List {
         res_tx: oneshot::Sender<Vec<RoomId>>,
     },
+    ListLobbies {
+        res_tx: oneshot::Sender<Vec<LobbyListing>>,
+    },
     Join {
         conn: ConnId,
         room: RoomId,
+        res_tx: oneshot::Sender<()>,
+    },
+    JoinLobby {
+        conn: ConnId,
+        lobby_id: String,
         res_tx: oneshot::Sender<()>,
     },
     Message {
@@ -86,7 +102,7 @@ enum Command {
 /// ```
 #[derive(Debug)]
 pub struct ChatServer {
-    sessions: HashMap<ConnId, mpsc::UnboundedSender<Msg>>,
+    sessions: HashMap<ConnId, Session>,
     rooms: HashMap<RoomId, HashSet<ConnId>>,
     lobby_container: LobbyContainer,
     visitor_count: Arc<AtomicUsize>,
@@ -123,7 +139,7 @@ impl ChatServer {
             for conn_id in sessions {
                 if *conn_id != skip {
                     if let Some(tx) = self.sessions.get(conn_id) {
-                        let _ = tx.send(msg.clone());
+                        let _ = tx.conn_tx.send(msg.clone());
                     }
                 }
             }
@@ -140,13 +156,18 @@ impl ChatServer {
         };
     }
 
-    async fn connect(&mut self, tx: mpsc::UnboundedSender<Msg>) -> ConnId {
+    async fn connect(&mut self, tx: mpsc::UnboundedSender<Msg>, user_info: UserInfo) -> ConnId {
         log::info!("Someone joined");
 
         self.send_system_message("main", 0, "Someone joined").await;
 
         let id = thread_rng().gen::<usize>();
-        self.sessions.insert(id, tx);
+        let session = Session {
+            conn: id,
+            user_info,
+            conn_tx: tx,
+        };
+        self.sessions.insert(id, session);
 
         self.rooms.entry("main".to_owned()).or_default().insert(id);
 
@@ -240,12 +261,22 @@ impl ChatServer {
 
         "ok".to_string()
     }
+ 
+    fn list_lobbies(&self) -> Vec<LobbyListing> {
+        self.lobby_container.list_lobbies()
+    }
+
+    async fn join_lobby(&mut self, _conn: ConnId, lobby_id: String) {
+        // TODO: Add correct username
+        let username = "test".to_string();
+        self.lobby_container.add_player(&lobby_id, username).ok();
+    }
 
     pub async fn run(mut self) -> io::Result<()> {
         while let Some(cmd) = self.cmd_rx.recv().await {
             match cmd {
-                Command::Connect { conn_tx, res_tx } => {
-                    let conn_id = self.connect(conn_tx).await;
+                Command::Connect { conn_tx, user_info, res_tx } => {
+                    let conn_id = self.connect(conn_tx, user_info).await;
                     let _ = res_tx.send(conn_id);
                 }
                 Command::Disconnect { conn } => {
@@ -266,7 +297,16 @@ impl ChatServer {
                     let res = self.exec_board_cmd(conn, cmd).await;
                     let _ = res_tx.send(res);
                 }
-                Command::StartMatch { conn, res_tx } => {}
+                Command::StartMatch { conn, res_tx } => {
+                    todo!()
+                }
+                Command::ListLobbies { res_tx } => {
+                    let _ = res_tx.send(self.list_lobbies());
+                },
+                Command::JoinLobby { conn, lobby_id, res_tx } => {
+                    self.join_lobby(conn, lobby_id).await;
+                    let _ = res_tx.send(());
+                },
             }
         }
 
@@ -280,11 +320,11 @@ pub struct ChatServerHandle {
 }
 
 impl ChatServerHandle {
-    pub async fn connect(&self, conn_tx: mpsc::UnboundedSender<String>) -> ConnId {
+    pub async fn connect(&self, conn_tx: mpsc::UnboundedSender<String>, user_info: UserInfo) -> ConnId {
         let (res_tx, res_rx) = oneshot::channel();
 
         self.cmd_tx
-            .send(Command::Connect { conn_tx, res_tx })
+            .send(Command::Connect { conn_tx, user_info, res_tx })
             .unwrap();
 
         res_rx.await.unwrap()
@@ -350,6 +390,28 @@ impl ChatServerHandle {
             .unwrap();
 
         res_rx.await.unwrap();
+    }
+
+    pub async fn list_lobbies(&self) -> Vec<LobbyListing> {
+        let (res_tx, res_rx) = oneshot::channel();
+
+        self.cmd_tx.send(Command::ListLobbies { res_tx }).unwrap();
+
+        res_rx.await.unwrap()
+    }
+
+    pub async fn join_lobby(&self, conn: ConnId, lobby_id: impl Into<String>) {
+        let (res_tx, res_rx) = oneshot::channel();
+
+        self.cmd_tx
+            .send(Command::JoinLobby {
+                conn,
+                lobby_id: lobby_id.into(),
+                res_tx,
+            })
+            .unwrap();
+
+        res_rx.await.unwrap()
     }
 }
 

@@ -90,6 +90,7 @@ impl WsBoardMgr {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct WsBoardMgrHandle {
     cmd_tx: mpsc::UnboundedSender<()>,
 }
