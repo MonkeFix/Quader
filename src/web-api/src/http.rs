@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use actix_web::{cookie::Cookie, HttpResponseBuilder};
 use serde::Serialize;
 
-use crate::error::Status;
+use lib::error::Status;
 
 pub use self::error::Error;
 

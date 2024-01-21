@@ -5,7 +5,6 @@ pub mod handler {
     use crate::{
         app::AppState,
         db::UserExt,
-        error::Error,
         middleware::RequireAuth,
         model::{Authenticated, UserRole, self}, http,
     };
@@ -48,7 +47,7 @@ pub mod handler {
 
         match maybe_user {
             Some(user) => Ok(http::Response::ok(user)),
-            None => Err(http::Error::bad_request(Error::UserDoesNotExist)),
+            None => Err(http::Error::bad_request(lib::Error::UserDoesNotExist)),
         }
     }
 }

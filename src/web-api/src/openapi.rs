@@ -1,9 +1,10 @@
+use lib::{error, utils};
 use utoipa::{
-    openapi::security::{ApiKey, ApiKeyValue, HttpAuthScheme, HttpBuilder, SecurityScheme},
+    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
     Modify, OpenApi,
 };
 
-use crate::{dto, error, model, scope, utils};
+use crate::{dto, model, scope};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -25,7 +26,7 @@ use crate::{dto, error, model, scope, utils};
         dto::TokenData,
         error::Response,
         error::Status,
-        error::Error,
+        lib::Error,
         utils::token::Claims,
     )),
     modifiers(&SecurityAddon)

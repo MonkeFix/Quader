@@ -1,9 +1,8 @@
 use actix_web::{HttpResponse, ResponseError};
 use derive_more::Display;
+use lib::error::{self, Status};
 use log::warn;
 use utoipa::ToSchema;
-
-use crate::error::{self, Status};
 
 #[derive(Debug, Clone, Display, ToSchema)]
 #[display(fmt = "Error: message: {}, status: {}", message, status)]

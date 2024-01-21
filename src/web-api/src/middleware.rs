@@ -1,18 +1,17 @@
-use actix_web::cookie::Cookie;
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::error::{ErrorForbidden, ErrorInternalServerError, ErrorUnauthorized};
 use actix_web::{web, HttpMessage};
 use chrono::Utc;
 use futures_util::future::{ready, LocalBoxFuture, Ready};
 use futures_util::FutureExt;
+use lib::error::Status;
+use lib::{utils, error};
 use std::rc::Rc;
 use std::task::{Context, Poll};
 
-use crate::{Error, http, dto, model};
+use crate::app::AppState;
 use crate::db::UserExt;
-use crate::error::{self, Status};
 use crate::model::{User, UserRole};
-use crate::{utils, app::AppState};
 
 pub struct RequireAuth {
     allowed_roles: Vec<UserRole>,
@@ -54,13 +53,13 @@ pub struct AuthMiddleware<S> {
 fn get_user_id(
     token: Option<String>,
     jwt_secret: &[u8],
-) -> Result<String, crate::Error> {
-    let token = token.ok_or(crate::Error::TokenNotProvided)?;
+) -> Result<String, lib::Error> {
+    let token = token.ok_or(lib::Error::TokenNotProvided)?;
     let claims = utils::token::decode_jwt(&token, jwt_secret)?;
     let now = Utc::now().timestamp() as usize;
 
     if claims.exp < now {
-        Err(crate::Error::AccessTokenExpired)
+        Err(lib::Error::AccessTokenExpired)
     } else {
         Ok(claims.sub)
     }
@@ -70,21 +69,21 @@ async fn validate_token(
     user_id: String,
     db_client: &impl UserExt,
     allowed_roles: Vec<UserRole>,
-) -> Result<model::User, error::Error> {
+) -> Result<User, error::Error> {
     let user_id = uuid::Uuid::parse_str(user_id.as_str()).unwrap();
 
     let result = db_client
         .get_user(Some(user_id.clone()), None, None)
         .await
-        .map_err(|e| Error::from_str(e))?;
+        .map_err(|e| lib::Error::from_str(e))?;
 
-    let user = result.ok_or(crate::Error::UserNoLongerExist)?;
+    let user = result.ok_or(lib::Error::UserNoLongerExist)?;
 
     // Check if user's role matches the required role
     if allowed_roles.contains(&user.role) {
         Ok(user)
     } else {
-        Err(crate::Error::PermissionDenied)
+        Err(lib::Error::PermissionDenied)
     }
 }
 
@@ -132,7 +131,7 @@ where
 
                 async move {
                     match validate_token(user_id, &app_state.db_client, allowed_roles).await {
-                        Err(e @ crate::Error::Message(_)) => {
+                        Err(e @ lib::Error::Message(_)) => {
                             let json_error = error::Response {
                                 status: Status::Error,
                                 message: e,

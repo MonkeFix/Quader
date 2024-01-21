@@ -4,6 +4,7 @@ pub mod handler {
         post, web, HttpResponse, Responder, get, HttpRequest,
     };
     use chrono::Utc;
+    use lib::utils::{password, token::{self, decode_jwt, Claims}};
     use serde_json::json;
     use uuid::Uuid;
     use validator::Validate;
@@ -13,8 +14,7 @@ pub mod handler {
         db::UserExt,
         http::{self, Created},
         middleware::RequireAuth,
-        model::{UserRole, self},
-        utils::{password, token::{self, Claims, decode_jwt}}, Error, dto,
+        model::{UserRole, self}, dto,
     };
 
     #[utoipa::path(
@@ -32,10 +32,10 @@ pub mod handler {
         body: web::Json<dto::RegisterUser>,
     ) -> Result<http::Response<model::User, Created>, http::Error> {
         body.validate()
-            .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
+            .map_err(|e| http::Error::bad_request(lib::Error::from_str(e)))?;
 
         let hashed_password = password::hash(&body.password)
-            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
 
         let result = app_state
             .db_client
@@ -47,13 +47,13 @@ pub mod handler {
             Err(sqlx::Error::Database(db_err)) => {
                 if db_err.is_unique_violation() {
                     Err(http::Error::unique_constraint_voilation(
-                        Error::EmailExist,
+                        lib::Error::EmailExist,
                     ))
                 } else {
-                    Err(http::Error::server_error(Error::from_str(db_err)))
+                    Err(http::Error::server_error(lib::Error::from_str(db_err)))
                 }
             }
-            Err(e) => Err(http::Error::server_error(Error::from_str(e))),
+            Err(e) => Err(http::Error::server_error(lib::Error::from_str(e))),
         }
     }
 
@@ -102,26 +102,26 @@ pub mod handler {
         body: web::Json<dto::LoginUser>,
     ) -> Result<http::Response<dto::TokenData>, http::Error> {
         body.validate()
-            .map_err(|e| http::Error::bad_request(Error::from_str(e)))?;
+            .map_err(|e| http::Error::bad_request(lib::Error::from_str(e)))?;
 
         let result = app_state
             .db_client
             .get_user(None, None, Some(&body.email))
             .await
-            .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+            .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
 
-        let user = result.ok_or(http::Error::unauthorized(Error::WrongCredentials))?;
+        let user = result.ok_or(http::Error::unauthorized(lib::Error::WrongCredentials))?;
 
         let password_matches = password::compare(&body.password, &user.password_hash)
-            .map_err(|_| http::Error::unauthorized(Error::WrongCredentials))?;
+            .map_err(|_| http::Error::unauthorized(lib::Error::WrongCredentials))?;
 
         if password_matches {
             let token = make_token(&user.id, app_state.config.jwt_maxage, &app_state.config.jwt_secret)
-                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+                .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
             let cookie = make_cookie("token", token.clone(), app_state.config.jwt_maxage);
 
             let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
-                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+                .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
             let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_refresh_maxage);
 
             app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
@@ -132,7 +132,7 @@ pub mod handler {
                 .cookie(cookie)
                 .cookie(refresh_cookie))
         } else {
-            Err(http::Error::unauthorized(Error::WrongCredentials))
+            Err(http::Error::unauthorized(lib::Error::WrongCredentials))
         }
     }
 
@@ -152,7 +152,7 @@ pub mod handler {
         let refresh_token = req
             .cookie("refresh_token")
             .map(|c| c.value().to_string())
-            .ok_or(http::Error::bad_request(crate::Error::RefreshTokenNotProvided))?;
+            .ok_or(http::Error::bad_request(lib::Error::RefreshTokenNotProvided))?;
 
         let claims = decode_jwt(&refresh_token, app_state.config.jwt_secret.as_bytes())
             .map_err(http::Error::bad_request)?;
@@ -163,21 +163,21 @@ pub mod handler {
             .db_client
             .get_user(Some(user_id), None, None)
             .await?
-            .ok_or(http::Error::bad_request(crate::Error::UserNoLongerExist))?;
+            .ok_or(http::Error::bad_request(lib::Error::UserNoLongerExist))?;
 
         let now = Utc::now().timestamp() as usize;
 
         if refresh_token != user.refresh_token {
-            Err(http::Error::not_acceptable(crate::Error::InvalidRefreshToken))
+            Err(http::Error::not_acceptable(lib::Error::InvalidRefreshToken))
         } else if claims.exp < now {
-            Err(http::Error::not_acceptable(crate::Error::RefreshTokenExpired))
+            Err(http::Error::not_acceptable(lib::Error::RefreshTokenExpired))
         } else {
             let token = make_token(&user.id, app_state.config.jwt_maxage, &app_state.config.jwt_secret)
-                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+                .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
             let cookie = make_cookie("token", token.clone(), app_state.config.jwt_maxage);
 
             let refresh_token = make_token(&user.id, app_state.config.jwt_refresh_maxage, &app_state.config.jwt_secret)
-                .map_err(|e| http::Error::server_error(Error::from_str(e)))?;
+                .map_err(|e| http::Error::server_error(lib::Error::from_str(e)))?;
             let refresh_cookie = make_cookie("refresh_token", refresh_token.clone(), app_state.config.jwt_refresh_maxage);
 
             app_state.db_client.update_refresh_token(user.id, refresh_token.clone()).await?;
