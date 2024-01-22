@@ -26,14 +26,13 @@ pub async fn chat_ws(
 ) {
     log::info!("user connected: {user_info:?}");
 
-    let mut name = None;
     let mut last_heartbeat = Instant::now();
     let mut interval = interval(HEARTBEAT_INTERVAL);
 
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
 
     log::debug!("server connect");
-    let conn_id = chat_server.connect(conn_tx, user_info).await;
+    let conn_id = chat_server.connect(conn_tx, user_info.clone()).await;
     log::debug!("server connected");
 
     let close_reason: Option<CloseReason> = loop {
@@ -60,7 +59,7 @@ pub async fn chat_ws(
                                 last_heartbeat = Instant::now();
                             }
                             Message::Text(text) => {
-                                if let Err(err) = process_text_msg(&chat_server, &mut session, &text, conn_id, &mut name).await {
+                                if let Err(err) = process_text_msg(&chat_server, &mut session, &text, conn_id, &user_info).await {
                                         log::error!("Error while processing message: {:?}", err);
                                         let _ = session.text(format!("error while processing message: {:?}", err)).await;
                                     }
@@ -130,9 +129,6 @@ pub enum WsBoardCommand {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WsAction {
     Chat(Msg),
-    ListRooms,
-    JoinRoom(String),
-    SetName(String),
     BoardCommand(WsBoardCommand),
     StartMatch,
     ListLobbies,
@@ -144,38 +140,15 @@ async fn process_text_msg(
     session: &mut actix_ws::Session,
     text: &str,
     conn: ConnId,
-    name: &mut Option<String>,
+    user_info: &UserInfo
 ) -> Result<(), serde_json::Error> {
     let msg = text.trim();
 
     let action = serde_json::from_str::<WsAction>(msg)?;
 
     match action {
-        WsAction::ListRooms => {
-            log::info!("conn {conn}: listing rooms");
-
-            let rooms = chat_server.list_rooms().await;
-
-            for room in rooms {
-                session.text(room).await.unwrap();
-            }
-        }
-        WsAction::JoinRoom(room) => {
-            log::info!("conn {conn}: joining room {room}");
-
-            chat_server.join_room(conn, &room).await;
-
-            session.text(format!("joined {room}")).await.unwrap();
-        }
-        WsAction::SetName(new_name) => {
-            log::info!("conn {conn}: setting name to: {new_name}");
-            name.replace(new_name.to_owned());
-        }
         WsAction::Chat(msg) => {
-            let msg = match name {
-                Some(ref name) => format!("{name}: {msg}"),
-                None => msg.to_owned(),
-            };
+            let msg = format!("{}: {msg}", user_info.username);
 
             chat_server.send_message(conn, msg).await;
         }

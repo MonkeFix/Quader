@@ -9,8 +9,9 @@ use tokio::task::JoinHandle;
 use uuid::Uuid;
 
 use crate::{
+    auth::UserInfo,
     ws::wsboard::{WsBoardMgr, WsBoardMgrHandle},
-    LobbyName, LobbyUuid,
+    ConnId, LobbyName, LobbyUuid,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,18 +22,20 @@ pub struct LobbySettings {
     // pub game_settings: GameSettings
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct LobbyListing {
-    pub uuid: String,
-    pub name: String,
-    pub player_limit: usize,
-    pub player_count: usize,
-}
-
 impl LobbySettings {
     pub fn new(name: String, player_limit: usize) -> Self {
         Self { name, player_limit }
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LobbyListing {
+    pub uuid: String,
+    pub name: String,
+    pub creator_username: String,
+    pub player_limit: usize,
+    pub player_count: usize,
+    pub is_started: bool,
 }
 
 #[derive(Debug)]
@@ -64,14 +67,23 @@ impl LobbyContainer {
     /// Tries to add a new player to lobby with specified `uuid`.
     /// If the lobby is full, returns `Err(())`.
     /// Returns `Ok(())` otherwise.
-    pub fn add_player(&mut self, uuid: &str, username: String) -> Result<(), ()> {
-        let lobby = self.lobby_map.get_mut(uuid).unwrap();
-        lobby.add_player(username)
+    pub fn try_add_player(
+        &mut self,
+        uuid: &str,
+        conn: ConnId,
+        user_info: UserInfo,
+    ) -> Result<(), ()> {
+        let lobby = self.lobby_map.get_mut(uuid);
+
+        match lobby {
+            Some(lobby) => lobby.try_add_player(conn, user_info),
+            None => Err(())
+        }
     }
 
     pub fn remove_player(&mut self, uuid: &str, username: &str) -> Result<(), ()> {
         let lobby = self.lobby_map.get_mut(uuid).unwrap();
-        lobby.remove_player(username)
+        lobby.try_remove_player(username)
     }
 
     pub fn list_lobbies(&self) -> Vec<LobbyListing> {
@@ -82,9 +94,17 @@ impl LobbyContainer {
                 name: kv.1.lobby_name.clone(),
                 player_limit: kv.1.player_limit,
                 player_count: kv.1.player_count(),
+                is_started: kv.1.is_started,
+                creator_username: kv.1.creator_username.clone(),
             })
             .collect()
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct LobbyUser {
+    pub conn: ConnId,
+    pub user_info: UserInfo,
 }
 
 #[derive(Debug)]
@@ -92,7 +112,7 @@ pub struct Lobby {
     pub uuid: String,
     pub lobby_name: String,
     pub player_limit: usize,
-    pub player_list: Vec<String>,
+    pub player_list: Vec<LobbyUser>,
     pub creator_username: String,
     pub is_started: bool,
     board_mgr: WsBoardMgrHandle,
@@ -146,22 +166,44 @@ impl Lobby {
 
     /// Tries to add a new player. If the lobby is full, returns `Err(())`.
     /// Returns `Ok(())` otherwise.
-    pub fn add_player(&mut self, username: String) -> Result<(), ()> {
+    pub fn try_add_player(&mut self, conn: ConnId, user_info: UserInfo) -> Result<(), ()> {
         if self.player_count() == self.player_limit {
             return Err(());
         }
 
-        self.player_list.push(username);
+        self.player_list.push(LobbyUser { conn, user_info });
         Ok(())
     }
 
-    pub fn remove_player(&mut self, username: &str) -> Result<(), ()> {
-        let index = self.player_list.iter().position(|x| x == username);
+    pub fn try_remove_player(&mut self, username: &str) -> Result<(), ()> {
+        let index = self
+            .player_list
+            .iter()
+            .position(|x| x.user_info.username == username);
         if let Some(index) = index {
             self.player_list.remove(index);
             return Ok(());
         }
 
         Err(())
+    }
+
+    pub fn remove_player(&mut self, conn: ConnId) -> bool {
+        let index = self.player_list.iter().position(|x| x.conn == conn);
+        match index {
+            Some(index) => {
+                self.player_list.remove(index);
+                true
+            }
+            None => false,
+        }
+    }
+
+    pub fn contains_player_conn(&self, conn: ConnId) -> bool {
+        let index = self.player_list.iter().position(|x| x.conn == conn);
+        match index {
+            Some(_index) => true,
+            None => false,
+        }
     }
 }
