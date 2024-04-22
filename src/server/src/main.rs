@@ -4,7 +4,7 @@ mod lobbies;
 mod ws;
 
 use crate::config::Config;
-use crate::ws::server::{ChatServer, ChatServerHandle};
+use crate::ws::server::{GameServer, GameServerHandle};
 use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use auth::mock::ensure_auth;
 use serde::Serialize;
@@ -40,7 +40,7 @@ async fn not_found() -> impl Responder {
 async fn chat_ws(
     req: HttpRequest,
     stream: web::Payload,
-    chat_server: web::Data<ChatServerHandle>,
+    chat_server: web::Data<GameServerHandle>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let (res, session, msg_stream) = actix_ws::handle(&req, stream)?;
     let ui_res = ensure_auth(req);
@@ -51,7 +51,7 @@ async fn chat_ws(
     }
     let (user_info, _token) = ui_res.unwrap();
 
-    spawn_local(ws::handler::chat_ws(
+    spawn_local(ws::handler::game_ws(
         (**chat_server).clone(),
         session,
         msg_stream,
@@ -70,7 +70,7 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Using config {:?}", config);
 
-    let (chat_server, server_tx) = ChatServer::new();
+    let (chat_server, server_tx) = GameServer::new();
     let chat_server = spawn(chat_server.run());
 
     log::info!("constructing http server");

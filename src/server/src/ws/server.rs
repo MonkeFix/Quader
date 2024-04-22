@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root for full license text.
  */
 
+use crate::lobbies::LobbyNotification;
 use crate::{
     auth::UserInfo,
     lobbies::{Lobby, LobbyContainer, LobbyListing, LobbySettings},
@@ -18,7 +19,6 @@ use std::{
     },
 };
 use tokio::sync::{mpsc, oneshot};
-use crate::lobbies::LobbyNotification;
 
 use super::handler::WsBoardCommand;
 
@@ -90,15 +90,15 @@ enum Command {
 ///  │Board_1│ │Board_2│ │Board_N│
 ///  └───────┘ └───────┘ └───────┘
 /// ```
-pub struct ChatServer {
+pub struct GameServer {
     sessions: HashMap<ConnId, Session>,
     lobby_container: LobbyContainer,
     visitor_count: Arc<AtomicUsize>,
     cmd_rx: mpsc::UnboundedReceiver<Command>,
 }
 
-impl ChatServer {
-    pub fn new() -> (Self, ChatServerHandle) {
+impl GameServer {
+    pub fn new() -> (Self, GameServerHandle) {
         let mut lobby_container = LobbyContainer::new();
         seed_lobbies(&mut lobby_container);
 
@@ -115,7 +115,7 @@ impl ChatServer {
                 visitor_count: Arc::new(AtomicUsize::new(0)),
                 cmd_rx,
             },
-            ChatServerHandle { cmd_tx },
+            GameServerHandle { cmd_tx },
         );
 
         log::debug!("res");
@@ -318,11 +318,11 @@ impl ChatServer {
 }
 
 #[derive(Debug, Clone)]
-pub struct ChatServerHandle {
+pub struct GameServerHandle {
     cmd_tx: mpsc::UnboundedSender<Command>,
 }
 
-impl ChatServerHandle {
+impl GameServerHandle {
     pub async fn connect(
         &self,
         conn_tx: mpsc::UnboundedSender<String>,

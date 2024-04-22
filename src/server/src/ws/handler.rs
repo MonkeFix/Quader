@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use crate::auth::UserInfo;
 use crate::ConnId;
-use crate::{ws::server::ChatServerHandle, Msg};
+use crate::{ws::server::GameServerHandle, Msg};
 use actix_ws::{CloseReason, Message};
 use futures_util::StreamExt as _;
 use quader_engine::board_command::BoardMoveDir;
@@ -18,8 +18,8 @@ use tokio::{pin, select, sync::mpsc, time::interval};
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub async fn chat_ws(
-    chat_server: ChatServerHandle,
+pub async fn game_ws(
+    game_server: GameServerHandle,
     mut session: actix_ws::Session,
     mut msg_stream: actix_ws::MessageStream,
     user_info: UserInfo,
@@ -32,7 +32,7 @@ pub async fn chat_ws(
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
 
     log::debug!("server connect");
-    let conn_id = chat_server.connect(conn_tx, user_info.clone()).await;
+    let conn_id = game_server.connect(conn_tx, user_info.clone()).await;
     log::debug!("server connected");
 
     let close_reason: Option<CloseReason> = loop {
@@ -59,7 +59,7 @@ pub async fn chat_ws(
                                 last_heartbeat = Instant::now();
                             }
                             Message::Text(text) => {
-                                if let Err(err) = process_text_msg(&chat_server, &mut session, &text, conn_id, &user_info).await {
+                                if let Err(err) = process_text_msg(&game_server, &mut session, &text, conn_id, &user_info).await {
                                         log::error!("Error while processing message: {:?}", err);
                                         let _ = session.text(format!("error while processing message: {:?}", err)).await;
                                     }
@@ -85,11 +85,11 @@ pub async fn chat_ws(
                 }
             }
             msg = msg_rx => {
-                // chat messages received from other room participants
+                // messages received from other room participants
                 if let Some(msg) = &msg {
                     session.text(msg).await.unwrap();
                 } else {
-                    unreachable!("all connection message senders were dropped; chat server may have panicked")
+                    unreachable!("all connection message senders were dropped; game server may have panicked")
                 }
             }
             // heartbeat internal tick
@@ -108,7 +108,7 @@ pub async fn chat_ws(
         }
     };
 
-    chat_server.disconnect(conn_id);
+    game_server.disconnect(conn_id);
     log::info!("closed, reason: {:?}", close_reason);
 
     let _ = session.close(close_reason).await;
@@ -136,11 +136,11 @@ pub enum WsAction {
 }
 
 async fn process_text_msg(
-    chat_server: &ChatServerHandle,
+    game_server: &GameServerHandle,
     session: &mut actix_ws::Session,
     text: &str,
     conn: ConnId,
-    user_info: &UserInfo
+    user_info: &UserInfo,
 ) -> Result<(), serde_json::Error> {
     let msg = text.trim();
 
@@ -150,21 +150,21 @@ async fn process_text_msg(
         WsAction::Chat(msg) => {
             let msg = format!("{}: {msg}", user_info.username);
 
-            chat_server.send_message(conn, msg).await;
+            game_server.send_message(conn, msg).await;
         }
         WsAction::BoardCommand(cmd) => {
             log::info!("conn {conn}: got a board cmd: {:?}", cmd);
-            let msg = chat_server.on_board_cmd(conn, cmd).await;
+            let msg = game_server.on_board_cmd(conn, cmd).await;
             session.text(msg).await.unwrap();
         }
         WsAction::StartMatch => {
             log::info!("conn {conn}: starting match");
-            chat_server.start_match(conn).await;
+            game_server.start_match(conn).await;
         }
         WsAction::ListLobbies => {
             log::info!("conn {conn}: listing lobbies");
 
-            let lobbies = chat_server.list_lobbies().await;
+            let lobbies = game_server.list_lobbies().await;
             let lobbies = serde_json::to_string(&lobbies).unwrap();
             session.text(lobbies).await.unwrap();
             /* for lobby in lobbies {
@@ -174,7 +174,7 @@ async fn process_text_msg(
         WsAction::JoinLobby(lobby) => {
             log::info!("conn {conn}: joining lobby {lobby}");
 
-            chat_server.join_lobby(conn, &lobby).await;
+            game_server.join_lobby(conn, &lobby).await;
 
             session.text(format!("joined lobby {lobby}")).await.unwrap();
         }
