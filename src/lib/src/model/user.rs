@@ -1,16 +1,17 @@
-
 use chrono::prelude::*;
 use derive_more::Display;
 
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "full")]
 use utoipa::ToSchema;
 
-
-
-#[derive(
-    Debug, Deserialize, Serialize, Clone, Copy, sqlx::Type, PartialEq, Display, Eq, Hash, ToSchema,
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Display, Eq, Hash)]
+#[cfg_attr(feature = "full", derive(sqlx::Type, ToSchema))]
+#[cfg_attr(
+    feature = "full",
+    sqlx(type_name = "user_role", rename_all = "lowercase")
 )]
-#[sqlx(type_name = "user_role", rename_all = "lowercase")]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {
     #[display(fmt = "admin")]
@@ -35,7 +36,8 @@ impl UserRole {
     }
 }
 
-#[derive(Debug, Deserialize, sqlx::FromRow, sqlx::Type, Serialize, Clone, ToSchema)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[cfg_attr(feature = "full", derive(ToSchema, sqlx::FromRow, sqlx::Type))]
 pub struct User {
     pub id: uuid::Uuid,
     pub username: String,

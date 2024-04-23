@@ -1,9 +1,12 @@
 use derive_more::Display;
 use serde::Serialize;
 use std::fmt;
+
+#[cfg(feature = "full")]
 use utoipa::ToSchema;
 
-#[derive(Debug, Display, Copy, Clone, Serialize, ToSchema)]
+#[derive(Debug, Display, Copy, Clone, Serialize)]
+#[cfg_attr(feature = "full", derive(ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Status {
     #[display(fmt = "success")]
@@ -22,7 +25,8 @@ where
     serializer.collect_str(value)
 }
 
-#[derive(Debug, Serialize, Clone, ToSchema)]
+#[derive(Debug, Serialize, Clone)]
+#[cfg_attr(feature = "full", derive(ToSchema))]
 pub struct Response {
     #[serde(serialize_with = "use_display")]
     pub status: Status,
@@ -36,7 +40,8 @@ impl fmt::Display for Response {
     }
 }
 
-#[derive(Debug, PartialEq, Display, Clone, ToSchema)]
+#[derive(Debug, PartialEq, Display, Clone)]
+#[cfg_attr(feature = "full", derive(ToSchema))]
 pub enum Error {
     #[display(fmt = "Server Error. Please try again later")]
     ServerError,
