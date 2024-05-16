@@ -115,34 +115,3 @@ pub fn piece_type_to_offset_type(piece_type: &PieceType) -> OffsetType {
         _ => OffsetType::Cell
     }
 }
-
-// Rotates a 3x3 array counter-clockwise
-/*pub fn rotate_array3x3(a: &mut [[u8; 3]]) {
-    let n = a.len();
-    let mut tmp: u8;
-
-    for i in 0..n/2 {
-        for j in i..n - i - 1 {
-            tmp = a[i][j];
-            a[i][j] = a[j][n - i - 1];
-            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
-            a[n - j - 1][i] = tmp;
-        }
-    }
-}
-
-pub fn rotate_array<T: Copy>(a: &mut Vec<&mut Vec<T>>) {
-    let n = a.len();
-    let mut tmp: T;
-
-    for i in 0..n/2 {
-        for j in i..n - i - 1 {
-            tmp = a[i][j];
-            a[i][j] = a[j][n - i - 1];
-            a[j][n - i - 1] = a[n - i - 1][n - j - 1];
-            a[n - i - 1][n - j - 1] = a[n - j - 1][i];
-            a[n - j - 1][i] = tmp;
-        }
-    }
-}*/

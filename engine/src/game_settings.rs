@@ -4,11 +4,7 @@
  */
 
 use serde::{Deserialize, Serialize};
-use crate::wall_kick_data::{WallKickDataMode};
-
-//pub const BOARD_WIDTH: usize = 10;
-//pub const BOARD_HEIGHT: usize = 40;
-//pub const BOARD_FULL_HEIGHT: usize = BOARD_HEIGHT * 2;
+use crate::wall_kick_data::WallKickDataMode;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct GravitySettings {
