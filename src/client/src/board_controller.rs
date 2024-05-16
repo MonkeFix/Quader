@@ -3,12 +3,12 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use macroquad::prelude::*;
 
-use quader_engine::board::{Board};
-use quader_engine::game_settings::{GameSettings};
-use quader_engine::piece::{RotationDirection};
+use quader_engine::board::Board;
+use quader_engine::game_settings::GameSettings;
+use quader_engine::piece::RotationDirection;
 use quader_engine::piece_mgr::BoardErrorReason;
 use quader_engine::replays::MoveResult;
 use quader_engine::rng_manager::RngManager;

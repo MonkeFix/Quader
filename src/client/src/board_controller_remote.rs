@@ -5,8 +5,6 @@
 
 use std::net::TcpStream;
 
-use std::sync::mpsc;
-use std::thread;
 use tungstenite::{connect, stream::MaybeTlsStream, Message, WebSocket};
 use url::Url;
 
@@ -28,21 +26,16 @@ impl BoardControllerRemote {
         }
 
         socket.send(Message::Text("Hello WS!".into())).unwrap();
-        loop {
-            let msg = socket.read().expect("Error reading message");
-            println!("Received: {}", msg);
 
-            match msg {
-                Message::Text(content) => {
-                    //serde_json::from_str(&content);
-                }
-                Message::Close(_close_frame) => {
-                    break;
-                }
-                Message::Ping(_) | Message::Pong(_) | Message::Frame(_) | Message::Binary(_) => {}
+        let msg = socket.read().expect("Error reading message");
+        println!("Received: {}", msg);
+
+        match msg {
+            Message::Text(_content) => {
+                //serde_json::from_str(&content);
             }
-
-            break;
+            Message::Close(_close_frame) => {}
+            Message::Ping(_) | Message::Pong(_) | Message::Frame(_) | Message::Binary(_) => {}
         }
 
         Self { socket }

@@ -44,7 +44,7 @@ async fn chat_ws(
 ) -> Result<HttpResponse, actix_web::error::Error> {
     let (res, session, msg_stream) = actix_ws::handle(&req, stream)?;
     let ui_res = ensure_auth(req);
-    if let None = ui_res {
+    if ui_res.is_none() {
         return Err(actix_web::error::ErrorForbidden(
             "invalid token".to_string(),
         ));

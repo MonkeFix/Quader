@@ -3,21 +3,20 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::collections::VecDeque;
 use crate::piece::PieceType;
 use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
+use std::collections::VecDeque;
 
 #[derive(Debug)]
 pub struct PieceQueue {
     pub queue: VecDeque<PieceType>,
     piece_generator: Box<PieceGeneratorBag7>,
     next_piece: PieceType,
-    seed: u64
+    seed: u64,
 }
 
 impl PieceQueue {
     pub fn new(seed: u64) -> Self {
-
         let mut piece_generator = Box::new(PieceGeneratorBag7::new(seed));
         let queue = piece_generator.init();
 
@@ -25,7 +24,7 @@ impl PieceQueue {
             queue,
             piece_generator,
             next_piece: PieceType::Pixel,
-            seed
+            seed,
         }
     }
 
@@ -43,8 +42,7 @@ impl PieceQueue {
     }
 
     pub fn reset(&mut self, new_seed: Option<u64>) {
-
-        let seed = new_seed.unwrap_or_else(|| self.seed);
+        let seed = new_seed.unwrap_or(self.seed);
 
         let mut piece_generator = Box::new(PieceGeneratorBag7::new(seed));
         let queue = piece_generator.init();

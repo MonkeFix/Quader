@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::sync::{Arc};
+use std::sync::Arc;
 use quader_engine::{game_settings::GameSettings, time_mgr::TimeMgr};
 use quader_engine::piece_mgr::BoardErrorReason;
 use quader_engine::replays::MoveResult;

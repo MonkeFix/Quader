@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 /*
  * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
  * See the LICENSE file in the repository root for full licence text.
@@ -22,12 +23,11 @@ pub struct StateMachine<T> {
     pub prev_state: Option<String>,
     pub context: Arc<T>,
     states: HashMap<String, Box<dyn State<T>>>,
-    pub elapsed_in_state: f32
+    pub elapsed_in_state: f32,
 }
 
 impl<T> StateMachine<T> {
     pub fn new(context: T, mut initial_state: Box<dyn State<T>>) -> Self {
-
         let state_name = initial_state.get_name().to_owned();
         initial_state.begin();
         let mut states = HashMap::new();
@@ -38,7 +38,7 @@ impl<T> StateMachine<T> {
             cur_state: state_name,
             prev_state: None,
             states,
-            elapsed_in_state: 0.0
+            elapsed_in_state: 0.0,
         }
     }
 
@@ -69,7 +69,7 @@ impl<T> StateMachine<T> {
         cur_state.end();
 
         self.elapsed_in_state = 0.0;
-        self.prev_state  = Some(self.cur_state.to_owned());
+        self.prev_state = Some(self.cur_state.to_owned());
         let cur_state = &mut self.states.get_mut(state_name).unwrap();
         self.cur_state = cur_state.get_name().to_string();
         cur_state.begin();

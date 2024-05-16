@@ -26,8 +26,8 @@ pub mod mock {
 
     static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
-    pub const API_TOKEN_ADMIN: &'static str = "12345";
-    pub const API_TOKEN_USER: &'static str = "54321";
+    pub const API_TOKEN_ADMIN: &str = "12345";
+    pub const API_TOKEN_USER: &str = "54321";
 
     pub fn ensure_auth(req: actix_web::HttpRequest) -> Option<(UserInfo, String)> {
         let auth = req.headers().get(actix_web::http::header::AUTHORIZATION);
@@ -59,7 +59,7 @@ pub mod mock {
     }
 
     fn check_token(header: String) -> Option<(UserInfo, String)> {
-        let parts: Vec<&str> = header.split(" ").collect();
+        let parts: Vec<&str> = header.split(' ').collect();
 
         if parts.len() == 2 && parts[0] == "Bearer" {
             if parts[1] == API_TOKEN_ADMIN {

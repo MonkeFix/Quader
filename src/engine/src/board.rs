@@ -3,18 +3,18 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::sync::{Arc};
 use crate::board_command::BoardMoveDir;
-use crate::cell_holder::{CellHolder};
-use crate::game_settings::{GameSettings};
+use crate::cell_holder::CellHolder;
+use crate::game_settings::GameSettings;
 use crate::garbage_mgr::GarbageMgr;
 use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
 use crate::piece::{Piece, PieceType, RotationDirection, RotationState};
-use crate::piece_mgr::{PieceMgr, BoardErrorReason};
+use crate::piece_mgr::{BoardErrorReason, PieceMgr};
 use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
-use crate::scoring::{ScoringMgr};
+use crate::scoring::ScoringMgr;
 use crate::time_mgr::TimeMgr;
-use crate::wall_kick_data::{WallKickData};
+use crate::wall_kick_data::WallKickData;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Board {
@@ -31,13 +31,11 @@ pub struct Board {
     pub garbage_mgr: GarbageMgr,
     pub replay_mgr: ReplayMgr,
 
-    cur_sec: f32
+    cur_sec: f32,
 }
 
 impl Board {
-
     pub fn new(game_settings: GameSettings, wkd: Arc<WallKickData>, seed: u64) -> Self {
-
         let gravity_mgr = GravityMgr::new(&game_settings.gravity);
         let piece_mgr = Box::new(PieceMgr::new(&game_settings, seed));
 
@@ -52,7 +50,7 @@ impl Board {
             is_dead: false,
             garbage_mgr: GarbageMgr::new(&game_settings.attack),
             replay_mgr: ReplayMgr::default(),
-            cur_sec: 0.0
+            cur_sec: 0.0,
         }
     }
 
@@ -79,9 +77,7 @@ impl Board {
                 self.soft_drop(dt);
                 None
             }
-            GravityUpdateResult::HardDrop => {
-                Some(self.hard_drop())
-            }
+            GravityUpdateResult::HardDrop => Some(self.hard_drop()),
         }
     }
 
@@ -91,7 +87,8 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_left() {
-                self.replay_mgr.push_move(self.cur_sec, MoveAction::MoveLeft);
+                self.replay_mgr
+                    .push_move(self.cur_sec, MoveAction::MoveLeft);
                 moves_count += 1;
             }
         }
@@ -105,7 +102,8 @@ impl Board {
 
         for _ in 0..delta {
             if self.piece_mgr.move_right() {
-                self.replay_mgr.push_move(self.cur_sec, MoveAction::MoveRight);
+                self.replay_mgr
+                    .push_move(self.cur_sec, MoveAction::MoveRight);
                 moves_count += 1;
             }
         }
@@ -129,11 +127,11 @@ impl Board {
             let action = match direction {
                 RotationDirection::Clockwise => MoveAction::RotateCW,
                 RotationDirection::CounterClockwise => MoveAction::RotateCCW,
-                RotationDirection::Deg180 => MoveAction::RotateDeg180
+                RotationDirection::Deg180 => MoveAction::RotateDeg180,
             };
             self.replay_mgr.push_move(self.cur_sec, action);
 
-            return Some(self.piece_mgr.cur_piece.current_rotation)
+            return Some(self.piece_mgr.cur_piece.current_rotation);
         }
 
         None
@@ -142,11 +140,11 @@ impl Board {
     /// Tries to hold current piece. Doesn't do anything if it fails.
     /// It may fail if the player has already held the piece during his turn.
     pub fn try_hold_piece(&mut self) -> Option<Result<&Piece, BoardErrorReason>> {
-        
         let result = self.piece_mgr.try_hold_piece();
 
-        if let Some(_) = result {
-            self.replay_mgr.push_move(self.cur_sec, MoveAction::HoldPiece);
+        if result.is_some() {
+            self.replay_mgr
+                .push_move(self.cur_sec, MoveAction::HoldPiece);
         }
 
         result
@@ -159,16 +157,35 @@ impl Board {
 
     /// Executes specified `MoveAction` once. Returns `None` if a simple action occurs,
     /// for example, `MoveLeft` or `MoveRight`.
-    pub fn exec_action(&mut self, action: MoveAction) -> Option<Result<MoveResult, BoardErrorReason>> {
+    pub fn exec_action(
+        &mut self,
+        action: MoveAction,
+    ) -> Option<Result<MoveResult, BoardErrorReason>> {
         match action {
-            MoveAction::MoveLeft => { self.move_left(1); },
-            MoveAction::MoveRight => { self.move_right(1); },
-            MoveAction::RotateCW => { self.rotate(RotationDirection::Clockwise); },
-            MoveAction::RotateCCW => { self.rotate(RotationDirection::CounterClockwise); },
-            MoveAction::RotateDeg180 => { self.rotate(RotationDirection::Deg180); },
-            MoveAction::SoftDrop => { self.soft_drop(1); },
-            MoveAction::HardDrop => { return Some(self.hard_drop()); }
-            MoveAction::HoldPiece => { self.try_hold_piece(); }
+            MoveAction::MoveLeft => {
+                self.move_left(1);
+            }
+            MoveAction::MoveRight => {
+                self.move_right(1);
+            }
+            MoveAction::RotateCW => {
+                self.rotate(RotationDirection::Clockwise);
+            }
+            MoveAction::RotateCCW => {
+                self.rotate(RotationDirection::CounterClockwise);
+            }
+            MoveAction::RotateDeg180 => {
+                self.rotate(RotationDirection::Deg180);
+            }
+            MoveAction::SoftDrop => {
+                self.soft_drop(1);
+            }
+            MoveAction::HardDrop => {
+                return Some(self.hard_drop());
+            }
+            MoveAction::HoldPiece => {
+                self.try_hold_piece();
+            }
         }
 
         None
@@ -176,7 +193,7 @@ impl Board {
 
     /// Performs a hard drop and at same time updates all the board's internals.
     /// That includes applying piece onto the board, updating current combo and b2b,
-    /// updating player's statistics, pushing the move to the replay manager, 
+    /// updating player's statistics, pushing the move to the replay manager,
     /// and composing the final `MoveResult`.
     pub fn hard_drop(&mut self) -> Result<MoveResult, BoardErrorReason> {
         if !self.is_enabled {
@@ -192,9 +209,11 @@ impl Board {
         // update combo and b2b
         self.scoring_mgr.hard_drop(&hard_drop_info);
         // update board stats (apm, pps, etc.)
-        self.board_stats.hard_drop(&hard_drop_info, &self.scoring_mgr);
+        self.board_stats
+            .hard_drop(&hard_drop_info, &self.scoring_mgr);
         // add the move to the replay manager
-        self.replay_mgr.push_move(self.cur_sec, MoveAction::HardDrop);
+        self.replay_mgr
+            .push_move(self.cur_sec, MoveAction::HardDrop);
 
         let move_queue = self.replay_mgr.end_move();
 
@@ -206,16 +225,18 @@ impl Board {
             &mut self.garbage_mgr,
             &self.piece_mgr.cell_holder,
             move_queue,
-            self.cur_sec
+            self.cur_sec,
         );
 
         // if the attack is negative, the board received damage; pushing garbage then
-        move_result.attack.in_damage_queue
-            .iter()
-            .for_each(|dmg| {
-                self.garbage_mgr.push_garbage_at(dmg.amount as u32, dmg.hole_x, &mut self.piece_mgr.cell_holder);
-                self.piece_mgr.update_nearest_y();
-            });
+        move_result.attack.in_damage_queue.iter().for_each(|dmg| {
+            self.garbage_mgr.push_garbage_at(
+                dmg.amount as u32,
+                dmg.hole_x,
+                &mut self.piece_mgr.cell_holder,
+            );
+            self.piece_mgr.update_nearest_y();
+        });
 
         Ok(move_result)
     }
@@ -230,7 +251,8 @@ impl Board {
         for _ in 0..dt {
             if self.piece_mgr.soft_drop() {
                 self.gravity_mgr.reset_lock();
-                self.replay_mgr.push_move(self.cur_sec, MoveAction::SoftDrop);
+                self.replay_mgr
+                    .push_move(self.cur_sec, MoveAction::SoftDrop);
                 amount_moved += 1;
             }
         }
@@ -243,14 +265,16 @@ impl Board {
     /// Messiness = 0 means that the hole will be at the same x coordinate within
     /// pending garbage rows.
     pub fn push_garbage(&mut self, amount: u32, messiness: u32) {
-        self.garbage_mgr.push_garbage(amount, messiness, &mut self.piece_mgr.cell_holder);
+        self.garbage_mgr
+            .push_garbage(amount, messiness, &mut self.piece_mgr.cell_holder);
     }
 
     /// Pushes damage onto board. The difference between this method and `push_garbage()`
     /// is that `push_garbage()` adds garbage immediately, whereas this method
     /// adds damage into the damage queue.
     pub fn attack(&mut self, damage: i32) {
-        self.garbage_mgr.attack(self.game_settings.board.width, damage);
+        self.garbage_mgr
+            .attack(self.game_settings.board.width, damage);
     }
 
     pub fn get_cell_holder(&self) -> &CellHolder {
@@ -322,7 +346,7 @@ impl BoardSimple {
         Self {
             piece_mgr: Box::new(PieceMgr::new(&game_settings, seed)),
             is_enabled: true,
-            garbage_mgr: GarbageMgr::new(&game_settings.attack)
+            garbage_mgr: GarbageMgr::new(&game_settings.attack),
         }
     }
 
@@ -333,12 +357,25 @@ impl BoardSimple {
         }
 
         match move_action {
-            MoveAction::MoveLeft => { self.piece_mgr.move_left_force(); }
-            MoveAction::MoveRight => { self.piece_mgr.move_right_force(); }
-            MoveAction::RotateCW => { self.piece_mgr.rotate_force(RotationDirection::Clockwise); }
-            MoveAction::RotateCCW => { self.piece_mgr.rotate_force(RotationDirection::CounterClockwise); }
-            MoveAction::RotateDeg180 => { self.piece_mgr.rotate_force(RotationDirection::Deg180); }
-            MoveAction::SoftDrop => { self.piece_mgr.soft_drop_force(); }
+            MoveAction::MoveLeft => {
+                self.piece_mgr.move_left_force();
+            }
+            MoveAction::MoveRight => {
+                self.piece_mgr.move_right_force();
+            }
+            MoveAction::RotateCW => {
+                self.piece_mgr.rotate_force(RotationDirection::Clockwise);
+            }
+            MoveAction::RotateCCW => {
+                self.piece_mgr
+                    .rotate_force(RotationDirection::CounterClockwise);
+            }
+            MoveAction::RotateDeg180 => {
+                self.piece_mgr.rotate_force(RotationDirection::Deg180);
+            }
+            MoveAction::SoftDrop => {
+                self.piece_mgr.soft_drop_force();
+            }
             MoveAction::HardDrop => {
                 self.piece_mgr.hard_drop().ok();
             }
@@ -350,6 +387,7 @@ impl BoardSimple {
 
     /// Sends `amount` rows of garbage with a hole at `hole_x`.
     pub fn send_garbage(&mut self, amount: u32, hole_x: u32) {
-        self.garbage_mgr.push_garbage_at(amount, hole_x, &mut self.piece_mgr.cell_holder);
+        self.garbage_mgr
+            .push_garbage_at(amount, hole_x, &mut self.piece_mgr.cell_holder);
     }
 }

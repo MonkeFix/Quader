@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::collections::VecDeque;
-use std::fmt::{Debug, Formatter};
+use crate::piece::PieceType;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
-use crate::piece::{PieceType};
+use std::collections::VecDeque;
+use std::fmt::{Debug, Formatter};
 
 pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::S,
@@ -16,14 +16,16 @@ pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::O,
     PieceType::J,
     PieceType::I,
-    PieceType::T
+    PieceType::T,
 ];
 
 pub const BAG_SIZE: usize = AVAILABLE_PIECES.len();
 
 pub trait PieceGenerator {
     /// Returns queue size.
-    fn get_queue_size(&self) -> usize { 5 }
+    fn get_queue_size(&self) -> usize {
+        5
+    }
     /// Creates and returns initial piece queue.
     fn init(&mut self) -> VecDeque<PieceType>;
     /// Generates a new piece.
@@ -35,7 +37,6 @@ impl Debug for dyn PieceGenerator {
         write!(f, "PieceGenerator{{queue_size: {}}}", self.get_queue_size())
     }
 }
-
 
 /*pub enum PieceGeneratorType {
     FullRandom, Bag7
@@ -56,10 +57,9 @@ pub struct PieceGeneratorFullRandom {
 }
 
 impl PieceGeneratorFullRandom {
-
     pub fn new(seed: u64) -> Self {
         Self {
-            rng: SeedableRng::seed_from_u64(seed)
+            rng: SeedableRng::seed_from_u64(seed),
         }
     }
 
@@ -70,9 +70,7 @@ impl PieceGeneratorFullRandom {
 
 impl PieceGenerator for PieceGeneratorFullRandom {
     fn init(&mut self) -> VecDeque<PieceType> {
-        (0..self.get_queue_size())
-            .map(|_i| self.rng())
-            .collect()
+        (0..self.get_queue_size()).map(|_i| self.rng()).collect()
     }
 
     fn next(&mut self) -> PieceType {
@@ -83,14 +81,14 @@ impl PieceGenerator for PieceGeneratorFullRandom {
 #[derive(Debug)]
 pub struct PieceGeneratorBag7 {
     rng: ChaCha8Rng,
-    queue: VecDeque<PieceType>
+    queue: VecDeque<PieceType>,
 }
 
 impl PieceGeneratorBag7 {
     pub fn new(seed: u64) -> Self {
         Self {
             rng: SeedableRng::seed_from_u64(seed),
-            queue: VecDeque::new()
+            queue: VecDeque::new(),
         }
     }
 
@@ -113,16 +111,12 @@ impl PieceGenerator for PieceGeneratorBag7 {
         let bag2 = self.generate_bag();
 
         self.queue = (self.get_queue_size()..BAG_SIZE)
-            .map(|i|bag[i])
+            .map(|i| bag[i])
             .collect::<VecDeque<PieceType>>();
 
         self.enqueue_range(&bag2);
 
-        let res = bag.into_iter()
-            .take(self.get_queue_size())
-            .collect();
-
-        res
+        bag.into_iter().take(self.get_queue_size()).collect()
     }
 
     fn next(&mut self) -> PieceType {
@@ -138,6 +132,4 @@ impl PieceGenerator for PieceGeneratorBag7 {
 }
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

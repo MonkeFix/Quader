@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::slice::Iter;
-use serde::{Deserialize, Serialize};
-use crate::game_settings::{BoardSettings};
+use crate::game_settings::BoardSettings;
 use crate::primitives::{Point, Rect};
 use crate::utils::adjust_positions_clone;
+use serde::{Deserialize, Serialize};
+use std::slice::Iter;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CellType {
@@ -21,7 +21,7 @@ pub enum CellType {
     Z,
     Garbage,
     Solid,
-    Ghost
+    Ghost,
 }
 
 pub trait BoolArray {
@@ -31,14 +31,14 @@ pub trait BoolArray {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Row {
     pub cells: Vec<CellType>,
-    pub width: usize
+    pub width: usize,
 }
 
 impl Default for Row {
     fn default() -> Self {
         Self {
             cells: vec![CellType::None; 10],
-            width: 10
+            width: 10,
         }
     }
 }
@@ -47,7 +47,7 @@ impl Row {
     pub fn new(width: usize, fill_with: CellType) -> Self {
         Self {
             cells: vec![fill_with; width],
-            width
+            width,
         }
     }
 
@@ -63,7 +63,9 @@ impl Row {
     }
 
     pub fn is_full(&self) -> bool {
-        self.cells.iter().all(|&b| b != CellType::None && b != CellType::Solid)
+        self.cells
+            .iter()
+            .all(|&b| b != CellType::None && b != CellType::Solid)
     }
 
     pub fn is_empty(&self) -> bool {
@@ -98,14 +100,14 @@ impl<'a> IntoIterator for &'a Row {
     fn into_iter(self) -> Self::IntoIter {
         RowIterator {
             row: self,
-            index: 0
+            index: 0,
         }
     }
 }
 
 pub struct RowIterator<'a> {
     row: &'a Row,
-    index: usize
+    index: usize,
 }
 
 impl<'a> Iterator for RowIterator<'a> {
@@ -128,7 +130,7 @@ pub struct CellHolder {
     layout: Vec<Row>,
     pub(crate) width: usize,
     pub(crate) height: usize,
-    occupied_cells: usize
+    occupied_cells: usize,
 }
 
 pub fn increases_cells(cell_type: CellType) -> bool {
@@ -146,12 +148,12 @@ pub fn increases_cells(cell_type: CellType) -> bool {
 }*/
 
 impl CellHolder {
-
     pub fn new(board_settings: &BoardSettings) -> Self {
         CellHolder {
-            width: board_settings.width, height: board_settings.full_height(),
+            width: board_settings.width,
+            height: board_settings.full_height(),
             layout: vec![Row::empty(board_settings.width); board_settings.full_height()],
-            occupied_cells: 0
+            occupied_cells: 0,
         }
     }
 
@@ -164,10 +166,9 @@ impl CellHolder {
     }
 
     pub fn check_row_clears(&self, bounds: Option<&Rect>) -> Vec<usize> {
-
         let max = match bounds {
             Some(b) => b.top() as usize,
-            None => 0
+            None => 0,
         };
 
         (std::cmp::max(max, 0)..self.height)
@@ -201,21 +202,16 @@ impl CellHolder {
     }
 
     pub fn intersects_any(&self, points: &[Point]) -> bool {
-        points
-            .iter()
-            .any(|p| {
-                self.intersects(p)
-            })
+        points.iter().any(|p| self.intersects(p))
     }
 
     pub fn move_up(&mut self, update_cell_count: bool) {
-        (1..self.height)
-            .for_each(|y| {
-                let cur = self.layout[y].clone();
+        (1..self.height).for_each(|y| {
+            let cur = self.layout[y].clone();
 
-                self.layout[y] = Row::empty(self.width);
-                self.layout[y - 1] = cur;
-            });
+            self.layout[y] = Row::empty(self.width);
+            self.layout[y - 1] = cur;
+        });
 
         if update_cell_count {
             self.occupied_cells += self.width;
@@ -237,14 +233,12 @@ impl CellHolder {
     }
 
     pub fn move_down(&mut self, from_y: usize, update_cell_count: bool) {
-        (0..=(from_y - 1))
-            .rev()
-            .for_each(|y| {
-                let cur = self.layout[y].clone();
+        (0..=(from_y - 1)).rev().for_each(|y| {
+            let cur = self.layout[y].clone();
 
-                self.layout[y] = Row::empty(self.width);
-                self.layout[y + 1] = cur;
-            });
+            self.layout[y] = Row::empty(self.width);
+            self.layout[y + 1] = cur;
+        });
         if update_cell_count {
             self.occupied_cells -= self.width;
         }
@@ -293,7 +287,7 @@ impl CellHolder {
 
     pub fn calc_nearest_y(&self, cur_x: u32, cur_y: u32, points: &[Point]) -> u32 {
         let mut y = cur_y;
-        
+
         for i in cur_y..=(self.height as u32) {
             let offset: Point<i32> = Point::new(cur_x as i32, cur_y as i32);
             let new_points = adjust_positions_clone(points, offset);
@@ -302,7 +296,7 @@ impl CellHolder {
             }
             y = i;
         }
-        
+
         y
     }
 
@@ -338,7 +332,7 @@ mod tests {
 
     const BOARD_SETTINGS: BoardSettings = BoardSettings {
         width: BOARD_WIDTH,
-        height: BOARD_HEIGHT
+        height: BOARD_HEIGHT,
     };
 
     fn create_empty_holder() -> CellHolder {
@@ -355,7 +349,7 @@ mod tests {
             b'J' => CellType::J,
             b'S' => CellType::S,
             b'Z' => CellType::Z,
-            _ => CellType::Solid
+            _ => CellType::Solid,
         }
     }
 
@@ -421,8 +415,7 @@ mod tests {
         row.set(1, CellType::I);
         row.set(2, CellType::J);
 
-        assert_eq!(str_to_row("XIJ"),
-                   row);
+        assert_eq!(str_to_row("XIJ"), row);
 
         assert_eq!(row.get(0), CellType::Garbage);
         assert_eq!(row.get(1), CellType::I);
