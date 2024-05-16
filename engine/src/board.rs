@@ -3,17 +3,18 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::sync::Arc;
+use std::{collections::VecDeque, sync::Arc};
 
-use crate::{settings::GameSettings, time::TimeMgr};
+use crate::{primitives::Point, settings::GameSettings, time::TimeMgr};
 
 use self::{
-    cell_holder::{BoolArray, CellHolder},
+    cell_holder::{BoolArray, CellHolder, Row},
     commands::BoardMoveDir,
-    garbage::GarbageMgr,
+    garbage::{GarbageMgr, IncomingDamage},
     gravity::{GravityMgr, GravityUpdateResult},
     piece::{
         manager::{BoardErrorReason, PieceMgr},
+        queue::PieceQueue,
         wall_kick::WallKickData,
         Piece, PieceType, RotationDirection, RotationState,
     },
@@ -32,18 +33,18 @@ pub mod scoring;
 
 #[derive(Debug)]
 pub struct Board {
-    pub game_settings: GameSettings,
+    game_settings: GameSettings,
 
-    pub(crate) gravity_mgr: GravityMgr,
-    pub piece_mgr: Box<PieceMgr>,
-    pub(crate) is_enabled: bool,
+    gravity_mgr: GravityMgr,
+    piece_mgr: Box<PieceMgr>,
+    is_enabled: bool,
 
     wkd: Arc<WallKickData>,
-    pub(crate) scoring_mgr: ScoringMgr,
-    pub board_stats: BoardStats,
-    pub is_dead: bool,
-    pub garbage_mgr: GarbageMgr,
-    pub replay_mgr: ReplayMgr,
+    scoring_mgr: ScoringMgr,
+    board_stats: BoardStats,
+    is_dead: bool,
+    garbage_mgr: GarbageMgr,
+    replay_mgr: ReplayMgr,
 
     cur_sec: f32,
 }
@@ -291,18 +292,10 @@ impl Board {
             .attack(self.game_settings.board.width, damage);
     }
 
-    pub fn get_cell_holder(&self) -> &CellHolder {
-        &self.piece_mgr.cell_holder
-    }
-
-    pub fn get_piece_mgr(&self) -> &PieceMgr {
-        &self.piece_mgr
-    }
-
     /// Returns nearest Y coordinate which the piece fits at.
     /// May be useful for rendering ghost piece.
     pub fn find_nearest_y(&self) -> u32 {
-        self.get_piece_mgr().find_nearest_y()
+        self.piece_mgr().find_nearest_y()
     }
 
     /// Completely resets the state of the board.
@@ -344,8 +337,62 @@ impl Board {
         //self.time_mgr.disable();
     }
 
-    pub fn to_bool_array(&self) -> Vec<Vec<bool>> {
-        self.piece_mgr.cell_holder.to_bool_array()
+    pub fn cell_holder(&self) -> &CellHolder {
+        &self.piece_mgr.cell_holder
+    }
+
+    pub fn cell_holder_mut(&mut self) -> &mut CellHolder {
+        &mut self.piece_mgr.cell_holder
+    }
+
+    pub fn piece_mgr(&self) -> &PieceMgr {
+        &self.piece_mgr
+    }
+
+    pub fn piece_mgr_mut(&mut self) -> &mut PieceMgr {
+        &mut self.piece_mgr
+    }
+
+    pub fn cur_piece(&self) -> &Piece {
+        &self.piece_mgr.cur_piece
+    }
+
+    pub fn queue(&self) -> &PieceQueue {
+        &self.piece_mgr.piece_queue
+    }
+
+    pub fn layout(&self) -> &[Row] {
+        self.piece_mgr.cell_holder.layout()
+    }
+
+    pub fn nearest_y(&self) -> u32 {
+        self.piece_mgr.nearest_y
+    }
+
+    pub fn piece_points(&self) -> &[Point] {
+        self.piece_mgr.cur_piece.points()
+    }
+
+    pub fn garbage_queue(&self) -> &VecDeque<IncomingDamage> {
+        &self.garbage_mgr.queue
+    }
+
+    pub fn stats(&self) -> &BoardStats {
+        &self.board_stats
+    }
+
+    pub fn settings(&self) -> &GameSettings {
+        &self.game_settings
+    }
+
+    pub fn is_dead(&self) -> bool {
+        self.is_dead
+    }
+}
+
+impl BoolArray for Board {
+    fn to_bool_array(&self) -> Vec<Vec<bool>> {
+        self.cell_holder().to_bool_array()
     }
 }
 
@@ -407,5 +454,11 @@ impl BoardSimple {
     pub fn send_garbage(&mut self, amount: u32, hole_x: u32) {
         self.garbage_mgr
             .push_garbage_at(amount, hole_x, &mut self.piece_mgr.cell_holder);
+    }
+}
+
+impl BoolArray for BoardSimple {
+    fn to_bool_array(&self) -> Vec<Vec<bool>> {
+        self.piece_mgr.cell_holder.to_bool_array()
     }
 }

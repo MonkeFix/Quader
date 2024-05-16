@@ -45,11 +45,11 @@ fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
 
 fn find_nearest_y(cur_piece: &Piece, cell_holder: &CellHolder) -> u32 {
     let piece = cur_piece;
-    let mut y = piece.get_y();
+    let mut y = piece.y();
     let points = piece.get_positions();
 
-    for i in piece.get_y()..=(cell_holder.height as u32) {
-        let offset: Point<i32> = Point::new(piece.get_x() as i32, i as i32);
+    for i in piece.y()..=(cell_holder.height as u32) {
+        let offset: Point<i32> = Point::new(piece.x() as i32, i as i32);
         let new_points = adjust_positions_clone(points, offset);
         if cell_holder.intersects_any(&new_points) {
             break;
@@ -111,7 +111,7 @@ impl PieceMgr {
 
         let adjusted = adjust_positions_clone(
             self.cur_piece.get_positions(),
-            Point::new(self.cur_piece.get_x() as i32, self.cur_piece.get_y() as i32),
+            Point::new(self.cur_piece.x() as i32, self.cur_piece.y() as i32),
         );
         if self.cell_holder.intersects_any(&adjusted) {
             return Err(BoardErrorReason::CannotSpawnPiece);
@@ -284,8 +284,8 @@ impl PieceMgr {
         let tspin_status = if self.cur_piece.get_type() == PieceType::T {
             check_t_overhang(
                 &self.board_settings,
-                self.cur_piece.get_x() as i32,
-                self.cur_piece.get_y() as i32,
+                self.cur_piece.x() as i32,
+                self.cur_piece.y() as i32,
                 |p| self.cell_holder.intersects(&p),
             )
         } else {
@@ -362,7 +362,7 @@ impl PieceMgr {
 
         let pos = piece.get_positions();
         // casting to a signed integer here as a point could be to the left (-x) or to the top (-y)
-        let offset: Point<i32> = Point::new(piece.get_x() as i32 + x, piece.get_y() as i32 + y);
+        let offset: Point<i32> = Point::new(piece.x() as i32 + x, piece.y() as i32 + y);
         let new_pos = adjust_positions_clone(pos, offset);
 
         !self.cell_holder.intersects_any(&new_pos)
@@ -378,7 +378,7 @@ impl PieceMgr {
 
             let adjusted = adjust_positions_clone(
                 expected_pos,
-                Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y),
+                Point::new(piece.x() as i32 + test.x, piece.y() as i32 + test.y),
             );
 
             if !self.cell_holder.intersects_any(&adjusted) {
@@ -393,8 +393,8 @@ impl PieceMgr {
     /// It usually means that the player just lost.
     fn try_apply_piece(&mut self, y: u32) -> bool {
         let piece = &self.cur_piece;
-        let points = piece.get_current_pos();
-        let x = piece.get_x() as i32;
+        let points = piece.points();
+        let x = piece.x() as i32;
         let adjusted = adjust_positions_clone(points, Point::new(x, y as i32));
 
         let mut res = true;

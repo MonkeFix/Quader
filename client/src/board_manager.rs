@@ -25,7 +25,7 @@ impl BoardManager {
     pub fn new() -> Self {
         let game_settings = GameSettings::default();
         let seed = RngManager::from_entropy().gen();
-        let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_data_mode));
+        let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_mode));
 
         let time_mgr = TimeMgr::new();
 
