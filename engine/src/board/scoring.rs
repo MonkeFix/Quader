@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::collections::VecDeque;
 use serde::{Deserialize, Serialize};
-use crate::replays::{HardDropInfo, LastMoveType};
+
+use super::replays::{HardDropInfo, LastMoveType};
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TSpinStatus {
@@ -14,7 +14,7 @@ pub enum TSpinStatus {
     /// Full T-Spin: at least 3 occupied cells around the corners of the T piece.
     Full,
     /// Mini T-Spin: 2 occupied cells around the corners of the T piece.
-    Mini
+    Mini,
 }
 
 pub mod thresholds {
@@ -23,7 +23,6 @@ pub mod thresholds {
     pub const COMBO_3_THRESHOLD: u32 = 10;
     pub const COMBO_4_THRESHOLD: u32 = 15;
     pub const COMBO_5_THRESHOLD: u32 = 18;
-
 
     pub const B2B_1_THRESHOLD: u32 = 2;
     pub const B2B_2_THRESHOLD: u32 = 5;
@@ -62,29 +61,10 @@ pub fn has_flag(value: u32, flag: u32) -> bool {
     value & flag != 0
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct DamageMgr {
-    attack_queue: VecDeque<u32>,
-    incoming_damage: Vec<u32>,
-    last_garbage_x: u32,
-    cur_garbage_cd: f32
-}
-
-impl DamageMgr {
-    pub fn new() -> Self {
-        Self {
-            attack_queue: VecDeque::new(),
-            incoming_damage: Vec::new(),
-            last_garbage_x: 0,
-            cur_garbage_cd: 0.0
-        }
-    }
-}
-
 #[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct ScoringMgr {
     pub combo: u32,
-    pub b2b: u32
+    pub b2b: u32,
 }
 
 impl ScoringMgr {
@@ -98,13 +78,12 @@ impl ScoringMgr {
         //  - cleared exactly 4 lines,
         //  - performed a T-Spin which must include a rotation of the piece.
         // Otherwise break it.
-        if hard_drop_info.lines_cleared == 4 ||
-            (hard_drop_info.last_move_type == LastMoveType::Rotation &&
-                (
-                    hard_drop_info.lines_cleared >= 1 && hard_drop_info.tspin_status != TSpinStatus::None
-                )) {
+        if hard_drop_info.lines_cleared == 4
+            || (hard_drop_info.last_move_type == LastMoveType::Rotation
+                && (hard_drop_info.lines_cleared >= 1
+                    && hard_drop_info.tspin_status != TSpinStatus::None))
+        {
             self.b2b += 1;
-
         } else if hard_drop_info.lines_cleared != 0 {
             self.b2b = 0;
         }

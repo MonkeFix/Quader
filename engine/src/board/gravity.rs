@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::game_settings::{GravitySettings};
-use crate::piece_mgr::PieceMgr;
-use crate::time_mgr::{TimeMgr};
+use crate::{settings::GravitySettings, time::TimeMgr};
+
+use super::piece::manager::PieceMgr;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GravityUpdateResult {

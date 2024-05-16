@@ -10,8 +10,8 @@ use crate::ConnId;
 use crate::{ws::server::GameServerHandle, Msg};
 use actix_ws::{CloseReason, Message};
 use futures_util::StreamExt as _;
-use quader_engine::board_command::BoardMoveDir;
-use quader_engine::piece::RotationDirection;
+use quader_engine::board::commands::BoardMoveDir;
+use quader_engine::board::piece::RotationDirection;
 use serde::{Deserialize, Serialize};
 use tokio::{pin, select, sync::mpsc, time::interval};
 

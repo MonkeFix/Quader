@@ -6,17 +6,18 @@
 mod bot_board;
 
 pub use bot_board::BotBoard;
-use quader_engine::piece::PieceType;
+use quader_engine::board::piece::PieceType;
 
 #[derive(Debug, Copy, Clone)]
 pub struct BotSettings {
     /// Target Pieces Per Second.
-    pub target_pps: f32
+    pub target_pps: f32,
 }
 
 #[derive(Debug)]
 pub enum BotStatus {
-    Waiting, Dead
+    Waiting,
+    Dead,
 }
 
 pub fn piece_type_to_piece(piece_type: PieceType) -> libtetris::Piece {
@@ -28,6 +29,6 @@ pub fn piece_type_to_piece(piece_type: PieceType) -> libtetris::Piece {
         PieceType::J => libtetris::Piece::J,
         PieceType::S => libtetris::Piece::S,
         PieceType::Z => libtetris::Piece::Z,
-        PieceType::Pixel => panic!("Invalid conversion from pixel")
+        PieceType::Pixel => panic!("Invalid conversion from pixel"),
     }
 }

@@ -7,10 +7,10 @@ use crate::assets::Assets;
 use crate::board_controller::BoardController;
 use crate::board_controller_bot::BoardControllerBot;
 use macroquad::prelude::{info, is_key_pressed, KeyCode};
-use quader_engine::game_settings::GameSettings;
-use quader_engine::rng_manager::RngManager;
-use quader_engine::time_mgr::TimeMgr;
-use quader_engine::wall_kick_data::WallKickData;
+use quader_engine::board::piece::wall_kick::WallKickData;
+use quader_engine::board::rng::RngManager;
+use quader_engine::settings::GameSettings;
+use quader_engine::time::TimeMgr;
 use std::sync::Arc;
 
 pub struct BoardManager {

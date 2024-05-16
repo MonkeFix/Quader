@@ -3,17 +3,32 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::fmt::{Display, Formatter};
-use serde::{Deserialize, Serialize};
-use crate::cell_holder::CellType;
-use crate::piece_points;
-use crate::primitives::{Point, Rect, Color};
+use crate::primitives::{Color, Point, Rect};
 use crate::utils::{calc_bounds, piece_type_to_color, piece_type_to_offset_type};
-use crate::wall_kick_data::{WallKickType};
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
+use crate::board::piece;
+
+use self::wall_kick::WallKickType;
+
+use super::cell_holder::CellType;
+
+pub mod generators;
+pub mod manager;
+pub mod points;
+pub mod queue;
+pub mod wall_kick;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum PieceType {
-    I, O, T, L, J, S, Z, Pixel
+    I,
+    O,
+    T,
+    L,
+    J,
+    S,
+    Z,
+    Pixel,
 }
 
 impl Display for PieceType {
@@ -35,12 +50,17 @@ impl Display for PieceType {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RotationState {
-    Initial = 0, Clockwise = 1, Deg180 = 2, CounterClockwise = 3
+    Initial = 0,
+    Clockwise = 1,
+    Deg180 = 2,
+    CounterClockwise = 3,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RotationDirection {
-    Clockwise, CounterClockwise, Deg180
+    Clockwise,
+    CounterClockwise,
+    Deg180,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -58,80 +78,67 @@ pub enum RotationMove {
     InitToLeft,
 
     InitToDeg180,
-    Deg180ToInit
+    Deg180ToInit,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum OffsetType {
     Cell,
-    BetweenCells
+    BetweenCells,
 }
 
 pub fn get_points_for_piece(piece_type: PieceType, state: RotationState) -> &'static [Point] {
     match piece_type {
-        PieceType::I => {
-            match state {
-                RotationState::Initial => &piece_points::piece_i::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_i::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_i::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_i::DEG180_POS,
-            }
+        PieceType::I => match state {
+            RotationState::Initial => &piece::points::piece_i::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_i::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_i::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_i::DEG180_POS,
         },
-        PieceType::O => {
-            match state {
-                RotationState::Initial => &piece_points::piece_o::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_o::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_o::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_o::DEG180_POS,
-            }
+        PieceType::O => match state {
+            RotationState::Initial => &piece::points::piece_o::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_o::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_o::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_o::DEG180_POS,
         },
-        PieceType::T =>
-            match state {
-                RotationState::Initial => &piece_points::piece_t::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_t::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_t::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_t::DEG180_POS,
-            },
-        PieceType::L => {
-            match state {
-                RotationState::Initial => &piece_points::piece_l::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_l::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_l::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_l::DEG180_POS,
-            }
+        PieceType::T => match state {
+            RotationState::Initial => &piece::points::piece_t::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_t::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_t::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_t::DEG180_POS,
         },
-        PieceType::J => {
-            match state {
-                RotationState::Initial => &piece_points::piece_j::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_j::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_j::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_j::DEG180_POS,
-            }
+        PieceType::L => match state {
+            RotationState::Initial => &piece::points::piece_l::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_l::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_l::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_l::DEG180_POS,
         },
-        PieceType::S => {
-            match state {
-                RotationState::Initial => &piece_points::piece_s::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_s::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_s::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_s::DEG180_POS,
-            }
+        PieceType::J => match state {
+            RotationState::Initial => &piece::points::piece_j::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_j::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_j::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_j::DEG180_POS,
         },
-        PieceType::Z => {
-            match state {
-                RotationState::Initial => &piece_points::piece_z::INIT_POS,
-                RotationState::Clockwise => &piece_points::piece_z::RIGHT_POS,
-                RotationState::CounterClockwise => &piece_points::piece_z::LEFT_POS,
-                RotationState::Deg180 => &piece_points::piece_z::DEG180_POS,
-            }
+        PieceType::S => match state {
+            RotationState::Initial => &piece::points::piece_s::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_s::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_s::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_s::DEG180_POS,
         },
-        _ => panic!("invalid piece type")
+        PieceType::Z => match state {
+            RotationState::Initial => &piece::points::piece_z::INIT_POS,
+            RotationState::Clockwise => &piece::points::piece_z::RIGHT_POS,
+            RotationState::CounterClockwise => &piece::points::piece_z::LEFT_POS,
+            RotationState::Deg180 => &piece::points::piece_z::DEG180_POS,
+        },
+        _ => panic!("invalid piece type"),
     }
 }
 
 #[derive(Debug)]
 pub struct WallKickCheckParams<'a> {
     pub tests: &'a [Point],
-    pub expected_pos: &'a [Point]
+    pub expected_pos: &'a [Point],
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -143,7 +150,7 @@ pub struct Piece {
     x: u32,
     y: u32,
     pub current_rotation: RotationState,
-    wall_kick_type: WallKickType
+    wall_kick_type: WallKickType,
 }
 
 impl Piece {
@@ -151,7 +158,7 @@ impl Piece {
         let wall_kick_type = match piece_type {
             PieceType::I => WallKickType::PieceI,
             PieceType::O => WallKickType::PieceO,
-            _ => WallKickType::Default
+            _ => WallKickType::Default,
         };
 
         let offset_type = piece_type_to_offset_type(&piece_type);
@@ -184,7 +191,9 @@ impl Piece {
         self.piece_type
     }
 
-    pub fn get_cell_type(&self) -> CellType { self.board_cell_type }
+    pub fn get_cell_type(&self) -> CellType {
+        self.board_cell_type
+    }
 
     pub fn set_x(&mut self, x: u32) {
         self.x = x;
@@ -256,7 +265,10 @@ impl Piece {
         match rotation {
             RotationDirection::Clockwise => self.rotate_right(),
             RotationDirection::CounterClockwise => self.rotate_left(),
-            RotationDirection::Deg180 => { self.rotate_right(); self.rotate_right(); }
+            RotationDirection::Deg180 => {
+                self.rotate_right();
+                self.rotate_right();
+            }
         }
 
         self.bounds = self.calc_bounds();
@@ -267,7 +279,7 @@ impl Piece {
             RotationState::Initial => RotationState::Clockwise,
             RotationState::Clockwise => RotationState::Deg180,
             RotationState::Deg180 => RotationState::CounterClockwise,
-            RotationState::CounterClockwise => RotationState::Initial
+            RotationState::CounterClockwise => RotationState::Initial,
         }
     }
 
@@ -276,39 +288,75 @@ impl Piece {
             RotationState::Initial => RotationState::CounterClockwise,
             RotationState::Clockwise => RotationState::Initial,
             RotationState::CounterClockwise => RotationState::Deg180,
-            RotationState::Deg180 => RotationState::Clockwise
+            RotationState::Deg180 => RotationState::Clockwise,
         }
     }
 
     pub fn get_rotation_type(&self, rotation: RotationDirection) -> (RotationMove, &[Point]) {
         match self.current_rotation {
             RotationState::Initial => match rotation {
-                RotationDirection::Clockwise => (RotationMove::InitToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
-                RotationDirection::CounterClockwise => (RotationMove::InitToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
-                RotationDirection::Deg180 => (RotationMove::InitToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
-            }
+                RotationDirection::Clockwise => (
+                    RotationMove::InitToRight,
+                    get_points_for_piece(self.piece_type, RotationState::Clockwise),
+                ),
+                RotationDirection::CounterClockwise => (
+                    RotationMove::InitToLeft,
+                    get_points_for_piece(self.piece_type, RotationState::CounterClockwise),
+                ),
+                RotationDirection::Deg180 => (
+                    RotationMove::InitToDeg180,
+                    get_points_for_piece(self.piece_type, RotationState::Deg180),
+                ),
+            },
             RotationState::Clockwise => match rotation {
-                RotationDirection::Clockwise => (RotationMove::RightToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
-                RotationDirection::CounterClockwise => (RotationMove::RightToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
-                RotationDirection::Deg180 => (RotationMove::Deg180ToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
-            }
+                RotationDirection::Clockwise => (
+                    RotationMove::RightToDeg180,
+                    get_points_for_piece(self.piece_type, RotationState::Deg180),
+                ),
+                RotationDirection::CounterClockwise => (
+                    RotationMove::RightToInit,
+                    get_points_for_piece(self.piece_type, RotationState::Initial),
+                ),
+                RotationDirection::Deg180 => (
+                    RotationMove::Deg180ToLeft,
+                    get_points_for_piece(self.piece_type, RotationState::CounterClockwise),
+                ),
+            },
             RotationState::Deg180 => match rotation {
-                RotationDirection::Clockwise => (RotationMove::Deg180ToLeft, get_points_for_piece(self.piece_type, RotationState::CounterClockwise)),
-                RotationDirection::CounterClockwise => (RotationMove::Deg180ToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
-                RotationDirection::Deg180 => (RotationMove::Deg180ToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
-            }
+                RotationDirection::Clockwise => (
+                    RotationMove::Deg180ToLeft,
+                    get_points_for_piece(self.piece_type, RotationState::CounterClockwise),
+                ),
+                RotationDirection::CounterClockwise => (
+                    RotationMove::Deg180ToRight,
+                    get_points_for_piece(self.piece_type, RotationState::Clockwise),
+                ),
+                RotationDirection::Deg180 => (
+                    RotationMove::Deg180ToInit,
+                    get_points_for_piece(self.piece_type, RotationState::Initial),
+                ),
+            },
             RotationState::CounterClockwise => match rotation {
-                RotationDirection::Clockwise => (RotationMove::LeftToInit, get_points_for_piece(self.piece_type, RotationState::Initial)),
-                RotationDirection::CounterClockwise => (RotationMove::LeftToDeg180, get_points_for_piece(self.piece_type, RotationState::Deg180)),
-                RotationDirection::Deg180 => (RotationMove::InitToRight, get_points_for_piece(self.piece_type, RotationState::Clockwise)),
-            }
+                RotationDirection::Clockwise => (
+                    RotationMove::LeftToInit,
+                    get_points_for_piece(self.piece_type, RotationState::Initial),
+                ),
+                RotationDirection::CounterClockwise => (
+                    RotationMove::LeftToDeg180,
+                    get_points_for_piece(self.piece_type, RotationState::Deg180),
+                ),
+                RotationDirection::Deg180 => (
+                    RotationMove::InitToRight,
+                    get_points_for_piece(self.piece_type, RotationState::Clockwise),
+                ),
+            },
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-/*    use crate::piece::rotate_array;
+    /*    use crate::piece::rotate_array;
 
     #[test]
     fn rotate_matrix() {

@@ -4,9 +4,7 @@
  */
 
 use std::ops::{Add, AddAssign};
-use crate::cell_holder::CellType;
-use crate::piece::{OffsetType, PieceType};
-use crate::primitives::{Color, Point, Rect};
+use crate::{board::{cell_holder::CellType, piece::{OffsetType, PieceType}}, primitives::{Color, Point, Rect}};
 
 pub fn adjust_positions<T: AddAssign + Copy>(data: &mut [Point<T>], offset: Point<T>) {
     for p in &mut *data {

@@ -5,9 +5,9 @@
 
 use crate::assets::{Assets, CELL_SIZE};
 use macroquad::prelude::*;
+use quader_engine::board::cell_holder::CellType;
+use quader_engine::board::piece::{get_points_for_piece, OffsetType, PieceType, RotationState};
 use quader_engine::board::Board;
-use quader_engine::cell_holder::CellType;
-use quader_engine::piece::{get_points_for_piece, OffsetType, PieceType, RotationState};
 use quader_engine::primitives::Point;
 use quader_engine::utils::{
     adjust_point_clone, piece_type_to_cell_type, piece_type_to_color, piece_type_to_offset_type,

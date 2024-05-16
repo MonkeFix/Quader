@@ -3,11 +3,33 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::game_settings::{AttackSettings, BoardSettings};
-use crate::primitives::Point;
-use crate::replays::MoveResult;
-use crate::scoring::{damage_mods, has_flag, thresholds, TSpinStatus};
+use std::collections::VecDeque;
 
+use serde::{Deserialize, Serialize};
+
+use crate::board::replays::MoveResult;
+use crate::board::scoring::{damage_mods, has_flag, thresholds, TSpinStatus};
+use crate::primitives::Point;
+use crate::settings::{AttackSettings, BoardSettings};
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct DamageMgr {
+    attack_queue: VecDeque<u32>,
+    incoming_damage: Vec<u32>,
+    last_garbage_x: u32,
+    cur_garbage_cd: f32,
+}
+
+impl DamageMgr {
+    pub fn new() -> Self {
+        Self {
+            attack_queue: VecDeque::new(),
+            incoming_damage: Vec::new(),
+            last_garbage_x: 0,
+            cur_garbage_cd: 0.0,
+        }
+    }
+}
 
 pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveResult) -> u32 {
     let mut attack = attack_settings.lines_0;
@@ -19,20 +41,42 @@ pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveResult) -> u3
     let mods = mv.mod_bits;
 
     // COMBOS
-    if has_flag(mods, damage_mods::COMBO_1) { attack += attack_settings.combos[0]; }
-    if has_flag(mods, damage_mods::COMBO_2) { attack += attack_settings.combos[1]; }
-    if has_flag(mods, damage_mods::COMBO_3) { attack += attack_settings.combos[2]; }
-    if has_flag(mods, damage_mods::COMBO_4) { attack += attack_settings.combos[3]; }
-    if has_flag(mods, damage_mods::COMBO_5) { attack += attack_settings.combos[4]; }
+    if has_flag(mods, damage_mods::COMBO_1) {
+        attack += attack_settings.combos[0];
+    }
+    if has_flag(mods, damage_mods::COMBO_2) {
+        attack += attack_settings.combos[1];
+    }
+    if has_flag(mods, damage_mods::COMBO_3) {
+        attack += attack_settings.combos[2];
+    }
+    if has_flag(mods, damage_mods::COMBO_4) {
+        attack += attack_settings.combos[3];
+    }
+    if has_flag(mods, damage_mods::COMBO_5) {
+        attack += attack_settings.combos[4];
+    }
 
-    if has_flag(mods, damage_mods::ALL_CLEAR) { attack += attack_settings.all_clear; }
+    if has_flag(mods, damage_mods::ALL_CLEAR) {
+        attack += attack_settings.all_clear;
+    }
 
     // B2Bs
-    if has_flag(mods, damage_mods::B2B_1) { attack += attack_settings.b2bs[0]; }
-    if has_flag(mods, damage_mods::B2B_2) { attack += attack_settings.b2bs[1]; }
-    if has_flag(mods, damage_mods::B2B_3) { attack += attack_settings.b2bs[2]; }
-    if has_flag(mods, damage_mods::B2B_4) { attack += attack_settings.b2bs[3]; }
-    if has_flag(mods, damage_mods::B2B_5) { attack += attack_settings.b2bs[4]; }
+    if has_flag(mods, damage_mods::B2B_1) {
+        attack += attack_settings.b2bs[0];
+    }
+    if has_flag(mods, damage_mods::B2B_2) {
+        attack += attack_settings.b2bs[1];
+    }
+    if has_flag(mods, damage_mods::B2B_3) {
+        attack += attack_settings.b2bs[2];
+    }
+    if has_flag(mods, damage_mods::B2B_4) {
+        attack += attack_settings.b2bs[3];
+    }
+    if has_flag(mods, damage_mods::B2B_5) {
+        attack += attack_settings.b2bs[4];
+    }
 
     // T-SPINS
     if has_flag(mods, damage_mods::T_SPIN_FULL) {
@@ -73,9 +117,8 @@ pub fn calculate_damage(attack_settings: &AttackSettings, mv: &MoveResult) -> u3
 pub fn create_board_move_bits(
     total_cells: u32,
     mv: &MoveResult,
-    t_spin_status: TSpinStatus
+    t_spin_status: TSpinStatus,
 ) -> u32 {
-
     let mut res = 0;
 
     if total_cells == 0 {
@@ -105,10 +148,10 @@ pub fn create_board_move_bits(
     }
 
     match t_spin_status {
-        TSpinStatus::None => {},
+        TSpinStatus::None => {}
         TSpinStatus::Full => {
             res |= damage_mods::T_SPIN_FULL;
-        },
+        }
         TSpinStatus::Mini => {
             res |= damage_mods::T_SPIN_MINI;
         }
@@ -129,9 +172,15 @@ pub fn create_board_move_bits(
     res
 }
 
-pub fn check_t_overhang<F>(board_settings: &BoardSettings, piece_x: i32, piece_y: i32, not_empty_func: F) -> TSpinStatus
-    where F: Fn(Point) -> bool {
-
+pub fn check_t_overhang<F>(
+    board_settings: &BoardSettings,
+    piece_x: i32,
+    piece_y: i32,
+    not_empty_func: F,
+) -> TSpinStatus
+where
+    F: Fn(Point) -> bool,
+{
     let point_arr = [
         // TOP LEFT
         Point::new(piece_x - 1, piece_y - 1),
@@ -140,14 +189,19 @@ pub fn check_t_overhang<F>(board_settings: &BoardSettings, piece_x: i32, piece_y
         // BOTTOM LEFT
         Point::new(piece_x - 1, piece_y + 1),
         // BOTTOM RIGHT
-        Point::new(piece_x + 1, piece_y + 1)
+        Point::new(piece_x + 1, piece_y + 1),
     ];
 
     let mut oob_overhangs = 0;
     let mut non_oob_overhangs = 0;
 
     for p in point_arr {
-        if crate::utils::is_oob(p.x, p.y, board_settings.width as i32, board_settings.full_height() as i32) {
+        if crate::utils::is_oob(
+            p.x,
+            p.y,
+            board_settings.width as i32,
+            board_settings.full_height() as i32,
+        ) {
             oob_overhangs += 1;
         } else if not_empty_func(p) {
             non_oob_overhangs += 1;

@@ -6,14 +6,13 @@
 use crate::{piece_type_to_piece, BotSettings};
 use cold_clear::{BotPollState, Info, Interface};
 use libtetris::Move;
+use quader_engine::board::piece::manager::BoardErrorReason;
+use quader_engine::board::piece::wall_kick::WallKickData;
+use quader_engine::board::piece::{PieceType, RotationDirection};
+use quader_engine::board::replays::MoveResult;
 use quader_engine::board::Board;
-use quader_engine::cell_holder::BoolArray;
-use quader_engine::game_settings::GameSettings;
-use quader_engine::piece::{PieceType, RotationDirection};
-use quader_engine::piece_mgr::BoardErrorReason;
-use quader_engine::replays::MoveResult;
-use quader_engine::time_mgr::TimeMgr;
-use quader_engine::wall_kick_data::WallKickData;
+use quader_engine::settings::GameSettings;
+use quader_engine::time::TimeMgr;
 use std::sync::Arc;
 
 pub struct BotBoard {
@@ -156,7 +155,7 @@ impl BotBoard {
                     Ok(hd) => {
                         if !hd.attack.in_damage_queue.is_empty() {
                             // update bot's board
-                            let new_board = self.engine_board.piece_mgr.cell_holder.to_bool_array();
+                            let new_board = self.engine_board.to_bool_array();
                             let mut field = [[false; 10]; 40];
 
                             for (y, row) in new_board.iter().enumerate() {

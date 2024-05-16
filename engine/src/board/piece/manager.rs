@@ -3,37 +3,41 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::cell_holder::{CellHolder, CellType};
-use crate::damage_calculation::check_t_overhang;
-use crate::game_settings::{BoardSettings, GameSettings};
-use crate::piece::{OffsetType, Piece, PieceType, RotationDirection, WallKickCheckParams};
-use crate::piece_queue::PieceQueue;
-use crate::primitives::Point;
-use crate::replays::{HardDropInfo, LastMoveType};
-use crate::scoring::TSpinStatus;
-use crate::utils::{adjust_positions_clone, piece_type_to_cell_type};
-use crate::wall_kick_data::WallKickData;
+use crate::{
+    board::{
+        cell_holder::{CellHolder, CellType},
+        replays::{HardDropInfo, LastMoveType},
+        scoring::TSpinStatus,
+    },
+    damage::check_t_overhang,
+    primitives::Point,
+    settings::{BoardSettings, GameSettings},
+    utils::{adjust_positions_clone, piece_type_to_cell_type},
+};
+
+use super::{
+    queue::PieceQueue, wall_kick::WallKickData, OffsetType, Piece, PieceType, RotationDirection,
+    WallKickCheckParams,
+};
 
 #[derive(Debug, Copy, Clone)]
 pub enum BoardErrorReason {
     CannotApplyPiece,
     BoardDead,
     BoardDisabled,
-    CannotSpawnPiece
+    CannotSpawnPiece,
 }
 
 fn reset_piece(piece: &mut Piece, board_width: usize, board_height: usize) {
     // Pieces O and I are fit between cells.
     match piece.get_offset_type() {
-        OffsetType::Cell => piece
-            .set_x(board_width as u32 / 2 - 1),
-        OffsetType::BetweenCells => piece
-            .set_x(((board_width as f32) / 2.0).round() as u32)
+        OffsetType::Cell => piece.set_x(board_width as u32 / 2 - 1),
+        OffsetType::BetweenCells => piece.set_x(((board_width as f32) / 2.0).round() as u32),
     }
 
     match piece.get_type() {
         PieceType::I => piece.set_y(board_height as u32 / 2 + 1),
-        _ => piece.set_y(board_height as u32 / 2)
+        _ => piece.set_y(board_height as u32 / 2),
     };
 
     piece.reset();
@@ -67,18 +71,21 @@ pub struct PieceMgr {
     pub piece_queue: PieceQueue,
     pub is_enabled: bool,
     last_move_type: LastMoveType,
-    pub nearest_y: u32
+    pub nearest_y: u32,
 }
 
 impl PieceMgr {
     pub fn new(game_settings: &GameSettings, seed: u64) -> Self {
-
         let board_settings = game_settings.board;
 
         let mut piece_queue = PieceQueue::new(seed);
-        let next_piece = piece_queue.next();
+        let next_piece = piece_queue.next_piece();
         let mut piece = Piece::new(next_piece);
-        reset_piece(&mut piece, board_settings.width, board_settings.full_height());
+        reset_piece(
+            &mut piece,
+            board_settings.width,
+            board_settings.full_height(),
+        );
 
         let cell_holder = Box::new(CellHolder::new(&board_settings));
         let nearest_y = find_nearest_y(&piece, &cell_holder);
@@ -92,7 +99,7 @@ impl PieceMgr {
             piece_queue,
             is_enabled: true,
             last_move_type: LastMoveType::None,
-            nearest_y
+            nearest_y,
         }
     }
 
@@ -104,10 +111,7 @@ impl PieceMgr {
 
         let adjusted = adjust_positions_clone(
             self.cur_piece.get_positions(),
-            Point::new(
-                self.cur_piece.get_x() as i32,
-                self.cur_piece.get_y() as i32
-            )
+            Point::new(self.cur_piece.get_x() as i32, self.cur_piece.get_y() as i32),
         );
         if self.cell_holder.intersects_any(&adjusted) {
             return Err(BoardErrorReason::CannotSpawnPiece);
@@ -148,10 +152,10 @@ impl PieceMgr {
             // otherwise put current piece to hold and set a new piece
             self.hold_piece = Some(self.get_piece().get_type());
 
-            let new_piece = self.piece_queue.next();
+            let new_piece = self.piece_queue.next_piece();
 
             Some(self.try_create_piece(new_piece))
-        }
+        };
     }
 
     /// Tries to move the current piece one cell to the left `delta` times.
@@ -217,7 +221,7 @@ impl PieceMgr {
 
         let test = self.test_rotation(WallKickCheckParams {
             tests,
-            expected_pos: rot_type.1
+            expected_pos: rot_type.1,
         });
 
         if let Some(point) = test {
@@ -229,7 +233,7 @@ impl PieceMgr {
 
         false
     }
-    
+
     /// Rotates the piece without performing any wall kick tests.
     pub(crate) fn rotate_force(&mut self, rotation: RotationDirection) {
         self.cur_piece.rotate_simple(rotation);
@@ -256,7 +260,7 @@ impl PieceMgr {
             self.nearest_y = self.find_nearest_y();
             return true;
         }
-        
+
         false
     }
 
@@ -282,7 +286,7 @@ impl PieceMgr {
                 &self.board_settings,
                 self.cur_piece.get_x() as i32,
                 self.cur_piece.get_y() as i32,
-                |p| { self.cell_holder.intersects(&p) },
+                |p| self.cell_holder.intersects(&p),
             )
         } else {
             TSpinStatus::None
@@ -307,13 +311,13 @@ impl PieceMgr {
             lines_cleared,
             tspin_status,
             last_move_type: self.last_move_type,
-            occupied_cells_left: self.cell_holder.get_occupied_cell_count() as u32
+            occupied_cells_left: self.cell_holder.get_occupied_cell_count() as u32,
         };
 
         self.reset_cur_piece();
         self.is_hold_used = false;
 
-        let next_piece = self.piece_queue.next();
+        let next_piece = self.piece_queue.next_piece();
         self.try_create_piece(next_piece)?;
 
         Ok(result)
@@ -323,12 +327,16 @@ impl PieceMgr {
         self.is_hold_used = false;
         self.cell_holder.clear();
         self.piece_queue.reset(new_seed);
-        
-        let next_piece = self.piece_queue.next();
+
+        let next_piece = self.piece_queue.next_piece();
         let mut piece = Piece::new(next_piece);
-        reset_piece(&mut piece, self.board_settings.width, self.board_settings.full_height());
+        reset_piece(
+            &mut piece,
+            self.board_settings.width,
+            self.board_settings.full_height(),
+        );
         self.cur_piece = piece;
-        
+
         self.last_move_type = LastMoveType::None;
         self.hold_piece = None;
 
@@ -342,7 +350,6 @@ impl PieceMgr {
     }
 
     fn test_movement(&self, x: i32, y: i32) -> bool {
-
         let piece = &self.cur_piece;
         let b = piece.get_bounds();
 
@@ -355,10 +362,7 @@ impl PieceMgr {
 
         let pos = piece.get_positions();
         // casting to a signed integer here as a point could be to the left (-x) or to the top (-y)
-        let offset: Point<i32> = Point::new(
-            piece.get_x() as i32 + x,
-            piece.get_y() as i32 + y
-        );
+        let offset: Point<i32> = Point::new(piece.get_x() as i32 + x, piece.get_y() as i32 + y);
         let new_pos = adjust_positions_clone(pos, offset);
 
         !self.cell_holder.intersects_any(&new_pos)
@@ -374,7 +378,7 @@ impl PieceMgr {
 
             let adjusted = adjust_positions_clone(
                 expected_pos,
-                Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y)
+                Point::new(piece.get_x() as i32 + test.x, piece.get_y() as i32 + test.y),
             );
 
             if !self.cell_holder.intersects_any(&adjusted) {
@@ -396,13 +400,16 @@ impl PieceMgr {
         let mut res = true;
 
         for point in adjusted {
-            let cell = self.cell_holder.get_cell_at(point.x as usize, point.y as usize);
+            let cell = self
+                .cell_holder
+                .get_cell_at(point.x as usize, point.y as usize);
             if cell != CellType::None {
                 res = false;
             }
 
             let cell_type = piece_type_to_cell_type(piece.get_type());
-            self.cell_holder.set_cell_at(point.x as usize, point.y as usize, cell_type);
+            self.cell_holder
+                .set_cell_at(point.x as usize, point.y as usize, cell_type);
         }
 
         res
@@ -410,7 +417,11 @@ impl PieceMgr {
 
     fn reset_cur_piece(&mut self) {
         self.last_move_type = LastMoveType::None;
-        reset_piece(&mut self.cur_piece, self.board_settings.width, self.board_settings.full_height());
+        reset_piece(
+            &mut self.cur_piece,
+            self.board_settings.width,
+            self.board_settings.full_height(),
+        );
 
         self.nearest_y = self.find_nearest_y();
     }

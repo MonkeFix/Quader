@@ -5,7 +5,7 @@
 
 use macroquad::math::Rect;
 use macroquad::prelude::{load_texture, load_ttf_font, Font, Texture2D};
-use quader_engine::cell_holder::CellType;
+use quader_engine::board::cell_holder::CellType;
 use std::collections::HashMap;
 
 pub const CELL_SIZE: f32 = 32.0;

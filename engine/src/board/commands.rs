@@ -4,11 +4,13 @@
  */
 
 use serde::{Deserialize, Serialize};
-use crate::piece::{PieceType, RotationDirection};
+
+use super::piece::{PieceType, RotationDirection};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum BoardMoveDir {
-    Left, Right
+    Left,
+    Right,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -16,7 +18,7 @@ pub enum GameState {
     None,
     Ongoing,
     Paused,
-    Ended
+    Ended,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -34,7 +36,6 @@ pub enum BoardCommand {
     Update(f32),
     HoldPiece,
     RequestBoardLayout,
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -45,5 +46,5 @@ pub enum BoardMessage {
     GarbageReceived(u32, u32),
     GameStateChanged(GameState),
     PlayerRemoved,
-    BoardUpdated
+    BoardUpdated,
 }

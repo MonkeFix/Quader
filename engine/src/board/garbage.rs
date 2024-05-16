@@ -3,13 +3,13 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::cell_holder::CellHolder;
-use crate::game_settings::AttackSettings;
-use crate::time_mgr::TimeMgr;
+use crate::{settings::AttackSettings, time::TimeMgr};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
+
+use super::cell_holder::CellHolder;
 
 #[derive(Default, Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct IncomingDamage {

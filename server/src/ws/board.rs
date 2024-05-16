@@ -4,16 +4,16 @@
  */
 
 use std::sync::Arc;
+use quader_engine::board::commands::{BoardCommand, BoardMoveDir};
+use quader_engine::board::piece::manager::BoardErrorReason;
+use quader_engine::board::piece::wall_kick::WallKickData;
+use quader_engine::board::piece::RotationDirection;
+use quader_engine::board::replays::MoveResult;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use quader_engine::board::Board;
-use quader_engine::board_command::{BoardCommand, BoardMoveDir};
-use quader_engine::game_settings::GameSettings;
-use quader_engine::piece::RotationDirection;
-use quader_engine::piece_mgr::BoardErrorReason;
-use quader_engine::replays::MoveResult;
-use quader_engine::time_mgr::TimeMgr;
-use quader_engine::wall_kick_data::WallKickData;
+use quader_engine::settings::GameSettings;
+use quader_engine::time::TimeMgr;
 
 pub struct BoardInterface {
     send: Sender<BoardCommand>,

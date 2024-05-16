@@ -3,19 +3,19 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use std::sync::Arc;
 use macroquad::prelude::*;
+use std::sync::Arc;
 
-use quader_engine::board::Board;
-use quader_engine::game_settings::GameSettings;
-use quader_engine::piece::RotationDirection;
-use quader_engine::piece_mgr::BoardErrorReason;
-use quader_engine::replays::MoveResult;
-use quader_engine::rng_manager::RngManager;
-use quader_engine::time_mgr::TimeMgr;
-use quader_engine::wall_kick_data::WallKickData;
 use crate::assets::Assets;
 use crate::board_renderer::BoardRenderer;
+use quader_engine::board::piece::manager::BoardErrorReason;
+use quader_engine::board::piece::wall_kick::WallKickData;
+use quader_engine::board::piece::RotationDirection;
+use quader_engine::board::replays::MoveResult;
+use quader_engine::board::rng::RngManager;
+use quader_engine::board::Board;
+use quader_engine::settings::GameSettings;
+use quader_engine::time::TimeMgr;
 
 struct PieceMover {
     elapsed: f32,
@@ -24,7 +24,7 @@ struct PieceMover {
     das: f32,
     sdf: u32,
     is_left_down: bool,
-    is_right_down: bool
+    is_right_down: bool,
 }
 
 impl PieceMover {
@@ -46,13 +46,17 @@ impl PieceMover {
 pub struct BoardController {
     pub board: Board,
     piece_mover: PieceMover,
-    board_renderer: BoardRenderer
-    //wkd: Arc<WallKickData>
+    board_renderer: BoardRenderer, //wkd: Arc<WallKickData>
 }
 
 impl BoardController {
-    pub fn new(x: f32, y: f32, game_settings: GameSettings, seed: u64, wkd: Arc<WallKickData>) -> Self {
-
+    pub fn new(
+        x: f32,
+        y: f32,
+        game_settings: GameSettings,
+        seed: u64,
+        wkd: Arc<WallKickData>,
+    ) -> Self {
         let board = Board::new(game_settings, Arc::clone(&wkd), seed);
 
         dbg!(&game_settings);
@@ -65,10 +69,9 @@ impl BoardController {
                 das: 128.0,
                 sdf: u32::MAX,
                 is_left_down: false,
-                is_right_down: false
+                is_right_down: false,
             },
-            board_renderer: BoardRenderer::new(x, y, game_settings.board.height)
-            //wkd
+            board_renderer: BoardRenderer::new(x, y, game_settings.board.height), //wkd
         }
     }
 

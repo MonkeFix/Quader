@@ -3,18 +3,32 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::board_command::BoardMoveDir;
-use crate::cell_holder::CellHolder;
-use crate::game_settings::GameSettings;
-use crate::garbage_mgr::GarbageMgr;
-use crate::gravity_mgr::{GravityMgr, GravityUpdateResult};
-use crate::piece::{Piece, PieceType, RotationDirection, RotationState};
-use crate::piece_mgr::{BoardErrorReason, PieceMgr};
-use crate::replays::{BoardStats, MoveAction, MoveResult, ReplayMgr};
-use crate::scoring::ScoringMgr;
-use crate::time_mgr::TimeMgr;
-use crate::wall_kick_data::WallKickData;
 use std::sync::Arc;
+
+use crate::{settings::GameSettings, time::TimeMgr};
+
+use self::{
+    cell_holder::{BoolArray, CellHolder},
+    commands::BoardMoveDir,
+    garbage::GarbageMgr,
+    gravity::{GravityMgr, GravityUpdateResult},
+    piece::{
+        manager::{BoardErrorReason, PieceMgr},
+        wall_kick::WallKickData,
+        Piece, PieceType, RotationDirection, RotationState,
+    },
+    replays::{BoardStats, MoveAction, MoveResult, ReplayMgr},
+    scoring::ScoringMgr,
+};
+
+pub mod cell_holder;
+pub mod commands;
+pub mod garbage;
+pub mod gravity;
+pub mod piece;
+pub mod replays;
+pub mod rng;
+pub mod scoring;
 
 #[derive(Debug)]
 pub struct Board {
@@ -328,6 +342,10 @@ impl Board {
         self.gravity_mgr.disable();
         self.piece_mgr.disable();
         //self.time_mgr.disable();
+    }
+
+    pub fn to_bool_array(&self) -> Vec<Vec<bool>> {
+        self.piece_mgr.cell_holder.to_bool_array()
     }
 }
 

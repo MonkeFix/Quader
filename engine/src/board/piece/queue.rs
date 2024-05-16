@@ -3,9 +3,12 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::piece::PieceType;
-use crate::piece_generators::{PieceGenerator, PieceGeneratorBag7};
 use std::collections::VecDeque;
+
+use super::{
+    generators::{PieceGenerator, PieceGeneratorBag7},
+    PieceType,
+};
 
 #[derive(Debug)]
 pub struct PieceQueue {
@@ -28,7 +31,7 @@ impl PieceQueue {
         }
     }
 
-    pub fn next(&mut self) -> PieceType {
+    pub fn next_piece(&mut self) -> PieceType {
         self.set_piece()
     }
 

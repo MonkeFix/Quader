@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::game_settings::BoardSettings;
 use crate::primitives::{Point, Rect};
+use crate::settings::BoardSettings;
 use crate::utils::adjust_positions_clone;
 use serde::{Deserialize, Serialize};
 use std::slice::Iter;

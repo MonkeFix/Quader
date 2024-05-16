@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use quader_engine::{board::Board, time_mgr::TimeMgr, wall_kick_data::WallKickData};
+use quader_engine::{board::{piece::wall_kick::WallKickData, Board}, time::TimeMgr};
 use rand::{thread_rng, RngCore};
 use tokio::{
     pin, select,

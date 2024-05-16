@@ -3,11 +3,12 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::piece::PieceType;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::collections::VecDeque;
 use std::fmt::{Debug, Formatter};
+
+use super::PieceType;
 
 pub const AVAILABLE_PIECES: [PieceType; 7] = [
     PieceType::S,

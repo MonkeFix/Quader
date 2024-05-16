@@ -3,13 +3,14 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
+use crate::damage::{calculate_damage, create_board_move_bits};
+use crate::settings::AttackSettings;
+use crate::time::TimeMgr;
 use serde::{Deserialize, Serialize};
-use crate::cell_holder::CellHolder;
-use crate::damage_calculation::{calculate_damage, create_board_move_bits};
-use crate::game_settings::AttackSettings;
-use crate::garbage_mgr::{GarbageHardDropResult, GarbageMgr};
-use crate::scoring::{ScoringMgr, TSpinStatus};
-use crate::time_mgr::TimeMgr;
+
+use super::cell_holder::CellHolder;
+use super::garbage::{GarbageHardDropResult, GarbageMgr};
+use super::scoring::{ScoringMgr, TSpinStatus};
 
 /// Represents just a move done by a player.
 /// This includes lines cleared
@@ -18,7 +19,7 @@ pub struct HardDropInfo {
     pub lines_cleared: u32,
     pub tspin_status: TSpinStatus,
     pub last_move_type: LastMoveType,
-    pub occupied_cells_left: u32
+    pub occupied_cells_left: u32,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -33,12 +34,14 @@ pub enum MoveAction {
     SoftDrop,
     HardDrop,
 
-    HoldPiece
+    HoldPiece,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LastMoveType {
-    None, Rotation, Movement
+    None,
+    Rotation,
+    Movement,
 }
 
 impl Default for HardDropInfo {
@@ -47,7 +50,7 @@ impl Default for HardDropInfo {
             lines_cleared: 0,
             tspin_status: TSpinStatus::None,
             last_move_type: LastMoveType::None,
-            occupied_cells_left: 0
+            occupied_cells_left: 0,
         }
     }
 }
@@ -64,7 +67,7 @@ pub struct MoveResult {
     pub attack: GarbageHardDropResult,
 
     pub hard_drop_info: HardDropInfo,
-    pub move_queue: Vec<(f32, MoveAction)>
+    pub move_queue: Vec<(f32, MoveAction)>,
 }
 
 /*impl Display for MoveResult {
@@ -90,7 +93,7 @@ impl Default for MoveResult {
             is_success: false,
             attack: GarbageHardDropResult::default(),
             move_queue: vec![],
-            hard_drop_info: HardDropInfo::default()
+            hard_drop_info: HardDropInfo::default(),
         }
     }
 }
@@ -103,7 +106,7 @@ impl MoveResult {
         garbage_mgr: &mut GarbageMgr,
         cell_holder: &CellHolder,
         move_queue: Vec<(f32, MoveAction)>,
-        cur_sec: f32
+        cur_sec: f32,
     ) -> MoveResult {
         let mut result = MoveResult {
             is_success: true,
@@ -118,7 +121,7 @@ impl MoveResult {
         let bits = create_board_move_bits(
             cell_holder.get_occupied_cell_count() as u32,
             &result,
-            hard_drop_info.tspin_status
+            hard_drop_info.tspin_status,
         );
         result.mod_bits = bits;
 
@@ -151,7 +154,7 @@ pub struct BoardStats {
     pub tspin_triples: u32,
     pub all_clears: u32,
     pub max_combo: u32,
-    pub max_b2b: u32
+    pub max_b2b: u32,
 }
 
 impl BoardStats {
@@ -169,7 +172,7 @@ impl BoardStats {
     /// Updates all current stats using data from `HardDropInfo` and `ScoringMgr`.
     pub fn hard_drop(&mut self, hard_drop_info: &HardDropInfo, scoring_mgr: &ScoringMgr) {
         self.total_pieces += 1;
-        
+
         match hard_drop_info.lines_cleared {
             1 => self.singles += 1,
             2 => self.doubles += 1,
@@ -231,13 +234,13 @@ impl BoardStats {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReplayMove {
     pub action: MoveAction,
-    pub timestamp: f32
+    pub timestamp: f32,
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ReplayMgr {
     pub moves: Vec<ReplayMove>,
-    pub cur_move_queue: Vec<(f32, MoveAction)>
+    pub cur_move_queue: Vec<(f32, MoveAction)>,
 }
 
 impl ReplayMgr {
@@ -248,7 +251,7 @@ impl ReplayMgr {
     pub fn push_move(&mut self, timestamp: f32, move_action: MoveAction) {
         self.moves.push(ReplayMove {
             action: move_action,
-            timestamp
+            timestamp,
         });
         self.cur_move_queue.push((timestamp, move_action));
     }

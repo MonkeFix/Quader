@@ -4,7 +4,8 @@
  */
 
 use serde::{Deserialize, Serialize};
-use crate::wall_kick_data::WallKickDataMode;
+
+use crate::board::piece::wall_kick::WallKickMode;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct GravitySettings {
@@ -90,7 +91,7 @@ pub struct GameSettings {
     pub gravity: GravitySettings,
     pub board: BoardSettings,
     pub attack: AttackSettings,
-    pub wall_kick_data_mode: WallKickDataMode
+    pub wall_kick_data_mode: WallKickMode
 }
 impl Default for GameSettings {
     fn default() -> Self {
@@ -98,7 +99,7 @@ impl Default for GameSettings {
             gravity: GravitySettings::default(),
             board: BoardSettings::default(),
             attack: AttackSettings::default(),
-            wall_kick_data_mode: WallKickDataMode::Standard
+            wall_kick_data_mode: WallKickMode::Standard
         }
     }
 }
