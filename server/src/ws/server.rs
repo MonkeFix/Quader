@@ -100,6 +100,7 @@ pub struct GameServer {
 impl GameServer {
     pub fn new() -> (Self, GameServerHandle) {
         let mut lobby_container = LobbyContainer::new();
+        #[cfg(debug_assertions)]
         seed_lobbies(&mut lobby_container);
 
         log::debug!("created lobbies");
