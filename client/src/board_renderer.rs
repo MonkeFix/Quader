@@ -32,15 +32,15 @@ impl BoardRenderer {
         draw_texture(&assets.board_tex, self.x - 188., self.y - 1., WHITE);
 
         // render board layout
-        let layout = board.get_cell_holder();
+        let layout = board.layout();
 
-        for (y, row) in layout.get_layout().iter().enumerate() {
-            for (x, cell) in row.into_iter().enumerate() {
+        for (y, row) in layout.iter().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
                 let pos = self.i32_to_coords(x as i32, y as i32);
 
-                if cell != CellType::None {
-                    self.render_cell_type(assets, pos.0, pos.1 - self.render_offset, &cell, 255);
-                } else if y >= board.game_settings.board.height {
+                if *cell != CellType::None {
+                    self.render_cell_type(assets, pos.0, pos.1 - self.render_offset, cell, 255);
+                } else if y >= board.settings().board.height {
                     draw_rectangle(
                         pos.0,
                         pos.1 - self.render_offset,
@@ -61,12 +61,12 @@ impl BoardRenderer {
         }
 
         // render current piece
-        let piece = board.get_piece_mgr().get_piece();
+        let points = board.piece_points();
+        let piece = board.cur_piece();
 
-        let points = piece.get_current_pos();
         points
             .iter()
-            .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, piece.get_y() as i32)))
+            .map(|p| adjust_point_clone(p, Point::new(piece.x() as i32, piece.y() as i32)))
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
                 self.render_cell_type(
@@ -79,10 +79,10 @@ impl BoardRenderer {
             });
 
         // render ghost piece
-        let ghost_y = board.piece_mgr.nearest_y; //board.find_nearest_y();
+        let ghost_y = board.nearest_y(); //board.find_nearest_y();
         points
             .iter()
-            .map(|p| adjust_point_clone(p, Point::new(piece.get_x() as i32, ghost_y as i32)))
+            .map(|p| adjust_point_clone(p, Point::new(piece.x() as i32, ghost_y as i32)))
             .for_each(|p| {
                 let pos = self.point_to_coords(&p);
                 //self.render_cell_type(pos.0, pos.1 - self.render_offset, &piece.get_cell_type(), 150);
@@ -115,8 +115,7 @@ impl BoardRenderer {
         }
 
         // render queue
-        let queue = &board.get_piece_mgr().piece_queue.queue;
-        for (y, piece_type) in queue.iter().enumerate() {
+        for (y, piece_type) in board.queue().iter().enumerate() {
             let points = get_points_for_piece(*piece_type, RotationState::Initial);
 
             points
@@ -145,7 +144,7 @@ impl BoardRenderer {
         }
 
         // render incoming damage
-        let dmg_queue = &board.garbage_mgr.queue;
+        let dmg_queue = board.garbage_queue();
         let mut total_dmg = 0;
         for dmg in dmg_queue.iter() {
             let x = self.x + 322.;
@@ -162,21 +161,21 @@ impl BoardRenderer {
         let x_offset = -180.0;
         let y_offset = 200.0;
         draw_text(
-            &format!("Time: {:.2}", board.board_stats.elapsed_seconds),
+            &format!("Time: {:.2}", board.stats().elapsed_seconds),
             x_offset + self.x,
             y_offset + self.y,
             32.,
             RED,
         );
         draw_text(
-            &format!("APM: {:.2}", board.board_stats.apm),
+            &format!("APM: {:.2}", board.stats().apm),
             x_offset + self.x,
             y_offset + self.y + 34.,
             32.,
             RED,
         );
         draw_text(
-            &format!("PPS: {:.2}", board.board_stats.pps),
+            &format!("PPS: {:.2}", board.stats().pps),
             x_offset + self.x,
             y_offset + self.y + 34. * 2.,
             32.,

@@ -12,7 +12,7 @@ use super::{
 
 #[derive(Debug)]
 pub struct PieceQueue {
-    pub queue: VecDeque<PieceType>,
+    queue: VecDeque<PieceType>,
     piece_generator: Box<PieceGeneratorBag7>,
     next_piece: PieceType,
     seed: u64,
@@ -54,5 +54,30 @@ impl PieceQueue {
         self.piece_generator = piece_generator;
         self.next_piece = PieceType::Pixel;
         self.seed = seed;
+    }
+
+    pub fn iter(&self) -> std::collections::vec_deque::Iter<PieceType> {
+        self.queue.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::collections::vec_deque::IterMut<PieceType> {
+        self.queue.iter_mut()
+    }
+
+    pub fn last(&self) -> Option<PieceType> {
+        self.queue.back().copied()
+    }
+
+    pub fn first(&self) -> Option<PieceType> {
+        self.queue.front().copied()
+    }
+}
+
+impl std::iter::IntoIterator for PieceQueue {
+    type Item = PieceType;
+    type IntoIter = std::collections::vec_deque::IntoIter<PieceType>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.queue.into_iter()
     }
 }

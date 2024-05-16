@@ -277,7 +277,7 @@ impl CellHolder {
         }
     }
 
-    pub fn get_layout(&self) -> &[Row] {
+    pub fn layout(&self) -> &[Row] {
         &self.layout
     }
 

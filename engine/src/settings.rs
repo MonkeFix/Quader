@@ -13,7 +13,7 @@ pub struct GravitySettings {
     pub grav_base: f32,
     pub grav_incr: f32,
     pub lock_delay: f32,
-    pub lock_prolong_amount: f32
+    pub lock_prolong_amount: f32,
 }
 
 impl Default for GravitySettings {
@@ -23,7 +23,7 @@ impl Default for GravitySettings {
             grav_base: 0.8,
             grav_incr: 0.007,
             lock_delay: 1.0,
-            lock_prolong_amount: 0.02
+            lock_prolong_amount: 0.02,
         }
     }
 }
@@ -42,7 +42,7 @@ pub struct AttackSettings {
     pub all_clear: u32,
     pub b2bs: [u32; 5],
     pub combos: [u32; 5],
-    pub garbage_delay_ms: u32
+    pub garbage_delay_ms: u32,
 }
 
 impl Default for AttackSettings {
@@ -58,8 +58,8 @@ impl Default for AttackSettings {
             t_spin_triple: 6,
             t_spin_single_mini: 1,
             all_clear: 10,
-            b2bs: [1,2,3,4,5],
-            combos: [1,2,3,4,5],
+            b2bs: [1, 2, 3, 4, 5],
+            combos: [1, 2, 3, 4, 5],
             garbage_delay_ms: 1000,
         }
     }
@@ -68,14 +68,14 @@ impl Default for AttackSettings {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct BoardSettings {
     pub width: usize,
-    pub height: usize
+    pub height: usize,
 }
 
 impl Default for BoardSettings {
     fn default() -> Self {
         Self {
             width: 10,
-            height: 20
+            height: 20,
         }
     }
 }
@@ -91,7 +91,7 @@ pub struct GameSettings {
     pub gravity: GravitySettings,
     pub board: BoardSettings,
     pub attack: AttackSettings,
-    pub wall_kick_data_mode: WallKickMode
+    pub wall_kick_mode: WallKickMode,
 }
 impl Default for GameSettings {
     fn default() -> Self {
@@ -99,7 +99,7 @@ impl Default for GameSettings {
             gravity: GravitySettings::default(),
             board: BoardSettings::default(),
             attack: AttackSettings::default(),
-            wall_kick_data_mode: WallKickMode::Standard
+            wall_kick_mode: WallKickMode::Standard,
         }
     }
 }

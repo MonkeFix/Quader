@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
+use crate::board::piece;
 use crate::primitives::{Color, Point, Rect};
 use crate::utils::{calc_bounds, piece_type_to_color, piece_type_to_offset_type};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use crate::board::piece;
 
 use self::wall_kick::WallKickType;
 
@@ -205,11 +205,11 @@ impl Piece {
         self.bounds = self.calc_bounds();
     }
 
-    pub fn get_x(&self) -> u32 {
+    pub fn x(&self) -> u32 {
         self.x
     }
 
-    pub fn get_y(&self) -> u32 {
+    pub fn y(&self) -> u32 {
         self.y
     }
 
@@ -229,7 +229,7 @@ impl Piece {
         self.offset_type
     }
 
-    pub fn get_current_pos(&self) -> &[Point] {
+    pub fn points(&self) -> &[Point] {
         get_points_for_piece(self.piece_type, self.current_rotation)
     }
 
@@ -258,7 +258,7 @@ impl Piece {
     }
 
     fn calc_bounds(&self) -> Rect {
-        calc_bounds(self.get_current_pos(), self.x as i32, self.y as i32)
+        calc_bounds(self.points(), self.x as i32, self.y as i32)
     }
 
     pub(crate) fn rotate_simple(&mut self, rotation: RotationDirection) {

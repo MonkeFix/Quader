@@ -6,6 +6,7 @@
 use crate::{piece_type_to_piece, BotSettings};
 use cold_clear::{BotPollState, Info, Interface};
 use libtetris::Move;
+use quader_engine::board::cell_holder::BoolArray;
 use quader_engine::board::piece::manager::BoardErrorReason;
 use quader_engine::board::piece::wall_kick::WallKickData;
 use quader_engine::board::piece::{PieceType, RotationDirection};
@@ -28,8 +29,9 @@ pub struct BotBoard {
 
 fn create_bot_interface(board: &Board) -> Box<Interface> {
     let mut bot_board = libtetris::Board::new();
-    bot_board.add_next_piece(piece_type_to_piece(board.piece_mgr.cur_piece.get_type()));
-    for pt in &board.piece_mgr.piece_queue.queue {
+    bot_board.add_next_piece(piece_type_to_piece(board.cur_piece().get_type()));
+
+    for pt in board.queue().iter() {
         bot_board.add_next_piece(piece_type_to_piece(*pt));
     }
 
@@ -135,13 +137,7 @@ impl BotBoard {
                     let _ = self.engine_board.try_hold_piece();
                     if !self.hold_used {
                         self.bot_interface.add_next_piece(piece_type_to_piece(
-                            *self
-                                .engine_board
-                                .piece_mgr
-                                .piece_queue
-                                .queue
-                                .back()
-                                .unwrap(),
+                            self.engine_board.queue().last().unwrap(),
                         ));
                         self.hold_used = true;
                     }
@@ -180,13 +176,7 @@ impl BotBoard {
 
         if let Some(Ok(_)) = res {
             self.bot_interface.add_next_piece(piece_type_to_piece(
-                *self
-                    .engine_board
-                    .piece_mgr
-                    .piece_queue
-                    .queue
-                    .back()
-                    .unwrap(),
+                self.engine_board.queue().last().unwrap(),
             ));
 
             self.move_requested = false;
@@ -218,8 +208,7 @@ impl BotBoard {
 
     fn calc_incoming_garbage(&self) -> u32 {
         self.engine_board
-            .garbage_mgr
-            .queue
+            .garbage_queue()
             .iter()
             .map(|q| q.amount)
             .sum::<i32>() as u32

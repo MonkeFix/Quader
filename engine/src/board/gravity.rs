@@ -12,7 +12,7 @@ pub enum GravityUpdateResult {
     None,
     /// Amount
     SoftDrop(u32),
-    HardDrop
+    HardDrop,
 }
 
 #[derive(Debug)]
@@ -25,7 +25,7 @@ pub struct GravityMgr {
     pub(crate) y_to_check: u32,
 
     gravity_settings: GravitySettings,
-    pub is_enabled: bool
+    pub is_enabled: bool,
 }
 
 impl GravityMgr {
@@ -40,7 +40,7 @@ impl GravityMgr {
             y_needs_update: true,
             y_to_check: 0,
             gravity_settings: *gravity_settings,
-            is_enabled: true
+            is_enabled: true,
         }
     }
 
@@ -64,7 +64,7 @@ impl GravityMgr {
 
     pub fn update(&mut self, piece_mgr: &PieceMgr, time_mgr: &TimeMgr) -> GravityUpdateResult {
         let mut res = GravityUpdateResult::None;
-        
+
         if !self.is_enabled {
             return res;
         }
@@ -86,7 +86,7 @@ impl GravityMgr {
         }
 
         // If current piece "touches" any occupied cell, we decrease the lock
-        if self.y_to_check == piece_mgr.get_piece().get_y() {
+        if self.y_to_check == piece_mgr.get_piece().y() {
             self.cur_lock -= 1.0 * time_mgr.last_dt;
         }
 
