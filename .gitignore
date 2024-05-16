@@ -10,3 +10,5 @@ core/**/target
 src/**/target
 .direnv/
 src/dist
+dist
+target
