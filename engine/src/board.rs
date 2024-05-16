@@ -388,6 +388,10 @@ impl Board {
     pub fn is_dead(&self) -> bool {
         self.is_dead
     }
+
+    pub fn is_enabled(&self) -> bool {
+        self.is_enabled
+    }
 }
 
 impl BoolArray for Board {

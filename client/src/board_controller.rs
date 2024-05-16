@@ -80,6 +80,10 @@ impl BoardController {
     }
 
     pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
+        if !self.board.is_enabled() {
+            return None;
+        }
+
         let elapsed = time_mgr.last_dt * 1000.0; // convert to milliseconds
         let mut result = None;
 

@@ -19,7 +19,7 @@ use std::sync::Arc;
 pub struct BotBoard {
     pub engine_board: Board,
     pub game_settings: GameSettings,
-    pub bot_interface: Box<Interface>,
+    pub bot_interface: Option<Box<Interface>>,
     pub bot_settings: BotSettings,
     elapsed_secs: f32,
     hold_used: bool,
@@ -60,7 +60,7 @@ impl BotBoard {
     ) -> Self {
         let board = Board::new(game_settings, wkd, seed);
 
-        let bot_interface = create_bot_interface(&board);
+        let bot_interface = Some(create_bot_interface(&board));
 
         Self {
             engine_board: board,
@@ -72,6 +72,12 @@ impl BotBoard {
             is_enabled: true,
             move_requested: false,
         }
+    }
+
+    pub fn disable(&mut self) {
+        self.is_enabled = false;
+        self.engine_board.disable();
+        self.bot_interface = None;
     }
 
     pub fn update(&mut self, time_mgr: &TimeMgr) -> Option<Result<MoveResult, BoardErrorReason>> {
@@ -103,20 +109,25 @@ impl BotBoard {
         self.is_enabled = true;
         self.move_requested = false;
 
-        self.bot_interface = create_bot_interface(&self.engine_board);
+        self.bot_interface = Some(create_bot_interface(&self.engine_board));
     }
 
     pub fn add_next_piece(&self, piece_type: PieceType) {
         self.bot_interface
+            .as_ref()
+            .unwrap()
             .add_next_piece(piece_type_to_piece(piece_type));
     }
 
     pub fn request_next_move(&self, incoming_garbage: u32) {
-        self.bot_interface.suggest_next_move(incoming_garbage);
+        self.bot_interface
+            .as_ref()
+            .unwrap()
+            .suggest_next_move(incoming_garbage);
     }
 
     pub fn poll_next_move(&mut self) -> Result<(Move, Info), BotPollState> {
-        self.bot_interface.poll_next_move()
+        self.bot_interface.as_ref().unwrap().poll_next_move()
     }
 
     /*pub fn block_next_move(&self) -> Option<(libtetris::Move, Info)> {
@@ -124,60 +135,71 @@ impl BotBoard {
     }*/
 
     pub fn play_next_move(&self, falling_piece: libtetris::FallingPiece) {
-        self.bot_interface.play_next_move(falling_piece);
+        self.bot_interface
+            .as_ref()
+            .unwrap()
+            .play_next_move(falling_piece);
     }
 
     fn do_bot_move(&mut self) -> Option<Result<MoveResult, BoardErrorReason>> {
-        let res = match self.poll_next_move() {
-            Ok((m, _info)) => {
-                self.play_next_move(m.expected_location);
-                //let _plan = info.plan();
+        let res =
+            match self.poll_next_move() {
+                Ok((m, _info)) => {
+                    self.play_next_move(m.expected_location);
+                    //let _plan = info.plan();
 
-                if m.hold {
-                    let _ = self.engine_board.try_hold_piece();
-                    if !self.hold_used {
-                        self.bot_interface.add_next_piece(piece_type_to_piece(
-                            self.engine_board.queue().last().unwrap(),
-                        ));
-                        self.hold_used = true;
+                    if m.hold {
+                        let _ = self.engine_board.try_hold_piece();
+                        if !self.hold_used {
+                            self.bot_interface.as_ref().unwrap().add_next_piece(
+                                piece_type_to_piece(self.engine_board.queue().last().unwrap()),
+                            );
+                            self.hold_used = true;
+                        }
                     }
-                }
 
-                for input in m.inputs.iter() {
-                    self.exec_input(input);
-                }
+                    for input in m.inputs.iter() {
+                        self.exec_input(input);
+                    }
 
-                match self.engine_board.hard_drop() {
-                    Ok(hd) => {
-                        if !hd.attack.in_damage_queue.is_empty() {
-                            // update bot's board
-                            let new_board = self.engine_board.to_bool_array();
-                            let mut field = [[false; 10]; 40];
+                    match self.engine_board.hard_drop() {
+                        Ok(hd) => {
+                            if !hd.attack.in_damage_queue.is_empty() {
+                                // update bot's board
+                                let new_board = self.engine_board.to_bool_array();
+                                let mut field = [[false; 10]; 40];
 
-                            for (y, row) in new_board.iter().enumerate() {
-                                for (x, val) in row.iter().enumerate() {
-                                    field[39 - y][x] = *val;
+                                for (y, row) in new_board.iter().enumerate() {
+                                    for (x, val) in row.iter().enumerate() {
+                                        field[39 - y][x] = *val;
+                                    }
                                 }
+
+                                self.bot_interface.as_ref().unwrap().reset(
+                                    field,
+                                    hd.b2b > 0,
+                                    hd.combo,
+                                );
                             }
 
-                            self.bot_interface.reset(field, hd.b2b > 0, hd.combo);
+                            Some(Ok(hd))
                         }
-
-                        Some(Ok(hd))
+                        Err(err) => Some(Err(err)),
                     }
-                    Err(err) => Some(Err(err)),
                 }
-            }
-            Err(err) => match err {
-                BotPollState::Waiting => None,
-                BotPollState::Dead => Some(Err(BoardErrorReason::BoardDead)),
-            },
-        };
+                Err(err) => match err {
+                    BotPollState::Waiting => None,
+                    BotPollState::Dead => Some(Err(BoardErrorReason::BoardDead)),
+                },
+            };
 
         if let Some(Ok(_)) = res {
-            self.bot_interface.add_next_piece(piece_type_to_piece(
-                self.engine_board.queue().last().unwrap(),
-            ));
+            self.bot_interface
+                .as_ref()
+                .unwrap()
+                .add_next_piece(piece_type_to_piece(
+                    self.engine_board.queue().last().unwrap(),
+                ));
 
             self.move_requested = false;
         }

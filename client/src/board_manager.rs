@@ -7,6 +7,7 @@ use crate::assets::Assets;
 use crate::board_controller::BoardController;
 use crate::board_controller_bot::BoardControllerBot;
 use macroquad::prelude::{info, is_key_pressed, KeyCode};
+use quader_engine::board::piece::manager::BoardErrorReason;
 use quader_engine::board::piece::wall_kick::WallKickData;
 use quader_engine::board::rng::RngManager;
 use quader_engine::settings::GameSettings;
@@ -70,10 +71,20 @@ impl BoardManager {
                             .attack(hd.attack.out_damage);
                     }
                 }
-                Err(_) => {
-                    info!("Player is dead.");
+                Err(err) => {
+                    match err {
+                        BoardErrorReason::CannotApplyPiece
+                        | BoardErrorReason::BoardDead
+                        | BoardErrorReason::CannotSpawnPiece => {
+                            info!("Player is dead. {:?}", err);
+                        }
+                        BoardErrorReason::BoardDisabled => {
+                            info!("Player's board is disabled. {:?}", err);
+                        }
+                    }
+
                     self.player_board.board.disable();
-                    self.bot_board.bot_board.engine_board.disable();
+                    self.bot_board.bot_board.disable();
                 }
             }
         }
@@ -84,10 +95,19 @@ impl BoardManager {
                         let _ = &self.player_board.board.attack(hd.attack.out_damage);
                     }
                 }
-                Err(_) => {
-                    info!("Bot is dead.");
+                Err(err) => {
+                    match err {
+                        BoardErrorReason::CannotApplyPiece
+                        | BoardErrorReason::BoardDead
+                        | BoardErrorReason::CannotSpawnPiece => {
+                            info!("Bot is dead. {:?}", err);
+                        }
+                        BoardErrorReason::BoardDisabled => {
+                            info!("Bot's board is disabled. {:?}", err);
+                        }
+                    }
                     self.player_board.board.disable();
-                    self.bot_board.bot_board.engine_board.disable();
+                    self.bot_board.bot_board.disable();
                 }
             }
         }
