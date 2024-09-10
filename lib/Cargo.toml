@@ -10,7 +10,7 @@ proptest = "1.4.0"
 
 [dependencies]
 argon2 = "0.5.2"
-derive_more = "0.99.17"
+derive_more = { version = "1.0", features = ["full"] }
 jsonwebtoken = "9.2.0"
 serde_json = "1.0.111"
 
@@ -36,7 +36,7 @@ features = ["chrono", "uuid", "actix_extras"]
 optional = true
 
 [dependencies.sqlx]
-version = "0.7.3"
+version = "0.8"
 features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"]
 optional = true
 

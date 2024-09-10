@@ -5,7 +5,7 @@ use log::warn;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Display, ToSchema)]
-#[display(fmt = "Error: message: {}, status: {}", message, status)]
+#[display("Error: message: {}, status: {}", message, status)]
 pub struct Error {
     pub message: error::Response,
     pub status: u16,

@@ -14,15 +14,15 @@ use utoipa::ToSchema;
 )]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {
-    #[display(fmt = "admin")]
+    #[display("admin")]
     Admin,
-    #[display(fmt = "user")]
+    #[display("user")]
     User,
-    #[display(fmt = "moderator")]
+    #[display("moderator")]
     Moderator,
-    #[display(fmt = "supporter")]
+    #[display("supporter")]
     Supporter,
-    #[display(fmt = "guest")]
+    #[display("guest")]
     Guest,
 }
 

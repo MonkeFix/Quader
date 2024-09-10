@@ -9,11 +9,11 @@ use utoipa::ToSchema;
 #[cfg_attr(feature = "full", derive(ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Status {
-    #[display(fmt = "success")]
+    #[display("success")]
     Success,
-    #[display(fmt = "failure")]
+    #[display("failure")]
     Failure,
-    #[display(fmt = "error")]
+    #[display("error")]
     Error,
 }
 
@@ -40,42 +40,42 @@ impl fmt::Display for Response {
     }
 }
 
-#[derive(Debug, PartialEq, Display, Clone)]
+#[derive(Debug, PartialEq, Display, Clone, Serialize)]
 #[cfg_attr(feature = "full", derive(ToSchema))]
 pub enum Error {
-    #[display(fmt = "Server Error. Please try again later")]
+    #[display("Server Error. Please try again later")]
     ServerError,
-    #[display(fmt = "Email or password is wrong")]
+    #[display("Email or password is wrong")]
     WrongCredentials,
-    #[display(fmt = "User with this email already exists")]
+    #[display("User with this email already exists")]
     EmailExist,
-    #[display(fmt = "User belonging to this token no longer exists")]
+    #[display("User belonging to this token no longer exists")]
     UserNoLongerExist,
-    #[display(fmt = "User with this id does not exist")]
+    #[display("User with this id does not exist")]
     UserDoesNotExist,
-    #[display(fmt = "Password cannot be empty")]
+    #[display("Password cannot be empty")]
     EmptyPassword,
-    #[display(fmt = "Password must not be more than {} characters", _0)]
+    #[display("Password must not be more than {} characters", _0)]
     ExceededMaxPasswordLength(usize),
-    #[display(fmt = "Error while hashing password")]
+    #[display("Error while hashing password")]
     HashingError,
-    #[display(fmt = "Invalid password hash format")]
+    #[display("Invalid password hash format")]
     InvalidHashFormat,
-    #[display(fmt = "Authentication token is invalid")]
+    #[display("Authentication token is invalid")]
     InvalidToken,
-    #[display(fmt = "Refresh token is invalid")]
+    #[display("Refresh token is invalid")]
     InvalidRefreshToken,
-    #[display(fmt = "You are not logged in, please provide token")]
+    #[display("You are not logged in, please provide token")]
     TokenNotProvided,
-    #[display(fmt = "No refresh token provided")]
+    #[display("No refresh token provided")]
     RefreshTokenNotProvided,
-    #[display(fmt = "Access token is expired")]
+    #[display("Access token is expired")]
     AccessTokenExpired,
-    #[display(fmt = "Refresh token is expired")]
+    #[display("Refresh token is expired")]
     RefreshTokenExpired,
-    #[display(fmt = "You are not allowed to perform this action")]
+    #[display("You are not allowed to perform this action")]
     PermissionDenied,
-    #[display(fmt = "{}", _0)]
+    #[display("{}", _0)]
     Message(String),
 }
 

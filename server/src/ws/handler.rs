@@ -53,13 +53,13 @@ pub async fn game_ws(
                         match msg {
                             Message::Ping(bytes) => {
                                 last_heartbeat = Instant::now();
-                                session.pong(&bytes).await.unwrap();
+                                session.pong(bytes).await.unwrap();
                             }
                             Message::Pong(_) => {
                                 last_heartbeat = Instant::now();
                             }
                             Message::Text(text) => {
-                                if let Err(err) = process_text_msg(&game_server, &mut session, &text, conn_id, &user_info).await {
+                                if let Err(err) = process_text_msg(&game_server, &mut session, text, conn_id, &user_info).await {
                                         log::error!("Error while processing message: {:?}", err);
                                         let _ = session.text(format!("error while processing message: {:?}", err)).await;
                                     }
@@ -87,7 +87,7 @@ pub async fn game_ws(
             msg = msg_rx => {
                 // messages received from other room participants
                 if let Some(msg) = &msg {
-                    session.text(msg).await.unwrap();
+                    session.text(msg.to_string()).await.unwrap();
                 } else {
                     unreachable!("all connection message senders were dropped; game server may have panicked")
                 }
