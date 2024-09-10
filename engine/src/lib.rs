@@ -7,6 +7,7 @@ extern crate core;
 
 pub mod board;
 pub mod damage;
+pub mod prelude;
 pub mod primitives;
 pub mod settings;
 pub mod time;
