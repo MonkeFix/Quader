@@ -3,19 +3,19 @@
  * See the LICENSE file in the repository root for full licence text.
  */
 
-use crate::board_manager::BoardManager;
+use crate::boards::manager::Manager;
 use macroquad::prelude::*;
 
 pub struct GameRoot {
     close_requested: bool,
-    board_manager: Box<BoardManager>,
+    board_manager: Box<Manager>,
 }
 
 impl GameRoot {
     pub fn new() -> Self {
         GameRoot {
             close_requested: false,
-            board_manager: Box::new(BoardManager::new()),
+            board_manager: Box::new(Manager::new()),
         }
     }
 

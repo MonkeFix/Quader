@@ -1,43 +1,58 @@
-/*
- * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
- * See the LICENSE file in the repository root for full licence text.
- */
-
-use crate::assets::Assets;
-use crate::board_controller::BoardController;
-use crate::board_controller_bot::BoardControllerBot;
-use macroquad::prelude::{info, is_key_pressed, KeyCode};
-use quader_engine::board::piece::manager::BoardErrorReason;
-use quader_engine::board::piece::wall_kick::WallKickData;
-use quader_engine::board::rng::RngManager;
-use quader_engine::settings::GameSettings;
-use quader_engine::time::TimeMgr;
 use std::sync::Arc;
 
-pub struct BoardManager {
-    pub player_board: Box<BoardController>,
-    pub bot_board: Box<BoardControllerBot>,
+use macroquad::prelude::*;
+use quader_engine::prelude::*;
+
+use crate::assets::Assets;
+
+use super::{
+    controller::{Controller, ControllerBot, ControllerPlayer},
+    renderer::{DefaultRenderer, Renderer},
+    ControllerSettings,
+};
+
+struct BoardCouple {
+    pub controller: Box<dyn Controller>,
+    pub renderer: Box<DefaultRenderer>,
+}
+
+pub struct Manager {
+    player_board: BoardCouple,
+    bot_board: BoardCouple,
     pub game_settings: GameSettings,
     pub time_mgr: TimeMgr,
     pub assets: Option<Assets>,
 }
 
-impl BoardManager {
+impl Manager {
     pub fn new() -> Self {
         let game_settings = GameSettings::default();
+        let time_mgr = TimeMgr::new();
         let seed = RngManager::from_entropy().gen();
         let wkd = Arc::new(WallKickData::new(game_settings.wall_kick_mode));
 
-        let time_mgr = TimeMgr::new();
+        let settings = ControllerSettings {
+            game_settings,
+            seed,
+            wkd: wkd.clone(),
+        };
 
-        let player_board = BoardController::new(300., 128., game_settings, seed, Arc::clone(&wkd));
-
-        let bot_board =
-            BoardControllerBot::new(1200., 128., game_settings, seed, Arc::clone(&wkd), 1.25);
+        let player_board = BoardCouple {
+            controller: Box::new(ControllerPlayer::new(settings.clone())),
+            renderer: Box::new(DefaultRenderer::new(300., 128., game_settings.board.height)),
+        };
+        let bot_board = BoardCouple {
+            controller: Box::new(ControllerBot::new(settings.clone(), 1.3)),
+            renderer: Box::new(DefaultRenderer::new(
+                1200.,
+                128.,
+                game_settings.board.height,
+            )),
+        };
 
         Self {
-            player_board: Box::new(player_board),
-            bot_board: Box::new(bot_board),
+            player_board,
+            bot_board,
             game_settings,
             time_mgr,
             assets: None,
@@ -56,18 +71,18 @@ impl BoardManager {
 
             self.time_mgr.reset();
 
-            self.player_board.reset(Some(seed));
-            self.bot_board.reset(Some(seed));
+            self.player_board.controller.reset(Some(seed));
+            self.bot_board.controller.reset(Some(seed));
         }
 
-        if let Some(hd) = self.player_board.update(&self.time_mgr) {
+        if let Some(hd) = self.player_board.controller.update(&self.time_mgr) {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
                         let _ = &self
                             .bot_board
-                            .bot_board
-                            .engine_board
+                            .controller
+                            .board_mut()
                             .attack(hd.attack.out_damage);
                     }
                 }
@@ -83,16 +98,20 @@ impl BoardManager {
                         }
                     }
 
-                    self.player_board.board.disable();
-                    self.bot_board.bot_board.disable();
+                    self.player_board.controller.disable();
+                    self.bot_board.controller.disable();
                 }
             }
         }
-        if let Some(hd) = self.bot_board.update(&self.time_mgr) {
+        if let Some(hd) = self.bot_board.controller.update(&self.time_mgr) {
             match hd {
                 Ok(hd) => {
                     if hd.attack.out_damage > 0 {
-                        let _ = &self.player_board.board.attack(hd.attack.out_damage);
+                        let _ = &self
+                            .player_board
+                            .controller
+                            .board_mut()
+                            .attack(hd.attack.out_damage);
                     }
                 }
                 Err(err) => {
@@ -106,8 +125,8 @@ impl BoardManager {
                             info!("Bot's board is disabled. {:?}", err);
                         }
                     }
-                    self.player_board.board.disable();
-                    self.bot_board.bot_board.disable();
+                    self.player_board.controller.disable();
+                    self.bot_board.controller.disable();
                 }
             }
         }
@@ -115,8 +134,11 @@ impl BoardManager {
 
     pub fn render(&self) {
         if let Some(assets) = &self.assets {
-            self.player_board.render(assets);
-            self.bot_board.render(assets);
+            let board = self.player_board.controller.board();
+            self.player_board.renderer.render(assets, board);
+
+            let board = self.bot_board.controller.board();
+            self.bot_board.renderer.render(assets, board);
         } else {
             panic!("assets are not loaded!");
         }

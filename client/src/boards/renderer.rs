@@ -1,25 +1,26 @@
-/*
- * Copyright (c) Grigory Alfyorov. Licensed under the MIT License.
- * See the LICENSE file in the repository root for full licence text.
- */
-
-use crate::assets::{Assets, CELL_SIZE};
+use cell_holder::CellType;
 use macroquad::prelude::*;
-use quader_engine::board::cell_holder::CellType;
-use quader_engine::board::piece::{get_points_for_piece, OffsetType, PieceType, RotationState};
-use quader_engine::board::Board;
-use quader_engine::primitives::Point;
-use quader_engine::utils::{
-    adjust_point_clone, piece_type_to_cell_type, piece_type_to_color, piece_type_to_offset_type,
+use quader_engine::{
+    prelude::*,
+    primitives::Point,
+    utils::{
+        adjust_point_clone, piece_type_to_cell_type, piece_type_to_color, piece_type_to_offset_type,
+    },
 };
 
-pub struct BoardRenderer {
+use crate::assets::{Assets, CELL_SIZE};
+
+pub trait Renderer {
+    fn render(&self, assets: &Assets, board: &Board);
+}
+
+pub struct DefaultRenderer {
     pub x: f32,
     pub y: f32,
     pub render_offset: f32,
 }
 
-impl BoardRenderer {
+impl DefaultRenderer {
     pub fn new(x: f32, y: f32, board_height: usize) -> Self {
         Self {
             x,
@@ -28,7 +29,55 @@ impl BoardRenderer {
         }
     }
 
-    pub fn render(&self, assets: &Assets, board: &Board) {
+    pub fn point_to_coords(&self, point: &Point) -> (f32, f32) {
+        self.i32_to_coords(point.x, point.y)
+    }
+    pub fn i32_to_coords(&self, x: i32, y: i32) -> (f32, f32) {
+        (self.x + x as f32 * CELL_SIZE, self.y + y as f32 * CELL_SIZE)
+    }
+
+    fn render_cell_type(&self, assets: &Assets, x: f32, y: f32, cell_type: &CellType, alpha: u8) {
+        let ta = &assets.texture_atlas;
+
+        draw_texture_ex(
+            ta,
+            x,
+            y,
+            Color::from_rgba(255, 255, 255, alpha),
+            DrawTextureParams {
+                source: Some(assets.source_rect(cell_type)),
+                ..Default::default()
+            },
+        );
+    }
+
+    fn render_piece_ghost(
+        &self,
+        assets: &Assets,
+        x: f32,
+        y: f32,
+        piece_type: PieceType,
+        alpha: u8,
+    ) {
+        let ta = &assets.texture_atlas;
+
+        let col = piece_type_to_color(piece_type);
+
+        draw_texture_ex(
+            ta,
+            x,
+            y,
+            Color::from_rgba(col.r, col.g, col.b, alpha),
+            DrawTextureParams {
+                source: Some(assets.source_rect(&CellType::Ghost)),
+                ..Default::default()
+            },
+        );
+    }
+}
+
+impl Renderer for DefaultRenderer {
+    fn render(&self, assets: &Assets, board: &Board) {
         draw_texture(&assets.board_tex, self.x - 188., self.y - 1., WHITE);
 
         // render board layout
@@ -180,52 +229,6 @@ impl BoardRenderer {
             y_offset + self.y + 34. * 2.,
             32.,
             RED,
-        );
-    }
-
-    pub fn point_to_coords(&self, point: &Point) -> (f32, f32) {
-        self.i32_to_coords(point.x, point.y)
-    }
-    pub fn i32_to_coords(&self, x: i32, y: i32) -> (f32, f32) {
-        (self.x + x as f32 * CELL_SIZE, self.y + y as f32 * CELL_SIZE)
-    }
-
-    fn render_cell_type(&self, assets: &Assets, x: f32, y: f32, cell_type: &CellType, alpha: u8) {
-        let ta = &assets.texture_atlas;
-
-        draw_texture_ex(
-            ta,
-            x,
-            y,
-            Color::from_rgba(255, 255, 255, alpha),
-            DrawTextureParams {
-                source: Some(assets.source_rect(cell_type)),
-                ..Default::default()
-            },
-        );
-    }
-
-    fn render_piece_ghost(
-        &self,
-        assets: &Assets,
-        x: f32,
-        y: f32,
-        piece_type: PieceType,
-        alpha: u8,
-    ) {
-        let ta = &assets.texture_atlas;
-
-        let col = piece_type_to_color(piece_type);
-
-        draw_texture_ex(
-            ta,
-            x,
-            y,
-            Color::from_rgba(col.r, col.g, col.b, alpha),
-            DrawTextureParams {
-                source: Some(assets.source_rect(&CellType::Ghost)),
-                ..Default::default()
-            },
         );
     }
 }

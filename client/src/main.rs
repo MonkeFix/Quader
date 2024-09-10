@@ -8,11 +8,7 @@ use macroquad::prelude::*;
 use crate::game_root::GameRoot;
 
 mod assets;
-mod board_controller;
-mod board_controller_bot;
-mod board_controller_remote;
-mod board_manager;
-mod board_renderer;
+mod boards;
 mod game_root;
 mod state_machine;
 
