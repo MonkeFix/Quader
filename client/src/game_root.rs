@@ -5,24 +5,36 @@
 
 use crate::boards::manager::Manager;
 use macroquad::prelude::*;
+use crossbeam::channel;
+use anyhow;
+
+use crate::ws::establish_connection;
 
 pub struct GameRoot {
     close_requested: bool,
+    receiver: channel::Receiver<tungstenite::Message>,
     board_manager: Box<Manager>,
 }
 
 impl GameRoot {
-    pub fn new() -> Self {
-        GameRoot {
+    pub fn new() -> anyhow::Result<Self> {
+        let receiver = establish_connection()?;
+        Ok(GameRoot {
             close_requested: false,
+            receiver,
             board_manager: Box::new(Manager::new()),
-        }
+        })
     }
 
     pub async fn run(&mut self) {
         self.load_content().await;
 
         'main_loop: loop {
+            let msg = self.receiver.try_recv();
+            if let Ok(_msg) = msg {
+                println!("Received pong from game")
+            }
+
             if is_key_pressed(KeyCode::Escape) {
                 self.close();
             }
