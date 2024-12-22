@@ -15,7 +15,7 @@ macroquad-profiler = "0.2.0"
 uuid = { version = "1.6.1", features = ["serde", "v4"] }
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-tungstenite = "0.24"
+tungstenite = "0.26"
 url = { version = "2.1.0" }
 reqwest = { version = "0.12", features = ["json"] }
 
