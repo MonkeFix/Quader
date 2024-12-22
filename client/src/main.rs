@@ -4,6 +4,7 @@
  */
 
 use macroquad::prelude::*;
+use anyhow;
 
 use crate::game_root::GameRoot;
 
@@ -11,6 +12,7 @@ mod assets;
 mod boards;
 mod game_root;
 mod state_machine;
+mod ws;
 
 fn window_conf() -> Conf {
     Conf {
@@ -28,9 +30,8 @@ fn window_conf() -> Conf {
 }
 
 #[macroquad::main(window_conf)]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     // debug!("This is a debug message");
-
-    let mut game = GameRoot::new();
-    game.run().await
+    let mut game = GameRoot::new()?;
+    Ok(game.run().await)
 }
