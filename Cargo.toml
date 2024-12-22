@@ -5,9 +5,9 @@ members = [
     "client",
     "skynet",
     "web-api",
-    "server",
-    "lib"
-, "engine-rpc-server"]
+    "lib",
+    "engine-rpc-server"
+]
 
 [profile.release]
 lto = true

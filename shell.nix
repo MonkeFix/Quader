@@ -4,14 +4,23 @@ let
   rustflags = with pkgs.lib.lists; foldr (x: acc: ''-L ${x}/lib '' + acc) "" [
     # add libraries here (e.g. pkgs.libvmi)
   ];
+  libs = with pkgs; [
+      libGL
+      xorg.libXi
+      xorg.libX11
+      xorg.libXrandr
+      xorg.libXcursor
+      libxkbcommon
+  ];
 in
 pkgs.mkShell rec {
-  nativeBuildInputs = [ pkgs.pkg-config ];
+  LD_LIBRARY_PATH = with pkgs; ''${lib.makeLibraryPath libs}'';
+  nativeBuildInputs = with pkgs; [ pkg-config ];
   buildInputs = with pkgs; [
     clang
     rustup
     llvmPackages_latest.bintools
-  ];
+  ] ++ libs;
   RUSTC_VERSION = pkgs.lib.readFile ./rust-toolchain;
   # https://github.com/rust-lang/rust-bindgen#environment-variables
   LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
