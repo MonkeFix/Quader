@@ -7,7 +7,7 @@ members = [
     "web-api",
     "server",
     "lib"
-]
+, "engine-rpc-server"]
 
 [profile.release]
 lto = true
