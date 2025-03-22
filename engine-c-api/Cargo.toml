@@ -1,0 +1,11 @@
+[package]
+name = "engine-c-api"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "quader_engine"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+quader_engine = { path = "../engine" }
