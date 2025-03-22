@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Quader.Server": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
