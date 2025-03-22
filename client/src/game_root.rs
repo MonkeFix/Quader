@@ -32,7 +32,7 @@ impl GameRoot {
         'main_loop: loop {
             let msg = self.receiver.try_recv();
             if let Ok(_msg) = msg {
-                println!("Received pong from game")
+                println!("Received pong from game");
             }
 
             if is_key_pressed(KeyCode::Escape) {
