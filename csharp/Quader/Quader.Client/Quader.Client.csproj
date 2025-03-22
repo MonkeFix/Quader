@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Content/**/*.*" Exclude="**/*.fx; Content/Content-Goes-Here.txt; **/*.mgcb; **/.vscode/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+  </PropertyGroup>
+
+  <!-- Copy fnalib directories to output -->
+  <ItemGroup>
+    <Content Include="..\fnalibs\x64\**\*.*" Visible="false" Condition="'$(OS)' == 'Windows_NT' AND '$(Platform)' != 'x86'">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\osx\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsOSX) == 'true'">
+      <Link>osx\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\lib\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+      <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\lib64\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+      <Link>lib64\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Skins - Copy\**" />
+    <EmbeddedResource Remove="Skins - Copy\**" />
+    <None Remove="Skins - Copy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\FontStashSharp\src\XNA\FontStashSharp.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Nez\Nez.ImGui\Nez.FNA.Core.ImGui.csproj" />
+    <ProjectReference Include="..\..\..\..\Nez\Nez.Persistence\Nez.FNA.Core.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\..\Nez\Nez.Portable\Nez.FNA.Core.csproj" />
+    <ProjectReference Include="..\Quader.Engine\Quader.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ContentPathGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ContentPathGenerator.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ContentPathGenerator.cs">
+      <DependentUpon>ContentPathGenerator.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Managers\" />
+    <Folder Include="Scenes\" />
+  </ItemGroup>
+
+</Project>

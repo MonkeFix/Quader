@@ -1,0 +1,27 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Nez;
+
+namespace Quader.Client.Extensions;
+
+public static class RenderTarget2DExt
+{
+    public static void RenderFrom(this RenderTarget2D renderTarget, Batcher batcher,
+        Action<Batcher> renderAction,
+        Color? clearColor = null)
+    {
+        if (clearColor == null)
+            clearColor = Color.Transparent;
+
+        Core.GraphicsDevice.SetRenderTarget(renderTarget);
+        Core.GraphicsDevice.Clear(clearColor.Value);
+
+        renderAction(batcher);
+    }
+
+    public static void RenderFrom(this RenderTarget2D renderTarget, Action<Batcher> renderAction,
+        Color? clearColor = null)
+    {
+        RenderFrom(renderTarget, Nez.Graphics.Instance.Batcher, renderAction, clearColor);
+    }
+}
