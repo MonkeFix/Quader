@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option csharp_namespace = "Quader.Engine";
+
+package engine;
+
+service Board {
+  rpc Create (BoardCreateRequest) returns (BoardCreateResponse);
+}
+
+enum WallKickMode {
+    Standard = 0;
+}
+
+message GameSettings {
+    message GravitySettings {
+        float grav_const = 1;
+        float grav_base = 2;
+        float grav_incr = 3;
+        float lock_delay = 4;
+        float lock_prolong_amount = 5;
+    }
+    message BoardSettings {
+        uint32 width = 1;
+        uint32 height = 2;
+    }
+    message AttackSettings {
+        uint32 lines_0 = 1;
+        uint32 lines_1 = 2;
+        uint32 lines_2 = 3;
+        uint32 lines_3 = 4;
+        uint32 lines_4 = 5;
+        uint32 t_spin_single = 6;
+        uint32 t_spin_double = 7;
+        uint32 t_spin_triple = 8;
+        uint32 t_spin_single_mini = 9;
+        uint32 all_clear = 10;
+        repeated uint32 b2bs = 11;
+        repeated uint32 combos = 12;
+        uint32 garbage_delay_ms = 13;
+    }
+    WallKickMode wall_kick_mode = 1;
+}
+
+message BoardCreateRequest {
+    GameSettings game_settings = 1;
+    uint64 seed = 2;
+}
+
+message BoardCreateResponse {
+    string message = 1;
+}
+ 
+message HelloRequest {
+  string name = 1;
+}
+ 
+message HelloReply {
+  string message = 1;
+}

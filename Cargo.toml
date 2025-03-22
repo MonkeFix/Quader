@@ -2,12 +2,13 @@
 resolver = "2"
 members = [
     "engine",
-    "client",
-    "skynet",
-    "web-api",
-    "lib",
-    "engine-rpc-server"
-]
+    #"client",
+    #"skynet",
+    #"web-api",
+    #"lib",
+    #"engine-rpc-server",
+    "engine-c-api"
+ ]
 
 [profile.release]
 lto = true
