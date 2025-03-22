@@ -55,7 +55,6 @@ impl Default for HardDropInfo {
     }
 }
 
-///
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MoveResult {
     pub timestamp: f32,

@@ -27,6 +27,7 @@ pub enum WallKickType {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WallKickData {
+    mode: WallKickMode,
     default: WK,
     piece_i: WK,
     piece_o: WK,
@@ -210,6 +211,7 @@ impl WallKickData {
                 ]);
 
                 WallKickData {
+                    mode,
                     default,
                     piece_i,
                     piece_o,

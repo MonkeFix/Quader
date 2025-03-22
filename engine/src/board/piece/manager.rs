@@ -143,7 +143,7 @@ impl PieceMgr {
 
         // if we have hold piece, then replace the current piece with the hold one
         // and put the new piece to hold
-        return if let Some(piece) = self.hold_piece {
+        if let Some(piece) = self.hold_piece {
             let curr_piece = self.get_piece();
             self.hold_piece = Some(curr_piece.get_type());
 
@@ -155,7 +155,7 @@ impl PieceMgr {
             let new_piece = self.piece_queue.next_piece();
 
             Some(self.try_create_piece(new_piece))
-        };
+        }
     }
 
     /// Tries to move the current piece one cell to the left `delta` times.
