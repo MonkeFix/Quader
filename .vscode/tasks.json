@@ -27,6 +27,30 @@
 		},
 		{
 			"type": "cargo",
+			"command": "run",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/engine-rpc-server"
+			},
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "Run Engine gRPC",
+		},
+		{
+			"type": "cargo",
+			"command": "build",
+			"args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/engine-c-api"
+			},
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "Build Engine C API",
+		},
+		{
+			"type": "cargo",
 			"command": "test",
 			"args": [],
 			"options": {
