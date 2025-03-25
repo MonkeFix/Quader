@@ -16,7 +16,10 @@ public class PieceQueue : IEnumerable<PieceType>
         _pieceGenerator = new PieceGeneratorBag7(_seed);
         _nextPiece = PieceType.Pixel;
 
-        _queue = _pieceGenerator.Initialize();
+        var q = _pieceGenerator.Initialize();
+        _queue = new Queue<PieceType>();
+        foreach (var pieceType in q)
+            _queue.Enqueue(pieceType);
     }
 
     public PieceType NextPiece() => SetPiece();
@@ -28,7 +31,10 @@ public class PieceQueue : IEnumerable<PieceType>
         var pieceGenerator = new PieceGeneratorBag7(_seed);
         var queue = pieceGenerator.Initialize();
 
-        _queue = queue;
+        _queue = new Queue<PieceType>();
+        foreach (var pieceType in queue)
+            _queue.Enqueue(pieceType);
+
         _pieceGenerator = pieceGenerator;
         _nextPiece = PieceType.Pixel;
     }

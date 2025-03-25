@@ -19,9 +19,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceI.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceI.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceI.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceI.LeftPos;
                 }
 
                 break;
@@ -33,9 +33,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceO.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceO.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceO.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceO.LeftPos;
                 }
 
                 break;
@@ -47,9 +47,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceT.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceT.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceT.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceT.LeftPos;
                 }
 
                 break;
@@ -61,9 +61,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceL.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceL.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceL.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceL.LeftPos;
                 }
 
                 break;
@@ -75,9 +75,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceJ.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceJ.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceJ.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceJ.LeftPos;
                 }
 
                 break;
@@ -89,9 +89,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceS.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceS.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceS.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceS.LeftPos;
                 }
 
                 break;
@@ -103,9 +103,9 @@ public static class PieceHelpers
                     case RotationState.Clockwise:
                         return PiecePoints.PieceZ.RightPos;
                     case RotationState.Deg180:
-                        return PiecePoints.PieceZ.LeftPos;
-                    case RotationState.CounterClockwise:
                         return PiecePoints.PieceZ.Deg180Pos;
+                    case RotationState.CounterClockwise:
+                        return PiecePoints.PieceZ.LeftPos;
                 }
 
                 break;

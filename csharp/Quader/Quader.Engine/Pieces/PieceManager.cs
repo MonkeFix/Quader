@@ -64,8 +64,9 @@ public class PieceManager
 
         if (HoldPiece.HasValue)
         {
+            var old = HoldPiece.Value;
             HoldPiece = CurrentPiece.PieceType;
-            return TryCreatePiece(HoldPiece.Value, out piece);
+            return TryCreatePiece(old, out piece);
         }
         else
         {
@@ -333,7 +334,7 @@ public class PieceManager
         var y = piece.Y;
         var points = piece.GetPoints();
 
-        for (int i = piece.Y; i < cellHolder.Height; i++)
+        for (int i = piece.Y; i <= cellHolder.Height; i++)
         {
             var offset = new Point(piece.X, i);
             var newPoints = PieceHelpers.AdjustPositions(points, offset);

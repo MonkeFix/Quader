@@ -68,6 +68,12 @@ public class Piece
     public Point[] GetPoints() => PieceHelpers.GetPointsForPiece(PieceType, CurrentRotation);
     public Point[] GetPositions() => GetPoints();
 
+    public IEnumerable<Point> GetPointsAdjusted()
+    {
+        var p = GetPoints();
+        return PieceHelpers.AdjustPositions(p, new Point(_x, _y));
+    }
+
     public void SetX(int x)
     {
         _x = x;
