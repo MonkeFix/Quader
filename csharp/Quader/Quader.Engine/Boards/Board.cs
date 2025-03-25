@@ -34,6 +34,7 @@ public class Board
     public PieceType? HoldPiece => GetHoldPiece();
     public Piece CurrentPiece => _pieceManager.CurrentPiece;
     public CellHolder CellHolder => _pieceManager.CellHolder;
+    public int NearestY => _pieceManager.NearestY;
 
     public Board(GameSettings gameSettings, WallKickData wallKickData, int seed)
     {

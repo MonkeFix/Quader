@@ -12,3 +12,4 @@ src/**/target
 src/dist
 dist
 target
+csharp/Quader/Quader.Client/Quader.Client.csproj.user

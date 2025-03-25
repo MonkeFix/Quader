@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Nez;
+﻿using Nez;
 using Nez.ImGuiTools;
 using Nez.UI;
 using Quader.Client.GameConfig;
