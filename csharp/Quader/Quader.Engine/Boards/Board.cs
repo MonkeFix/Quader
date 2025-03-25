@@ -31,6 +31,10 @@ public class Board
     private ReplayManager _replayManager;
     private float _curSec;
 
+    public PieceType? HoldPiece => GetHoldPiece();
+    public Piece CurrentPiece => _pieceManager.CurrentPiece;
+    public CellHolder CellHolder => _pieceManager.CellHolder;
+
     public Board(GameSettings gameSettings, WallKickData wallKickData, int seed)
     {
         _gameSettings = gameSettings;
@@ -198,6 +202,8 @@ public class Board
     public void Attack(int damage) => _garbageManager.Attack(_gameSettings.Board.Width, damage);
 
     public int FindNearestY() => _pieceManager.FindNearestY();
+
+    public IEnumerable<PieceType> PieceQueue() => _pieceManager.PieceQueue;
 
     public void Reset(int? newSeed)
     {
