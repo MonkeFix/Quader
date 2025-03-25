@@ -14,20 +14,23 @@ public class PieceGeneratorBag7 : IPieceGenerator
         _random = new Random(seed);
     }
 
-    public Queue<PieceType> Initialize()
+    public IEnumerable<PieceType> Initialize()
     {
-        var bag1 = GenerateBag();
+        _queue.Clear();
+        _queue = new Queue<PieceType>();
+
+        var bag = GenerateBag();
         var bag2 = GenerateBag();
 
         var bagSize = AvailablePieces.Pieces.Length;
         for (int i = QueueSize; i < bagSize; i++)
         {
-            _queue.Enqueue(bag1[i]);
+            _queue.Enqueue(bag[i]);
         }
 
         EnqueueRange(bag2);
 
-        return _queue;
+        return bag.Take(QueueSize).ToList();
     }
 
     public PieceType Next()
@@ -45,12 +48,18 @@ public class PieceGeneratorBag7 : IPieceGenerator
 
     private PieceType[] GenerateBag()
     {
-        var len = AvailablePieces.Pieces.Length;
-        var dest = new PieceType[len];
-        Array.Copy(AvailablePieces.Pieces, dest, len);
+        var pieceTypes = new PieceType[7];
+        AvailablePieces.Pieces.CopyTo(pieceTypes, 0);
 
-        dest.Shuffle(_random);
-        return dest;
+        pieceTypes.Shuffle(_random);
+
+        var result = new PieceType[7];
+        for (int i = 0; i < 7; i++)
+        {
+            result[i] = pieceTypes[i];
+        }
+
+        return result;
     }
 
     private void EnqueueRange(IEnumerable<PieceType> types)

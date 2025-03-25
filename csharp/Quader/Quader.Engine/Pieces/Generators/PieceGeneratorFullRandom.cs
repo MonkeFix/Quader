@@ -11,7 +11,7 @@ public class PieceGeneratorFullRandom : IPieceGenerator
         _random = new Random(seed);
     }
 
-    public Queue<PieceType> Initialize()
+    public IEnumerable<PieceType> Initialize()
     {
         var result = new Queue<PieceType>();
 

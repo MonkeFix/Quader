@@ -11,6 +11,6 @@ public static class AvailablePieces
 public interface IPieceGenerator
 {
     int QueueSize { get; }
-    Queue<PieceType> Initialize();
+    IEnumerable<PieceType> Initialize();
     PieceType Next();
 }
